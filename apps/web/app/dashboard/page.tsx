@@ -1,6 +1,7 @@
 import DashboardAlerts from '@/app/ui/dashboard/alerts';
 
 export default async function Page() {
+    // Dashboard Main Page
     return (
         <main>
             <h1 className="mb-4 text-xl md:text-2xl">

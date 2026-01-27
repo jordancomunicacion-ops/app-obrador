@@ -87,6 +87,10 @@ model Ingredient {
   // New Relation: Ingredient comes from a Transformation Output
   transformationOutputs TransformationOutput[]
 
+  // Storage Location
+  storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
+  storageLocationId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -105,6 +109,10 @@ model SupplierProduct {
   sapiensWorld String? // Reino Animal, Reino Vegetal, Reino Fungi, Mundo Mineral
 
   transformations Transformation[]
+
+  // Storage Location
+  storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
+  storageLocationId String?
 
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -187,6 +195,9 @@ model Recipe {
 
   // For Tasks (Production tasks)
   tasks Task[]
+
+  // For Mise En Place
+  miseEnPlaceTasks MiseEnPlaceTask[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -300,6 +311,93 @@ model AuditLog {
   changedByUserId String?
 
   timestamp DateTime @default(now())
-  changes   String? // Changed from Json to String to handle SQLite json safely (though Json type might work)
-  // Let's use String for simple robustness on downgrade.
+  changes   String? 
+}
+
+// 8. STORAGE & LOGISTICS (ALMACEN)
+enum StorageZone {
+  COCINA
+  ALMACEN_SECO
+  CAMARA_FRIA
+  CONGELACION
+}
+
+model StorageLocation {
+  id          String      @id @default(cuid())
+  name        String      // "Timbre 1", "Estantería A"
+  zone        StorageZone
+  
+  description String?
+  
+  // Hierarchy: Area -> Shelf -> Position
+  parentId    String?
+  parent      StorageLocation? @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    StorageLocation[] @relation("LocationHierarchy")
+
+  // Products stored here
+  storedIngredients Ingredient[]
+  storedProducts    SupplierProduct[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 9. MISE EN PLACE
+enum GastronormSize {
+  GN_1_1
+  GN_1_2
+  GN_1_3
+  GN_1_4
+  GN_1_6
+  GN_1_9
+}
+
+enum GastronormDepth {
+  D_20
+  D_40
+  D_65
+  D_100
+  D_150
+  D_200
+}
+
+enum StationType {
+  FRIO
+  CALIENTE
+  PASE
+}
+
+model MiseEnPlaceTask {
+  id          String   @id @default(cuid())
+  name        String   // "Corte de Cebolla" or "Salsas Mesa 1"
+  station     StationType
+  
+  // Linked Recipe (Optional, e.g. "Salsa Tomate")
+  recipe      Recipe?  @relation(fields: [recipeId], references: [id])
+  recipeId    String?
+
+  typicalVolume String? // "2KG" or "10L" text for now, or float
+  
+  // Recommended GN
+  recommendedGhSize  GastronormSize
+  recommendedGhDepth GastronormDepth
+  
+  refillRequired Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 10. SALES DATA (SMART SHOPPING)
+model SalesData {
+  id          String   @id @default(cuid())
+  date        DateTime
+  productName String
+  quantity    Float    // Quantity sold
+  amount      Float?   // Revenue
+  
+  source      String   @default("AGORA") // AGORA, MANUAL, ETC
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

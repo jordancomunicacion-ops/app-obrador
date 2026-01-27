@@ -19,6 +19,8 @@ export const links = [
     { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon },
     { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
     { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon },
+    { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
+    { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
     { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
     { name: 'Empleados', href: '/dashboard/employees', icon: UserGroupIcon },
     { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },

@@ -6,3 +6,240 @@
 [00:01:22.959] Server  LOG     prisma:query "SELECT 1"
 [00:01:22.959] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE 1=1 ORDER BY \"public\".\"SupplierProduct\".\"name\" ASC OFFSET $1"
 [00:01:22.985] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:13:28.511] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:17:46.065] Server  LOG     prisma:query "SELECT 1"
+[00:17:46.066] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:17:46.165] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:17:46.289] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:17:46.331] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:40:25.073] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:40:25.074] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:40:26.854] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:40:26.871] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:40:48.227] Server  LOG     prisma:query "SELECT 1"
+[00:40:48.228] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
+[00:40:48.284] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:41:39.405] Server  ERROR   ⨯ ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+Import trace for requested module:
+./app/dashboard/purchasing/layout.tsx
+[00:41:39.656] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+Import trace for requested module:
+./app/dashboard/purchasing/layout.tsx
+[00:41:40.873] Server  ERROR   ⨯ ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+Import trace for requested module:
+./app/dashboard/purchasing/layout.tsx
+[00:41:41.284] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+Import trace for requested module:
+./app/dashboard/purchasing/layout.tsx
+[00:41:41.837] Browser ERROR   uncaughtError: ModuleBuildError: Module build failed (from ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+[00:41:42.688] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+[00:41:43.066] Server  LOG     ○ Compiling /_error ...
+[00:42:39.524] Browser ERROR   uncaughtError: ModuleBuildError: Module build failed (from ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+
+[00:42:40.367] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:42:40.367] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
+Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
+ 45 │ }
+ 46 │ 
+ 47 │ // Client component for Tabs to access pathname
+ 48 │ 'use client';
+    · ─────────────
+ 49 │ 
+ 50 │ function PurchasingTabs() {
+ 50 │     const pathname = usePathname();
+    ╰────
+  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  │
+  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  │
+
+   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
+ 1 │ import Link from 'next/link';
+ 2 │ import { usePathname } from 'next/navigation';
+   ·          ───────────
+ 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+ 4 │ 
+ 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+   ╰────
+[00:42:40.994] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:42:41.040] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:42:41.440] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:42:42.602] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:43:05.806] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:43:17.498] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:43:42.184] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:43:45.453] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

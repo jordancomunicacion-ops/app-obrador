@@ -5,10 +5,15 @@
         "app/dashboard/products/page": {
           "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
+        },
+        "app/dashboard/purchasing/page": {
+          "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
         }
       },
       "layer": {
-        "app/dashboard/products/page": "action-browser"
+        "app/dashboard/products/page": "action-browser",
+        "app/dashboard/purchasing/page": "action-browser"
       },
       "filename": "../C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\apps\\web\\app\\lib\\actions.ts",
       "exportedName": "signOutAction"
@@ -18,10 +23,15 @@
         "app/dashboard/products/page": {
           "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
+        },
+        "app/dashboard/purchasing/page": {
+          "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
         }
       },
       "layer": {
-        "app/dashboard/products/page": "action-browser"
+        "app/dashboard/products/page": "action-browser",
+        "app/dashboard/purchasing/page": "action-browser"
       },
       "filename": "../C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\apps\\web\\app\\lib\\actions.ts",
       "exportedName": "registerUser"
@@ -31,10 +41,15 @@
         "app/dashboard/products/page": {
           "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
+        },
+        "app/dashboard/purchasing/page": {
+          "moduleId": "(action-browser)/../../node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%2C%5B%7B%22id%22%3A%2200bac9914c19bc27ab09339182a3f016789ebdbabe%22%2C%22exportedName%22%3A%22signOutAction%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%2260388043ecda26766e9122267972bb7bbf8141f7d8%22%2C%22exportedName%22%3A%22registerUser%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%2C%7B%22id%22%3A%22603e3f1347e0f20d6a7974a51e713ad284e3585970%22%2C%22exportedName%22%3A%22authenticate%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CCarlos%5C%5CSOTOdelPRIOR%5C%5CApp%20cocina%20SOTOdelPRIOR%5C%5Capps%5C%5Cweb%5C%5Capp%5C%5Clib%5C%5Cactions.ts%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
         }
       },
       "layer": {
-        "app/dashboard/products/page": "action-browser"
+        "app/dashboard/products/page": "action-browser",
+        "app/dashboard/purchasing/page": "action-browser"
       },
       "filename": "../C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\apps\\web\\app\\lib\\actions.ts",
       "exportedName": "authenticate"
