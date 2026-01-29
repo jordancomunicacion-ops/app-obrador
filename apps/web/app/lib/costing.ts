@@ -29,7 +29,19 @@ export function calculateRecipeCost(recipe: RecipeWithItems): number {
             const quantityInPricingUnit = convertTo(item.quantityGross, itemUnit, pricingUnit);
 
             if (quantityInPricingUnit !== null) {
-                totalCost += quantityInPricingUnit * pricePerUnit;
+                const itemCost = quantityInPricingUnit * pricePerUnit;
+                totalCost += itemCost;
+
+                // Debug logging
+                if (itemCost === 0) {
+                    console.warn(`Cost is 0 for ingredient ${item.ingredient.name}:`, {
+                        quantityGross: item.quantityGross,
+                        itemUnit,
+                        quantityInPricingUnit,
+                        pricePerUnit,
+                        pricingUnit
+                    });
+                }
             } else {
                 console.warn(`Cannot convert ${itemUnit} to ${pricingUnit} for ingredient ${item.ingredient.name}`);
             }

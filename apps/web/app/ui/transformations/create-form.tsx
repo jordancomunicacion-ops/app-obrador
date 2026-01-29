@@ -31,7 +31,8 @@ export default function TransformationForm({ product, ingredients }: Props) {
     const [state, formAction] = useActionState(createTransformation, initialState);
 
     // Default Input Test Quantity (e.g. 1 unit/kg)
-    const [testQuantity, setTestQuantity] = useState<number>(1);
+    const [testQuantity, setTestQuantity] = useState<number | string>(1);
+    const [testUnit, setTestUnit] = useState<string>(product.unit || 'KG');
 
     const [outputs, setOutputs] = useState<OutputRow[]>([
         { key: '1', ingredientId: '', newIngredientName: '', weight: '', costAllocation: 1 }
@@ -55,7 +56,7 @@ export default function TransformationForm({ product, ingredients }: Props) {
 
     // Derived Calculations
     const totalOutputWeight = outputs.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
-    const yieldPercentage = testQuantity > 0 ? (totalOutputWeight / testQuantity) * 100 : 0;
+    const yieldPercentage = Number(testQuantity) > 0 ? (totalOutputWeight / Number(testQuantity)) * 100 : 0;
 
     return (
         <form action={formAction}>
@@ -82,17 +83,26 @@ export default function TransformationForm({ product, ingredients }: Props) {
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Cantidad</label>
+                    <label className="block text-sm font-medium mb-1">Cantidad del Test</label>
                     <div className="flex items-center gap-2">
                         <input
                             name="testQuantity"
                             type="number"
                             step="any"
                             value={testQuantity}
-                            onChange={(e) => setTestQuantity(parseFloat(e.target.value))}
+                            onChange={(e) => setTestQuantity(e.target.value)}
                             className="w-32 rounded-md border-gray-200 py-2 pl-4 text-sm"
                         />
-                        <span className="font-bold text-gray-600">{product.unit}</span>
+                        <select
+                            name="testUnit"
+                            value={testUnit}
+                            onChange={(e) => setTestUnit(e.target.value)}
+                            className="rounded-md border-gray-200 py-2 pl-4 text-sm bg-gray-50"
+                        >
+                            <option value="KG">KG</option>
+                            <option value="L">L</option>
+                            <option value="UD">UD</option>
+                        </select>
                         <span className="text-sm text-gray-500">( de {product.name} )</span>
                     </div>
                     <div id="testQuantity-error" aria-live="polite" aria-atomic="true">
@@ -111,7 +121,7 @@ export default function TransformationForm({ product, ingredients }: Props) {
                             Rendimiento Total: {yieldPercentage.toFixed(1)}%
                         </span>
                         <span className="text-gray-400 mx-2">|</span>
-                        <span>Total Peso: {totalOutputWeight.toFixed(3)} {product.unit}</span>
+                        <span>Total Peso: {totalOutputWeight.toFixed(3)} {testUnit}</span>
                     </div>
                 </div>
 
@@ -127,7 +137,7 @@ export default function TransformationForm({ product, ingredients }: Props) {
 
                     {outputs.map((row, index) => {
                         const weightNum = Number(row.weight) || 0;
-                        const rowPercentage = testQuantity > 0 ? (weightNum / testQuantity) * 100 : 0;
+                        const rowPercentage = Number(testQuantity) > 0 ? (weightNum / Number(testQuantity)) * 100 : 0;
 
                         return (
                             <div key={row.key} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-2 rounded">
@@ -164,7 +174,7 @@ export default function TransformationForm({ product, ingredients }: Props) {
                                         step="any"
                                         className="w-full rounded border-gray-200 text-sm py-1"
                                         value={row.weight}
-                                        onChange={(e) => updateOutput(index, 'weight', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                        onChange={(e) => updateOutput(index, 'weight', e.target.value)}
                                     />
                                 </div>
 
@@ -175,7 +185,7 @@ export default function TransformationForm({ product, ingredients }: Props) {
                                         step="0.1"
                                         className="w-full rounded border-gray-200 text-sm py-1"
                                         value={row.costAllocation}
-                                        onChange={(e) => updateOutput(index, 'costAllocation', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                        onChange={(e) => updateOutput(index, 'costAllocation', e.target.value)}
                                     />
                                     {/* Tooltip */}
                                     <div className="hidden group-hover:block absolute bottom-full left-0 w-48 bg-gray-800 text-white text-xs p-2 rounded z-20 mb-1 shadow-lg">

@@ -18,7 +18,8 @@ const OutputSchema = z.object({
 const TransformationSchema = z.object({
     sourceProductId: z.string(),
     name: z.string().min(1, "El nombre es obligatorio"),
-    testQuantity: z.coerce.number().gt(0, "La cantidad del test debe ser mayor a 0"), // Changed min(0.01) to gt(0) for consistency
+    testQuantity: z.coerce.number().gt(0, "La cantidad del test debe ser mayor a 0"),
+    testUnit: z.string().default('KG'),
     outputs: z.array(OutputSchema).min(1, "Debe haber al menos una salida (aunque sea merma)"),
 });
 
@@ -39,6 +40,7 @@ export async function createTransformation(prevState: TransformationFormState, f
         sourceProductId: formData.get('sourceProductId'),
         name: formData.get('name'),
         testQuantity: Number(formData.get('testQuantity')),
+        testUnit: formData.get('testUnit'),
         outputs: outputsData
     });
 
@@ -49,15 +51,27 @@ export async function createTransformation(prevState: TransformationFormState, f
         };
     }
 
-    const { sourceProductId, name, testQuantity, outputs } = validatedFields.data;
+    const { sourceProductId, name, testQuantity, testUnit, outputs } = validatedFields.data;
 
     try {
+        // Get source product to calculate pricing
+        const sourceProduct = await prisma.supplierProduct.findUnique({
+            where: { id: sourceProductId },
+            select: { price: true, unit: true }
+        });
+
+        if (!sourceProduct) {
+            return { message: 'Producto fuente no encontrado.' };
+        }
+
         await prisma.$transaction(async (tx) => {
             // 1. Create the Transformation Header
             const transformation = await tx.transformation.create({
                 data: {
                     name,
                     sourceProductId,
+                    testQuantity,
+                    // testUnit, // Disabled until Prisma Client regeneration succeeds
                 }
             });
 
@@ -78,10 +92,19 @@ export async function createTransformation(prevState: TransformationFormState, f
                         ingredientId = existingIng.id;
                     } else {
                         // 2. Create new if not found
+                        // Calculate price per unit based on source product
+                        // Formula: (sourcePrice / testQuantity) * costAllocation
+                        // This gives the cost per KG of this output (Assuming KG output)
+                        // If testUnit is different, we might need conversion?
+                        // For MVP, we assume the cost allocation handles the value distribution regardless of units.
+                        const calculatedPrice = (sourceProduct.price / testQuantity) * output.costAllocation;
+
                         const newIng = await tx.ingredient.create({
                             data: {
-                                name: normalizedName, // Store as provided
-                                pricePerUnit: 0,
+                                name: normalizedName,
+                                pricePerUnit: calculatedPrice,
+                                pricingUnit: 'KG', // Outputs are usually measured in specific units, defaulting to KG for consistency
+                                yieldPercent: 100, // Default 100%
                             }
                         });
                         ingredientId = newIng.id;
@@ -97,6 +120,7 @@ export async function createTransformation(prevState: TransformationFormState, f
                         data: {
                             transformationId: transformation.id,
                             ingredientId: ingredientId,
+                            weight: output.weight,
                             percentage: percentage,
                             costAllocation: output.costAllocation
                         }
@@ -124,6 +148,7 @@ export async function updateTransformation(id: string, prevState: Transformation
         sourceProductId: formData.get('sourceProductId'),
         name: formData.get('name'),
         testQuantity: Number(formData.get('testQuantity')),
+        testUnit: formData.get('testUnit'),
         outputs: outputsData
     });
 
@@ -134,14 +159,14 @@ export async function updateTransformation(id: string, prevState: Transformation
         };
     }
 
-    const { sourceProductId, name, testQuantity, outputs } = validatedFields.data;
+    const { sourceProductId, name, testQuantity, testUnit, outputs } = validatedFields.data;
 
     try {
         await prisma.$transaction(async (tx) => {
             // 1. Update Transformation Header
             await tx.transformation.update({
                 where: { id },
-                data: { name }
+                data: { name, testQuantity /*, testUnit */ }
             });
 
             // 2. Clear old outputs (easier than diffing for now)
@@ -176,6 +201,7 @@ export async function updateTransformation(id: string, prevState: Transformation
                         data: {
                             transformationId: id,
                             ingredientId: ingredientId,
+                            weight: output.weight,
                             percentage: percentage,
                             costAllocation: output.costAllocation
                         }
@@ -195,12 +221,22 @@ export async function updateTransformation(id: string, prevState: Transformation
 
 export async function deleteTransformation(id: string) {
     try {
+        const transformation = await prisma.transformation.findUnique({
+            where: { id },
+            select: { sourceProductId: true }
+        });
+
+        if (!transformation) {
+            throw new Error('Transformation not found');
+        }
+
         await prisma.transformation.delete({
             where: { id },
         });
+
+        revalidatePath(`/dashboard/products/${transformation.sourceProductId}`);
     } catch (error) {
-        return { message: 'Error de base de datos: No se pudo borrar la transformación.' };
+        console.error('Error deleting transformation:', error);
+        throw error;
     }
-    revalidatePath('/dashboard/products');
-    return { message: 'Transformación eliminada correctamente' };
 }

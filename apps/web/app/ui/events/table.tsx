@@ -1,6 +1,7 @@
 import { UpdateEvent, DeleteEvent, ViewShoppingList } from '@/app/ui/events/buttons';
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 export default async function EventsTable({
     query,
@@ -49,7 +50,9 @@ export default async function EventsTable({
                                 >
                                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                         <div className="flex items-center gap-3">
-                                            <p className="font-semibold">{event.name}</p>
+                                            <Link href={`/dashboard/events/${event.id}`} className="font-semibold hover:text-blue-600 hover:underline">
+                                                {event.name}
+                                            </Link>
                                         </div>
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-3">

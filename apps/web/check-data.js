@@ -14,6 +14,7 @@ async function main() {
         const taskCount = await prisma.task.count();
         const eventCount = await prisma.event.count();
         const menuItemsCount = await prisma.eventMenuItem.count();
+        const miseEnPlaceCount = await prisma.miseEnPlaceTask.count();
 
         console.log('Users:', userCount);
         console.log('Recipes:', recipeCount);
@@ -21,6 +22,7 @@ async function main() {
         console.log('Tasks:', taskCount);
         console.log('Events:', eventCount);
         console.log('MenuItems:', menuItemsCount);
+        console.log('MiseEnPlace:', miseEnPlaceCount);
 
         if (recipeCount > 0) {
             const firstRecipe = await prisma.recipe.findFirst();

@@ -6,13 +6,20 @@ import { calculateRecipeCost, formatCurrency } from '@/app/lib/costing';
 export default async function RecipesTable({
     query,
     currentPage,
+    categoryFilter,
 }: {
     query: string;
     currentPage: number;
+    categoryFilter?: string;
 }) {
     const recipes = await prisma.recipe.findMany({
         where: {
-            name: { contains: query },
+            AND: [
+                { name: { contains: query } },
+                categoryFilter && categoryFilter !== 'ALL'
+                    ? { category: categoryFilter }
+                    : {}
+            ]
         },
         orderBy: { name: 'asc' },
         include: {
@@ -35,7 +42,7 @@ export default async function RecipesTable({
                                     Nombre
                                 </th>
                                 <th scope="col" className="px-3 py-5 font-medium">
-                                    Rendimiento
+                                    Tipo
                                 </th>
                                 <th scope="col" className="px-3 py-5 font-medium">
                                     Coste Total
@@ -54,7 +61,10 @@ export default async function RecipesTable({
                         <tbody className="bg-white">
                             {recipes.map((recipe: any) => {
                                 const totalCost = calculateRecipeCost(recipe);
-                                const costPerUnit = recipe.yieldQuantity > 0 ? totalCost / recipe.yieldQuantity : 0;
+                                // Cost per portion (if portions exist) otherwise cost of the whole recipe
+                                const costPerUnit = recipe.portions && recipe.portions > 0
+                                    ? totalCost / recipe.portions
+                                    : totalCost;
 
                                 return (
                                     <tr
@@ -67,13 +77,30 @@ export default async function RecipesTable({
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3">
-                                            {recipe.yieldQuantity} {recipe.yieldUnit}
+                                            {recipe.category === 'PRODUCTO_NO_ELABORADO' && (
+                                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+                                                    Producto
+                                                </span>
+                                            )}
+                                            {recipe.category === 'ELABORACION_INTERMEDIA' && (
+                                                <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
+                                                    Intermedia
+                                                </span>
+                                            )}
+                                            {recipe.category === 'ELABORACION_FINAL' && (
+                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                                    Final
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3 font-semibold text-gray-700">
                                             {formatCurrency(totalCost)}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3 text-green-600 font-bold">
                                             {formatCurrency(costPerUnit)}
+                                            {recipe.portions && recipe.portions > 0 && (
+                                                <span className="text-xs text-gray-500 ml-1">/ ración</span>
+                                            )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3">
                                             {recipe.items?.length || 0} items

@@ -98,7 +98,7 @@ export async function updateEvent(
                 }
             });
 
-            // Simple Sync for Menu Items: Delete all and Re-create
+            // Sync for Menu Items: Delete all and Re-create (Simplified sync)
             await tx.eventMenuItem.deleteMany({
                 where: { eventId: id }
             });
@@ -134,5 +134,58 @@ export async function deleteEvent(id: string) {
     } catch (error) {
         console.error('Database Error:', error);
         return { message: 'Error de base de datos: No se pudo eliminar el evento.' };
+    }
+}
+
+
+// --- TASK GENERATION ---
+
+export async function generateTasksForEvent(eventId: string) {
+    try {
+        const event = await prisma.event.findUnique({
+            where: { id: eventId },
+            include: {
+                menuItems: {
+                    include: {
+                        recipe: true
+                    }
+                }
+            }
+        });
+
+        if (!event) throw new Error('Event not found');
+
+        const tasksCreated = [];
+
+        for (const item of event.menuItems) {
+            const targetQty = item.servingsOverride || event.pax;
+            const recipeName = item.recipe.name;
+
+            // Check if task already exists for this recipe in this event context
+            // Since there is no direct link Event->Task in schema, we check title pattern or we add a link if needed.
+            // For now, simpler approach: Create a task.
+
+            const taskTitle = `PROD: ${recipeName} (${targetQty} pax)`;
+
+            const task = await prisma.task.create({
+                data: {
+                    title: taskTitle,
+                    description: `Generado desde Evento: ${event.name}`,
+                    status: 'PENDING',
+                    recipeId: item.recipeId,
+                    targetQuantity: targetQty,
+                    plannedEnd: event.date, // Due date is event date
+                }
+            });
+            tasksCreated.push(task);
+        }
+
+        revalidatePath(`/dashboard/events/${eventId}`);
+        revalidatePath('/dashboard/tasks');
+        return { message: `${tasksCreated.length} tareas generadas correctamente.` };
+
+    } catch (error) {
+        console.error('Generation Error:', error);
+        return { message: 'Error al generar tareas.' };
     }
 }

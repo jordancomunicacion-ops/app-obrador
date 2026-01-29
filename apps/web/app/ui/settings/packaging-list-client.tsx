@@ -18,7 +18,13 @@ export default function PackagingListClient({ packaging }: { packaging: RecipePa
                 {packaging.length === 0 && <p className="text-sm text-gray-500 italic">No hay envases definidos.</p>}
                 {packaging.map((pkg) => (
                     <li key={pkg.id} className="flex items-center justify-between py-2">
-                        <span className="text-sm font-medium text-gray-700">{pkg.name}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">{pkg.name}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${pkg.type === 'MOLDE' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                {pkg.type || 'ENVASE'}
+                            </span>
+                        </div>
                         <button
                             onClick={() => deletePackaging(pkg.id)}
                             className="p-1 text-gray-400 hover:text-red-500 transition-colors"
@@ -32,12 +38,20 @@ export default function PackagingListClient({ packaging }: { packaging: RecipePa
 
             {/* Add Form */}
             <form action={formAction} className="border-t pt-4">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Añadir Envase</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Añadir Envase / Molde</label>
                 <div className="flex gap-2">
+                    <select
+                        name="type"
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm bg-gray-50"
+                        defaultValue="ENVASE"
+                    >
+                        <option value="ENVASE">Envase</option>
+                        <option value="MOLDE">Molde</option>
+                    </select>
                     <input
                         name="name"
                         type="text"
-                        placeholder="Ej. Molde 22cm"
+                        placeholder="Ej. Gn 1/1, Molde 22cm..."
                         className="flex-grow rounded-md border border-gray-300 px-3 py-1.5 text-sm"
                     />
                     <button

@@ -39,14 +39,14 @@ export const RecipeItemSchema = z.object({
     subRecipeId: z.string().optional().nullable(),
     sourceProductId: z.string().optional().nullable(), // Provider/Brand selection
     type: z.enum(['INGREDIENT', 'SUB_RECIPE']),
-    quantityGross: z.coerce.number().gt(0, { message: 'La cantidad debe ser mayor a 0.' }),
+    quantityGross: z.coerce.number().min(0, { message: 'La cantidad no puede ser negativa.' }),
     unit: z.enum(['KG', 'G', 'L', 'ML', 'UD']),
 });
 
 export const RecipeStepSchema = z.object({
     id: z.string().optional(),
     order: z.coerce.number(),
-    description: z.string().min(1, { message: 'La descripción es obligatoria.' }),
+    description: z.string().optional(),
     action: z.string().optional(),
     subAction: z.string().optional(),
     ingredientId: z.string().optional().nullable(),
@@ -57,10 +57,7 @@ export const RecipeSchema = z.object({
     name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
 
     // Technical sheet fields
-
-    // Technical sheet fields
-    // Technical sheet fields
-    category: z.enum(['PRODUCTO_NO_ELABORADO', 'ELABORACION_INTERMEDIA', 'ELABORACION_FINAL']), // New fixed category
+    category: z.enum(['PRODUCTO_NO_ELABORADO', 'ELABORACION_INTERMEDIA', 'ELABORACION_FINAL']), // Required field
     classification: z.string().optional(), // Old "category"
     packaging: z.string().optional(),
     portions: z.preprocess(
@@ -77,7 +74,11 @@ export const RecipeSchema = z.object({
     ),
 
 
-    yieldQuantity: z.coerce.number().gt(0, { message: 'El rendimiento debe ser mayor a 0.' }),
+
+    yieldQuantity: z.preprocess(
+        (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+        z.number().gt(0, { message: 'El rendimiento debe ser mayor a 0.' }).optional().nullable()
+    ),
     yieldUnit: z.enum(['KG', 'G', 'L', 'ML', 'UD']).optional(),
     instructions: z.string().optional(), // Keeping for backward compatibility or simple notes
 

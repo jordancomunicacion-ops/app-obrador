@@ -57,9 +57,9 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
                 portions,
                 prepTime,
                 cookTime,
-                yieldQuantity,
-                yieldUnit: yieldUnit as any,
-                instructions,
+                yieldQuantity: yieldQuantity || 1,
+                yieldUnit: yieldUnit as any || 'UD',
+                instructions: instructions || '',
                 items: {
                     create: items?.map(item => ({
                         type: item.type,
@@ -71,13 +71,20 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
                     }))
                 },
                 steps: {
-                    create: steps?.map(step => ({
-                        order: step.order,
-                        description: step.description,
-                        action: step.action || null,
-                        subAction: step.subAction || null,
-                        ingredientId: step.ingredientId || null
-                    }))
+                    create: steps?.map(step => {
+                        // Determine if the "ingredientId" passed from UI is actually a subRecipe ID
+                        // We check if any item in the recipe list with TYPE=SUB_RECIPE has this ID
+                        const linkedItemIsSubRecipe = items?.some(i => i.type === 'SUB_RECIPE' && i.subRecipeId === step.ingredientId);
+
+                        return {
+                            order: step.order,
+                            description: step.description || '',
+                            action: step.action || null,
+                            subAction: step.subAction || null,
+                            ingredientId: linkedItemIsSubRecipe ? null : (step.ingredientId || null),
+                            subRecipeId: linkedItemIsSubRecipe ? step.ingredientId : null
+                        };
+                    })
                 }
             },
         });
@@ -146,9 +153,9 @@ export async function updateRecipe(
                     portions,
                     prepTime,
                     cookTime,
-                    yieldQuantity,
-                    yieldUnit: yieldUnit as any,
-                    instructions,
+                    yieldQuantity: yieldQuantity || 1,
+                    yieldUnit: yieldUnit as any || 'UD',
+                    instructions: instructions || '',
                 }
             });
 
@@ -180,22 +187,36 @@ export async function updateRecipe(
             // Create new steps
             if (steps && steps.length > 0) {
                 await tx.recipeStep.createMany({
-                    data: steps.map(step => ({
-                        recipeId: id,
-                        order: step.order,
-                        description: step.description,
-                        action: step.action || null,
-                        subAction: step.subAction || null,
-                        ingredientId: step.ingredientId || null
-                    }))
+                    data: steps.map(step => {
+                        const linkedItemIsSubRecipe = items?.some(i => i.type === 'SUB_RECIPE' && i.subRecipeId === step.ingredientId);
+                        return {
+                            recipeId: id,
+                            order: step.order,
+                            description: step.description || '',
+                            action: step.action || null,
+                            subAction: step.subAction || null,
+                            ingredientId: linkedItemIsSubRecipe ? null : (step.ingredientId || null),
+                            subRecipeId: linkedItemIsSubRecipe ? step.ingredientId : null
+                        };
+                    })
                 });
             }
         });
 
     } catch (error) {
         console.error('Database Error:', error);
+        // Debug logging to file
+        try {
+            const fs = await import('fs');
+            // Log full error details including code and meta if available
+            const errorLog = `Date: ${new Date().toISOString()}\nError: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}\nItems: ${JSON.stringify(items)}\nSteps: ${JSON.stringify(steps)}\n\n`;
+            fs.appendFileSync('db_error_log.txt', errorLog);
+        } catch (fsError) {
+            console.error('Failed to write log', fsError);
+        }
+
         return {
-            message: 'Error de base de datos: No se pudo actualizar la receta.',
+            message: `Error de base de datos: ${(error as any).message || 'No se pudo actualizar la receta.'}`,
         };
     }
 

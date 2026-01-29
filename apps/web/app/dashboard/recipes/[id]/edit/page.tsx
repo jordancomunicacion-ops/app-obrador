@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const [recipe, ingredients, categories, packaging, subRecipes] = await Promise.all([
+    const [recipe, ingredientsRaw, categories, packaging, subRecipes, transformedProducts] = await Promise.all([
         prisma.recipe.findUnique({
             where: { id },
             include: {
@@ -39,12 +39,22 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 id: { not: id } // Exclude self to avoid circular dependency
             },
             orderBy: { name: 'asc' }
+        }),
+        prisma.supplierProduct.findMany({
+            where: {
+                transformations: { some: {} }
+            },
+            select: { name: true }
         })
     ]);
 
     if (!recipe) {
         notFound();
     }
+
+    // Filter out ingredients that correspond to products with active transformations (yield tests)
+    const excludedNames = new Set(transformedProducts.map(p => p.name));
+    const ingredients = ingredientsRaw.filter(i => !excludedNames.has(i.name));
 
     return (
         <main>
@@ -70,7 +80,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                         <li>
                             <div className="flex items-center">
                                 <span className="text-gray-300">/</span>
-                                <span className="ml-4 text-sm font-medium text-gray-500" aria-current="page">Editar</span>
+                                <Link href="/dashboard/recipes/%5Bid%5D" className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                    Editar
+                                </Link>
                             </div>
                         </li>
                     </ol>

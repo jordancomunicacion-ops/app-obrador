@@ -2,11 +2,13 @@
 
 import { createProduct, ProductFormState } from '@/app/lib/actions/products';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 export default function Form() {
-    const initialState: ProductFormState = { message: null, errors: {} };
+    const initialState: ProductFormState = { message: '', errors: {} };
     const [state, formAction] = useActionState(createProduct, initialState);
+    const [unit, setUnit] = useState('KG');
+    const isPack = unit === 'CAJA' || unit === 'PACK' || unit === 'BOTELLA';
 
     return (
         <form action={formAction}>
@@ -42,7 +44,7 @@ export default function Form() {
                     </label>
                     <input
                         id="supplier"
-                        name="supplier"
+                        name="supplierId"
                         type="text"
                         placeholder="Ej. Makro, Carnicería Pepe..."
                         className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
@@ -82,15 +84,34 @@ export default function Form() {
                             name="unit"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
                             defaultValue="KG"
+                            onChange={(e) => setUnit(e.target.value)}
                         >
                             <option value="KG">KG</option>
                             <option value="L">Litros</option>
                             <option value="UD">Unidad</option>
                             <option value="CAJA">Caja</option>
                             <option value="PACK">Pack</option>
+                            <option value="BOTELLA">Botella</option>
                         </select>
                     </div>
                 </div>
+
+                {isPack && (
+                    <div className="mb-4">
+                        <label htmlFor="quantityPerUnit" className="mb-2 block text-sm font-medium">
+                            {unit === 'CAJA' ? 'Unidades/Kilos por Caja' :
+                                unit === 'BOTELLA' ? 'Capacidad (ml)' : 'Unidades por Pack'}
+                        </label>
+                        <input
+                            id="quantityPerUnit"
+                            name="quantityPerUnit"
+                            type="number"
+                            step="0.01"
+                            placeholder={unit === 'BOTELLA' ? "Ej. 750" : "Ej. 12"}
+                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                        />
+                    </div>
+                )}
 
                 {/* Sapiens World */}
                 <div className="mb-4">

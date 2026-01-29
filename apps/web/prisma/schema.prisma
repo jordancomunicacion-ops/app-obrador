@@ -55,6 +55,7 @@ model RecipeCategory {
 model RecipePackaging {
   id    String @id @default(cuid())
   name  String @unique
+  type  String @default("ENVASE") // ENVASE, MOLDE
   
   order Int    @default(0)
 
@@ -99,13 +100,51 @@ model Ingredient {
 // NEW: PRODUCT & TRANSFORMATION ARCHITECTURE
 // -----------------------------------------------------------------------------
 
-// Lo que compras (SupplierProduct)
+// Canonical Product (e.g. "Aceite de Oliva")
+model MasterProduct {
+  id          String   @id @default(cuid())
+  name        String
+  category    String?
+  description String?
+
+  supplierProducts SupplierProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Vendor/Provider (e.g. "Makro", "Frutería Pepe")
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  contactInfo String?
+  email       String?
+
+  products SupplierProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Lo que compras (SupplierProduct) - Specific variant from a supplier
 model SupplierProduct {
   id       String  @id @default(cuid())
   name     String // "Solomillo Vaca Rubia - Prov A"
+  
+  // Legacy string field (to be tracked/migrated)
   supplier String?
+
+  // New Relation to canonical Supplier entity
+  supplierEntity   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId String?
+
+  // New Relation to canonical MasterProduct
+  masterProduct   MasterProduct? @relation(fields: [masterProductId], references: [id])
+  masterProductId String?
+
   price    Float // Price per unit (e.g. 18.00)
   unit     String // KG, BOX, PACK
+  quantityPerUnit Float? // e.g. 4 (if unit is PACK), or 15 (if unit is BOX and it's 15kg)
   sapiensWorld String? // Reino Animal, Reino Vegetal, Reino Fungi, Mundo Mineral
 
   transformations Transformation[]
@@ -128,6 +167,10 @@ model Transformation {
   sourceProduct   SupplierProduct @relation(fields: [sourceProductId], references: [id])
   sourceProductId String
 
+  // Test data
+  testQuantity Float // Input quantity used in the yield test (e.g., 10 KG)
+  testUnit     String @default("KG") // Unit used in the test (KG, L, UD...)
+
   // Outputs (Destinations)
   outputs TransformationOutput[]
 
@@ -145,6 +188,7 @@ model TransformationOutput {
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
   ingredientId String // Removed @unique to allow multiple transformations to produce the same ingredient
 
+  weight         Float // Actual output weight from the test (e.g., 6.5 KG)
   percentage     Float // e.g. 60.0 (60%) yield of the source weight
   costAllocation Float // e.g. 1.2 (Allocates 1.2x cost per kg relative to source avg)
 }
@@ -199,6 +243,9 @@ model Recipe {
   // For Mise En Place
   miseEnPlaceTasks MiseEnPlaceTask[]
 
+  // Inverse relation: This recipe used as a sub-recipe in steps
+  usedInSteps RecipeStep[] @relation("SubRecipeStep")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -218,6 +265,9 @@ model RecipeStep {
 
   ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
   ingredientId String?
+
+  subRecipe    Recipe?     @relation("SubRecipeStep", fields: [subRecipeId], references: [id])
+  subRecipeId  String?
 }
 
 // Lines in a recipe (Ingredients or other Recipes)

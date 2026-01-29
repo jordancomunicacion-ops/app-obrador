@@ -4,7 +4,7 @@ import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export default async function Page() {
-    const [ingredients, categories, packaging, subRecipes] = await Promise.all([
+    const [ingredientsRaw, categories, packaging, subRecipes, transformedProducts] = await Promise.all([
         prisma.ingredient.findMany({
             orderBy: { name: 'asc' },
             include: {
@@ -20,7 +20,6 @@ export default async function Page() {
             }
         }),
         prisma.recipeCategory.findMany({ orderBy: { name: 'asc' } }),
-        prisma.recipeCategory.findMany({ orderBy: { name: 'asc' } }),
         prisma.recipePackaging.findMany({ orderBy: { name: 'asc' } }),
         prisma.recipe.findMany({
             where: {
@@ -29,8 +28,18 @@ export default async function Page() {
                 }
             },
             orderBy: { name: 'asc' }
+        }),
+        prisma.supplierProduct.findMany({
+            where: {
+                transformations: { some: {} }
+            },
+            select: { name: true }
         })
     ]);
+
+    // Filter out ingredients that correspond to products with active transformations (yield tests)
+    const excludedNames = new Set(transformedProducts.map(p => p.name));
+    const ingredients = ingredientsRaw.filter(i => !excludedNames.has(i.name));
 
     return (
         <main>

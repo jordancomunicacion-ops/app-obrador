@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { deleteTransformation } from '@/app/lib/actions/transformations';
-import { PencilIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { DeleteTransformationButton } from '@/app/ui/products/delete-transformation-button';
+import { PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
@@ -109,15 +109,10 @@ export default async function Page({ params }: { params: { id: string } }) {
                                         >
                                             <PencilIcon className="w-5 h-5" />
                                         </Link>
-                                        <form action={deleteTransformation.bind(null, trans.id)}>
-                                            <button
-                                                type="submit"
-                                                className="text-red-500 hover:text-red-700"
-                                                title="Eliminar"
-                                            >
-                                                <TrashIcon className="w-5 h-5" />
-                                            </button>
-                                        </form>
+                                        <DeleteTransformationButton
+                                            transformationId={trans.id}
+                                            productId={product.id}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -133,18 +128,23 @@ export default async function Page({ params }: { params: { id: string } }) {
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
                                         {trans.outputs.map((output) => {
-                                            // Estimated Cost = (Product Price / CostFactorCorrectedYield?)
-                                            // Simple approximation logic:
-                                            // If Cost Allocation is 1, Cost is Price / Yield%
-                                            // If Cost Allocation is 0, Cost is 0.
+                                            // Calculate Derived Cost per Unit
+                                            // Step 1: Calculate total input cost
+                                            const totalInputCost = product.price * trans.testQuantity;
 
-                                            // Math:
-                                            // Input Cost = 1kg * 20€ = 20€
-                                            // Output 1: 0.6kg (60%) * Cost1
-                                            // Output 2: 0.2kg (20%) * Cost2
-                                            // ...
-                                            // This view checks the stored parameters. Real cost calc logic is complex.
-                                            // Displaying just the raw parameters for now.
+                                            // Step 2: Calculate total weighted output (sum of weight * costAllocation for all outputs)
+                                            const totalWeightedOutput = trans.outputs.reduce(
+                                                (sum, o) => sum + (o.weight * o.costAllocation),
+                                                0
+                                            );
+
+                                            // Step 3: Distribute cost to this output proportionally
+                                            // Cost allocated to this output = (totalInputCost * thisWeight * thisCostFactor) / totalWeightedOutput
+                                            let derivedCostPerUnit = null;
+                                            if (totalWeightedOutput > 0 && output.weight > 0) {
+                                                const allocatedCost = (totalInputCost * output.weight * output.costAllocation) / totalWeightedOutput;
+                                                derivedCostPerUnit = allocatedCost / output.weight;
+                                            }
 
                                             return (
                                                 <tr key={output.id} className="group">
@@ -157,8 +157,20 @@ export default async function Page({ params }: { params: { id: string } }) {
                                                     <td className="py-2 text-right">
                                                         x{output.costAllocation}
                                                     </td>
-                                                    <td className="py-2 text-right text-gray-400">
-                                                        -
+                                                    <td className="py-2 text-right font-medium text-gray-700">
+                                                        {derivedCostPerUnit !== null ? (
+                                                            <>
+                                                                {new Intl.NumberFormat('es-ES', {
+                                                                    style: 'currency',
+                                                                    currency: 'EUR',
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2
+                                                                }).format(derivedCostPerUnit)}
+                                                                <span className="text-xs text-gray-400 ml-1">/{product.unit}</span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-gray-400">-</span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             );

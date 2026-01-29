@@ -78,11 +78,13 @@ export async function fetchCategories() {
 
 const CreatePackaging = z.object({
     name: z.string().min(1, 'El nombre es obligatorio').max(50),
+    type: z.enum(['ENVASE', 'MOLDE']).default('ENVASE'),
 });
 
 export async function createPackaging(prevState: CategoryFormState, formData: FormData) {
     const validatedFields = CreatePackaging.safeParse({
         name: formData.get('name'),
+        type: formData.get('type'),
     });
 
     if (!validatedFields.success) {
@@ -92,11 +94,11 @@ export async function createPackaging(prevState: CategoryFormState, formData: Fo
         };
     }
 
-    const { name } = validatedFields.data;
+    const { name, type } = validatedFields.data;
 
     try {
         await prisma.recipePackaging.create({
-            data: { name },
+            data: { name, type },
         });
         revalidatePath('/dashboard/settings');
         revalidatePath('/dashboard/recipes/create');

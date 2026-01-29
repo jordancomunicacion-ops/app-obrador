@@ -2,13 +2,16 @@
 
 import { updateProduct, ProductFormState } from '@/app/lib/actions/products';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { SupplierProduct } from '@prisma/client';
 
 export default function EditForm({ product }: { product: SupplierProduct }) {
-    const initialState: ProductFormState = { message: null, errors: {} };
+    const initialState: ProductFormState = { message: '', errors: {} };
     const updateProductWithId = updateProduct.bind(null, product.id);
     const [state, formAction] = useActionState(updateProductWithId, initialState);
+
+    const [unit, setUnit] = useState(product.unit || 'KG');
+    const isPack = unit === 'CAJA' || unit === 'PACK' || unit === 'BOTELLA';
 
     return (
         <form action={formAction}>
@@ -45,7 +48,7 @@ export default function EditForm({ product }: { product: SupplierProduct }) {
                     </label>
                     <input
                         id="supplier"
-                        name="supplier"
+                        name="supplierId"
                         type="text"
                         defaultValue={product.supplier || ''}
                         placeholder="Ej. Makro, Carnicería Pepe..."
@@ -87,15 +90,35 @@ export default function EditForm({ product }: { product: SupplierProduct }) {
                             name="unit"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
                             defaultValue={product.unit}
+                            onChange={(e) => setUnit(e.target.value)}
                         >
                             <option value="KG">KG</option>
                             <option value="L">Litros</option>
                             <option value="UD">Unidad</option>
                             <option value="CAJA">Caja</option>
                             <option value="PACK">Pack</option>
+                            <option value="BOTELLA">Botella</option>
                         </select>
                     </div>
                 </div>
+
+                {isPack && (
+                    <div className="mb-4">
+                        <label htmlFor="quantityPerUnit" className="mb-2 block text-sm font-medium">
+                            {unit === 'CAJA' ? 'Unidades/Kilos por Caja' :
+                                unit === 'BOTELLA' ? 'Capacidad (ml)' : 'Unidades por Pack'}
+                        </label>
+                        <input
+                            id="quantityPerUnit"
+                            name="quantityPerUnit"
+                            type="number"
+                            step="0.01"
+                            defaultValue={(product as any).quantityPerUnit}
+                            placeholder={unit === 'BOTELLA' ? "Ej. 750" : "Ej. 12"}
+                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                        />
+                    </div>
+                )}
 
                 {/* Sapiens World */}
                 <div className="mb-4">

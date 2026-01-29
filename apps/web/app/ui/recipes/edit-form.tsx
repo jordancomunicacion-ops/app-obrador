@@ -6,10 +6,30 @@ import Link from 'next/link';
 import {
     PlusIcon,
     TrashIcon,
+    Bars3Icon,
 } from '@heroicons/react/24/outline';
 import { useActionState, useState } from 'react';
 import { Ingredient, Recipe, RecipeItem, RecipeStep, TransformationOutput, SupplierProduct, RecipeCategory, RecipePackaging } from '@prisma/client';
 import { convertTo, UnitType } from '@/app/lib/units';
+import SearchableSelect from '@/app/ui/components/searchable-select';
+
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type IngredientWithSources = Ingredient & {
     transformationOutputs: (TransformationOutput & {
@@ -63,6 +83,13 @@ export default function EditForm({
             unit: item.unit
         }))
     );
+
+    const [selectedPackaging, setSelectedPackaging] = useState(recipe.packaging || '');
+
+    const isPack = selectedPackaging.toLowerCase().includes('caja') ||
+        selectedPackaging.toLowerCase().includes('pack') ||
+        selectedPackaging.toLowerCase().includes('estuche') ||
+        selectedPackaging.toLowerCase().includes('lata');
 
     const addItem = () => {
         setItems([
@@ -163,17 +190,49 @@ export default function EditForm({
         return sum;
     }, 0);
 
-    const costPerUnit = yieldVal > 0 ? totalCost / yieldVal : 0;
+    // Cost per portion (if portions exist) otherwise cost of the whole recipe
+    const costPerUnit = recipe.portions && recipe.portions > 0
+        ? totalCost / recipe.portions
+        : totalCost;
 
     // Helper to get ingredient name from ID
     const getIngredientOptions = () => {
         return items.map(item => {
-            const ing = ingredients.find(i => i.id === item.ingredientId);
-            return ing ? { id: ing.id, name: ing.name } : null;
+            if (item.type === 'INGREDIENT') {
+                const ing = ingredients.find(i => i.id === item.ingredientId);
+                return ing ? { id: ing.id, name: ing.name } : null;
+            } else if (item.type === 'SUB_RECIPE') {
+                const sub = availableSubRecipes.find(r => r.id === item.subRecipeId);
+                return sub ? { id: sub.id, name: sub.name } : null;
+            }
+            return null;
         }).filter(Boolean) as { id: string, name: string }[];
     };
 
     const availableIngredients = getIngredientOptions();
+
+    // DnD Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setSteps((items) => {
+                const oldIndex = items.findIndex((item) => item.key === active.id);
+                const newIndex = items.findIndex((item) => item.key === over.id);
+
+                const newOrder = arrayMove(items, oldIndex, newIndex);
+                // Re-assign order numbers based on new position
+                return newOrder.map((step, index) => ({ ...step, order: index + 1 }));
+            });
+        }
+    }
 
     return (
         <form action={formAction}>
@@ -189,18 +248,24 @@ export default function EditForm({
                         <p className="text-2xl font-bold text-blue-800">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalCost)}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-green-600 font-semibold">Coste por Ración/Unidad</p>
+                        <p className="text-sm text-green-600 font-semibold">
+                            {recipe.portions && recipe.portions > 0 ? 'Coste por Ración' : 'Coste Total'}
+                        </p>
                         <p className="text-2xl font-bold text-green-800">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(costPerUnit)}</p>
                     </div>
                 </div>
 
-                <input type="hidden" name="items" value={JSON.stringify(items)} />
+                {/* Normalize numbers: Replace commas with dots for decimal numbers */}
+                <input type="hidden" name="items" value={JSON.stringify(items.map(item => ({
+                    ...item,
+                    quantityGross: parseFloat(String(item.quantityGross).replace(',', '.')) || 0
+                })))} />
                 <input type="hidden" name="steps" value={JSON.stringify(steps)} />
 
                 {/* Recipe Name */}
                 <div className="mb-4">
                     <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                        Nombre de la Receta
+                        Nombre de la Receta <span className="text-red-500">*</span>
                     </label>
                     <div className="relative mt-2 rounded-md">
                         <input
@@ -248,7 +313,7 @@ export default function EditForm({
 
                     {/* New fixed Category (Type) */}
                     <div>
-                        <label htmlFor="category" className="mb-2 block text-sm font-medium">Tipo de Receta</label>
+                        <label htmlFor="category" className="mb-2 block text-sm font-medium">Tipo de Receta <span className="text-red-500">*</span></label>
                         <select
                             id="category"
                             name="category"
@@ -272,11 +337,19 @@ export default function EditForm({
                             name="packaging"
                             defaultValue={recipe.packaging || ''}
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                            onChange={(e) => setSelectedPackaging(e.target.value)}
                         >
                             <option value="">Seleccionar Envase...</option>
-                            {packaging.map((pkg) => (
-                                <option key={pkg.id} value={pkg.name}>{pkg.name}</option>
-                            ))}
+                            <optgroup label="Envases">
+                                {packaging.filter(p => (p as any).type === 'ENVASE' || !(p as any).type).map((pkg) => (
+                                    <option key={pkg.id} value={pkg.name}>{pkg.name}</option>
+                                ))}
+                            </optgroup>
+                            <optgroup label="Moldes / Platos">
+                                {packaging.filter(p => (p as any).type === 'MOLDE').map((pkg) => (
+                                    <option key={pkg.id} value={pkg.name}>{pkg.name}</option>
+                                ))}
+                            </optgroup>
                         </select>
                         <div id="packaging-error" aria-live="polite" aria-atomic="true">
                             {state.errors?.packaging && state.errors.packaging.map((error: string) => (
@@ -285,8 +358,10 @@ export default function EditForm({
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="portions" className="mb-2 block text-sm font-medium">Nº Raciones</label>
-                        <input id="portions" name="portions" type="number" defaultValue={recipe.portions || ''} placeholder="Ej. 36" className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
+                        <label htmlFor="portions" className="mb-2 block text-sm font-medium">
+                            {isPack ? 'Unidades por Caja/Pack' : 'Nº Raciones'}
+                        </label>
+                        <input id="portions" name="portions" type="number" defaultValue={recipe.portions || ''} placeholder={isPack ? "Ej. 12" : "Ej. 36"} className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
                         <div id="portions-error" aria-live="polite" aria-atomic="true">
                             {state.errors?.portions && state.errors.portions.map((error: string) => (
                                 <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
@@ -313,48 +388,9 @@ export default function EditForm({
                     </div>
                 </div>
 
-                {/* Yield Info */}
-                <div className="mb-4 grid grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="yieldQuantity" className="mb-2 block text-sm font-medium">
-                            Rendimiento (Cantidad)
-                        </label>
-                        <input
-                            id="yieldQuantity"
-                            name="yieldQuantity"
-                            type="number"
-                            step="0.01"
-                            defaultValue={recipe.yieldQuantity}
-                            onChange={(e) => setYieldVal(parseFloat(e.target.value) || 0)}
-                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                        />
-                        <div id="yieldQuantity-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.yieldQuantity && state.errors.yieldQuantity.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                        <label htmlFor="yieldUnit" className="mb-2 block text-sm font-medium">
-                            Unidad
-                        </label>
-                        <select
-                            id="yieldUnit"
-                            name="yieldUnit"
-                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                            defaultValue={recipe.yieldUnit || 'KG'}
-                        >
-                            <option value="KG">KG</option>
-                            <option value="L">L</option>
-                            <option value="UD">Raciones / Unidades</option>
-                        </select>
-                        <div id="yieldUnit-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.yieldUnit && state.errors.yieldUnit.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                {/* Yield Section - HIDDEN: Always 1 UD, quantity determined by Events/Tasks */}
+                <input type="hidden" name="yieldQuantity" value={recipe.yieldQuantity || 1} />
+                <input type="hidden" name="yieldUnit" value={recipe.yieldUnit || "UD"} />
 
                 {/* Instructions */}
                 <div className="mb-4">
@@ -413,32 +449,48 @@ export default function EditForm({
                                     {/* Item Selection */}
 
                                     {item.type === 'INGREDIENT' ? (
-                                        <select
-                                            className="block w-full rounded-md border-gray-200 text-sm"
+                                        <SearchableSelect
+                                            options={[
+                                                ...ingredients.filter(i => (!i.transformationOutputs || i.transformationOutputs.length === 0)).map(ing => ({
+                                                    value: ing.id,
+                                                    label: ing.name,
+                                                    group: 'Productos No Elaborados'
+                                                })),
+                                                ...ingredients.filter(i => (i.transformationOutputs && i.transformationOutputs.length > 0)).map(ing => {
+                                                    let displayName = ing.name;
+                                                    const sources = ing.transformationOutputs?.map(o => o.transformation.sourceProduct.name);
+                                                    if (sources && sources.length > 0) {
+                                                        const uniqueSources = Array.from(new Set(sources));
+                                                        displayName = `${uniqueSources.join(' / ')} - ${ing.name}`;
+                                                    }
+                                                    return {
+                                                        value: ing.id,
+                                                        label: displayName,
+                                                        group: 'Despieces / Elaboraciones'
+                                                    };
+                                                })
+                                            ]}
                                             value={item.ingredientId}
-                                            onChange={(e) => updateItem(index, 'ingredientId', e.target.value)}
-                                        >
-                                            <option value="">Seleccionar Ingrediente...</option>
-                                            {ingredients.map(ing => {
-                                                let displayName = ing.name;
-                                                // Check for sources
-                                                const sources = ing.transformationOutputs?.map(o => o.transformation.sourceProduct.name);
-                                                if (sources && sources.length > 0) {
-                                                    const uniqueSources = Array.from(new Set(sources));
-                                                    displayName = `${uniqueSources.join(' / ')} - ${ing.name}`;
-                                                }
-                                                return (
-                                                    <option key={ing.id} value={ing.id}>
-                                                        {displayName} ({ing.pricingUnit})
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
+                                            onChange={(value) => updateItem(index, 'ingredientId', value)}
+                                            placeholder="Buscar ingrediente..."
+                                            className="w-full"
+                                        />
                                     ) : (
                                         <select
                                             className="block w-full rounded-md border-gray-200 text-sm"
                                             value={item.subRecipeId}
-                                            onChange={(e) => updateItem(index, 'subRecipeId', e.target.value)}
+                                            onChange={(e) => {
+                                                const selectedId = e.target.value;
+                                                const recipe = availableSubRecipes?.find(r => r.id === selectedId);
+
+                                                const newItems = [...items];
+                                                newItems[index] = {
+                                                    ...newItems[index],
+                                                    subRecipeId: selectedId,
+                                                    unit: recipe?.yieldUnit || 'UD'
+                                                };
+                                                setItems(newItems);
+                                            }}
                                         >
                                             <option value="">Seleccionar Sub-Receta...</option>
                                             {availableSubRecipes.map(recipe => (
@@ -476,21 +528,21 @@ export default function EditForm({
                                 })()}
 
                                 {/* Quantity */}
-                                <div className="w-full md:w-24">
+                                <div className="w-20 md:w-24">
                                     <input
                                         type="number"
                                         step="any"
-                                        placeholder="Cant."
-                                        className="block w-full rounded-md border-gray-200 text-sm"
+                                        placeholder="0"
+                                        className="block w-full rounded-md border-gray-200 text-sm py-2"
                                         value={item.quantityGross}
-                                        onChange={(e) => updateItem(index, 'quantityGross', parseFloat(e.target.value))}
+                                        onChange={(e) => updateItem(index, 'quantityGross', Number(e.target.value))}
                                     />
                                 </div>
 
                                 {/* Unit */}
-                                <div className="w-full md:w-24">
+                                <div className="w-20 md:w-24">
                                     <select
-                                        className="block w-full rounded-md border-gray-200 text-sm"
+                                        className="block w-full rounded-md border-gray-200 text-sm py-2"
                                         value={item.unit}
                                         onChange={(e) => updateItem(index, 'unit', e.target.value)}
                                     >
@@ -520,59 +572,31 @@ export default function EditForm({
                         </button>
                     </div>
                     {steps.length === 0 && <p className="text-gray-500 italic text-sm">No hay pasos definidos.</p>}
-                    <div className="space-y-4">
-                        {steps.map((step, index) => (
-                            <div key={step.key} className="flex flex-col gap-2 p-3 bg-white rounded border border-gray-200 shadow-sm">
-                                <div className="flex gap-2 items-start">
-                                    <span className="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 font-bold text-xs text-gray-600 mt-1">
-                                        {step.order}
-                                    </span>
-                                    <textarea
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                        rows={2}
-                                        placeholder=""
-                                        value={step.description}
-                                        onChange={(e) => updateStep(index, 'description', e.target.value)}
-                                    ></textarea>
-                                    <button type="button" onClick={() => removeStep(index)} className="text-red-500 hover:text-red-700 p-1"><TrashIcon className="w-5" /></button>
-                                </div>
 
-                                {/* Structured Data / Tags */}
-                                <div className="ml-8 flex flex-wrap gap-2 items-center">
-                                    <select
-                                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
-                                        value={step.action || ''}
-                                        onChange={(e) => updateStep(index, 'action', e.target.value)}
-                                    >
-                                        <option value="">-- Acción --</option>
-                                        {Object.keys(ACTIONS).map(act => <option key={act} value={act}>{act}</option>)}
-                                    </select>
-
-                                    {step.action && ACTIONS[step.action] && (
-                                        <select
-                                            className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
-                                            value={step.subAction || ''}
-                                            onChange={(e) => updateStep(index, 'subAction', e.target.value)}
-                                        >
-                                            <option value="">-- Técnica --</option>
-                                            {ACTIONS[step.action].map(sub => <option key={sub} value={sub}>{sub}</option>)}
-                                        </select>
-                                    )}
-
-                                    <select
-                                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6 max-w-[150px]"
-                                        value={step.ingredientId || ''}
-                                        onChange={(e) => updateStep(index, 'ingredientId', e.target.value)}
-                                    >
-                                        <option value="">-- Ingrediente Relacionado --</option>
-                                        {availableIngredients.map(ing => (
-                                            <option key={ing.id} value={ing.id}>{ing.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={steps.map(s => s.key)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="space-y-4">
+                                {steps.map((step, index) => (
+                                    <SortableStep
+                                        key={step.key}
+                                        step={step}
+                                        index={index}
+                                        updateStep={(field: string, val: any) => updateStep(index, field as keyof StepInput, val)}
+                                        removeStep={() => removeStep(index)}
+                                        ACTIONS={ACTIONS}
+                                        availableIngredients={availableIngredients}
+                                    />
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </SortableContext>
+                    </DndContext>
                 </div>
 
                 <div aria-live="polite" aria-atomic="true">
@@ -580,7 +604,7 @@ export default function EditForm({
                         <p className="mt-2 text-sm text-red-500">{state.message}</p>
                     )}
                 </div>
-            </div>
+            </div >
             <div className="mt-6 flex justify-end gap-4">
                 <Link
                     href="/dashboard/recipes"
@@ -595,6 +619,87 @@ export default function EditForm({
                     Actualizar Receta
                 </button>
             </div>
-        </form>
+        </form >
+    );
+}
+
+// Sub-component for Sortable Step
+function SortableStep({ step, index, updateStep, removeStep, ACTIONS, availableIngredients }: any) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: step.key });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="flex flex-col gap-2 p-3 bg-white rounded border border-gray-200 shadow-sm relative group">
+            {/* Drag Handle & Header */}
+            <div className="flex gap-2 items-start">
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-move p-1 text-gray-400 hover:text-gray-600 mt-0.5"
+                >
+                    <Bars3Icon className="w-5 h-5" />
+                </div>
+
+                <span className="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 font-bold text-xs text-gray-600 mt-1">
+                    {step.order}
+                </span>
+
+                <textarea
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    rows={2}
+                    placeholder=""
+                    value={step.description}
+                    onChange={(e) => updateStep('description', e.target.value)}
+                ></textarea>
+
+                <button type="button" onClick={removeStep} className="text-red-500 hover:text-red-700 p-1">
+                    <TrashIcon className="w-5" />
+                </button>
+            </div>
+
+            {/* Structured Data / Tags */}
+            <div className="ml-10 flex flex-wrap gap-2 items-center">
+                <select
+                    className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
+                    value={step.action || ''}
+                    onChange={(e) => updateStep('action', e.target.value)}
+                >
+                    <option value="">-- Acción --</option>
+                    {Object.keys(ACTIONS).map(act => <option key={act} value={act}>{act}</option>)}
+                </select>
+
+                {step.action && ACTIONS[step.action] && (
+                    <select
+                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
+                        value={step.subAction || ''}
+                        onChange={(e) => updateStep('subAction', e.target.value)}
+                    >
+                        <option value="">-- Técnica --</option>
+                        {ACTIONS[step.action].map((sub: string) => <option key={sub} value={sub}>{sub}</option>)}
+                    </select>
+                )}
+
+                <select
+                    className="text-xs rounded border-gray-200 py-1 pl-2 pr-6 max-w-[150px]"
+                    value={step.ingredientId || ''}
+                    onChange={(e) => updateStep('ingredientId', e.target.value)}
+                >
+                    <option value="">-- Ingrediente Relacionado --</option>
+                    {availableIngredients.map((ing: any) => (
+                        <option key={ing.id} value={ing.id}>{ing.name}</option>
+                    ))}
+                </select>
+            </div>
+        </div>
     );
 }

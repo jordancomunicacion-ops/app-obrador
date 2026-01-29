@@ -1,245 +1,277 @@
-[00:00:02.111] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:02.320] Server  LOG     ✓ Ready in 1859ms
-[00:00:05.725] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE 1=1 ORDER BY \"public\".\"SupplierProduct\".\"name\" ASC OFFSET $1"
-[00:00:05.800] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:00:07.771] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:22.959] Server  LOG     prisma:query "SELECT 1"
-[00:01:22.959] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE 1=1 ORDER BY \"public\".\"SupplierProduct\".\"name\" ASC OFFSET $1"
-[00:01:22.985] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:13:28.511] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:17:46.065] Server  LOG     prisma:query "SELECT 1"
-[00:17:46.066] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:17:46.165] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:17:46.289] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:17:46.331] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:40:25.073] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:40:25.074] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:40:26.854] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:40:26.871] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:40:48.227] Server  LOG     prisma:query "SELECT 1"
-[00:40:48.228] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2 AND \"public\".\"Event\".\"status\" = $3) OFFSET $4"
-[00:40:48.284] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:41:39.405] Server  ERROR   ⨯ ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
+[00:00:02.462] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.710] Server  LOG     ✓ Ready in 2.2s
+[00:00:10.970] Server  WARN    prisma:tryLoadEnv Environment variables not found at null "\u001b[35m+9ms\u001b[39m"
+[00:00:10.975] Server  WARN    prisma:tryLoadEnv Environment variables loaded from C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\.env "\u001b[35m+6ms\u001b[39m"
+[00:00:10.978] Server  WARN    prisma:client checkPlatformCaching:postinstall "false" "\u001b[36m+3ms\u001b[39m"
+[00:00:10.980] Server  WARN    prisma:client checkPlatformCaching:ciName undefined "\u001b[36m+2ms\u001b[39m"
+[00:00:10.981] Server  WARN    prisma:tryLoadEnv Environment variables not found at null "\u001b[35m+1ms\u001b[39m"
+[00:00:10.982] Server  WARN    prisma:tryLoadEnv Environment variables loaded from C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\.env "\u001b[35m+1ms\u001b[39m"
+[00:00:10.983] Server  WARN    prisma:client dirname "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\node_modules\\.prisma\\client" "\u001b[31m+1ms\u001b[39m"
+[00:00:10.984] Server  WARN    prisma:client relativePath "../../../apps/web/prisma" "\u001b[31m+1ms\u001b[39m"
+[00:00:10.985] Server  WARN    prisma:client cwd "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\apps\\web\\prisma" "\u001b[31m+2ms\u001b[39m"
+[00:00:10.987] Server  WARN    prisma:client clientVersion "5.22.0" "\u001b[31m+1ms\u001b[39m"
+[00:00:10.989] Server  WARN    prisma:client:libraryEngine internalSetup "\u001b[34m+2ms\u001b[39m"
+[00:00:10.994] Server  WARN    prisma:client:engines:resolveEnginePath enginePath "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\node_modules\\.prisma\\client\\query_engine-windows.dll.node" "\u001b[31m+5ms\u001b[39m"
+[00:00:11.049] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+55ms\u001b[39m"
+[00:00:11.050] Server  WARN    prisma:client prisma.supplierProduct.findMany({
+  orderBy: {
+    name: "asc"
+  }
+}) "\u001b[31m+2ms\u001b[39m"
+[00:00:11.051] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
+[00:00:11.051] Server  WARN    prisma:client {
+  "modelName": "SupplierProduct",
+  "action": "findMany",
+  "query": {
+    "arguments": {
+      "orderBy": {
+        "name": "asc"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+1ms\u001b[39m"
+[00:00:11.052] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
+[00:00:11.054] Server  WARN    prisma:client:libraryEngine library starting "\u001b[34m+1ms\u001b[39m"
+[00:00:11.412] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+358ms\u001b[39m"
+[00:00:11.413] Server  WARN    prisma:client prisma.appConfig.findUnique({
+  where: {
+    id: "default"
+  }
+}) "\u001b[31m+1ms\u001b[39m"
+[00:00:11.413] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
+[00:00:11.414] Server  WARN    prisma:client {
+  "modelName": "AppConfig",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "default"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+0ms\u001b[39m"
+[00:00:11.415] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
+[00:00:11.416] Server  WARN    prisma:client:libraryEngine library already starting, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
+[00:00:15.129] Server  WARN    prisma:client:request_handler {
+  "name": "PrismaClientInitializationError",
+  "clientVersion": "5.22.0",
+  "errorCode": "P1001"
+} "\u001b[36m+3713ms\u001b[39m"
+[00:00:15.134] Server  LOG     prisma:error "\nInvalid `prisma.supplierProduct.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:00:15.135] Server  WARN    prisma:client:request_handler {
+  "name": "PrismaClientInitializationError",
+  "clientVersion": "5.22.0",
+  "errorCode": "P1001"
+} "\u001b[36m+6ms\u001b[39m"
+[00:00:15.136] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:00:15.159] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.supplierProduct.findMany()` invocation:
 
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
 
-Import trace for requested module:
-./app/dashboard/purchasing/layout.tsx
-[00:41:39.656] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
+Can't reach database server at `localhost:5432`
 
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
+Please make sure your database server is running at `localhost:5432`.
+[00:00:15.162] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
 
-Import trace for requested module:
-./app/dashboard/purchasing/layout.tsx
-[00:41:40.873] Server  ERROR   ⨯ ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
 
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
+Can't reach database server at `localhost:5432`
 
-Import trace for requested module:
-./app/dashboard/purchasing/layout.tsx
-[00:41:41.284] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
+Please make sure your database server is running at `localhost:5432`.
+[00:00:16.205] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:16.205] Browser ERROR   uncaughtError: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
 
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
 
-Import trace for requested module:
-./app/dashboard/purchasing/layout.tsx
-[00:41:41.837] Browser ERROR   uncaughtError: ModuleBuildError: Module build failed (from ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
+Can't reach database server at `localhost:5432`
 
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
-
-[00:41:42.688] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
-
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
-[00:41:43.066] Server  LOG     ○ Compiling /_error ...
-[00:42:39.524] Browser ERROR   uncaughtError: ModuleBuildError: Module build failed (from ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js):
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
-
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
-
-[00:42:40.367] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:42:40.367] Browser ERROR   ./app/dashboard/purchasing/layout.tsx
-Error:   × The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
-    ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:48:1]
- 45 │ }
- 46 │ 
- 47 │ // Client component for Tabs to access pathname
- 48 │ 'use client';
-    · ─────────────
- 49 │ 
- 50 │ function PurchasingTabs() {
- 50 │     const pathname = usePathname();
-    ╰────
-  × You're importing a component that needs `usePathname`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
-  │
-  │  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
-  │
-
-   ╭─[C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\app\dashboard\purchasing\layout.tsx:2:1]
- 1 │ import Link from 'next/link';
- 2 │ import { usePathname } from 'next/navigation';
-   ·          ───────────
- 3 │ import { DocumentMagnifyingGlassIcon, ArchiveBoxIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
- 4 │ 
- 4 │ function Tab({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
-   ╰────
-[00:42:40.994] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:42:41.040] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:42:41.440] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
-[00:42:42.602] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:43:05.806] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:43:17.498] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:43:42.184] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:43:45.453] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Please make sure your database server is running at `localhost:5432`.
+[00:03:42.398] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+207261ms\u001b[39m"
+[00:03:42.398] Server  WARN    prisma:client prisma.supplierProduct.findMany({
+  orderBy: {
+    name: "asc"
+  }
+}) "\u001b[31m+3ms\u001b[39m"
+[00:03:42.399] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
+[00:03:42.399] Server  WARN    prisma:client {
+  "modelName": "SupplierProduct",
+  "action": "findMany",
+  "query": {
+    "arguments": {
+      "orderBy": {
+        "name": "asc"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+0ms\u001b[39m"
+[00:03:42.400] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
+[00:03:42.401] Server  WARN    prisma:client:libraryEngine library starting "\u001b[34m+1ms\u001b[39m"
+[00:03:42.493] Server  WARN    prisma:client:libraryEngine library started "\u001b[34m+92ms\u001b[39m"
+[00:03:42.502] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+8ms\u001b[39m"
+[00:03:42.504] Server  WARN    prisma:client prisma.appConfig.findUnique({
+  where: {
+    id: "default"
+  }
+}) "\u001b[31m+2ms\u001b[39m"
+[00:03:42.504] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
+[00:03:42.504] Server  WARN    prisma:client {
+  "modelName": "AppConfig",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "default"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+1ms\u001b[39m"
+[00:03:42.505] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
+[00:03:42.569] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:03:42.583] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE 1=1 ORDER BY \"public\".\"SupplierProduct\".\"name\" ASC OFFSET $1"
+[00:03:43.949] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:49.668] Server  LOG     ○ Compiling /dashboard/products/[id]/edit ...
+[00:03:51.812] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+9306ms\u001b[39m"
+[00:03:51.813] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
+  where: {
+    id: "cmkyiukoc0002uu5dxx1mo4bn"
+  }
+}) "\u001b[31m+1ms\u001b[39m"
+[00:03:51.813] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
+[00:03:51.814] Server  WARN    prisma:client {
+  "modelName": "SupplierProduct",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "cmkyiukoc0002uu5dxx1mo4bn"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+1ms\u001b[39m"
+[00:03:51.916] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+102ms\u001b[39m"
+[00:03:51.923] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:03:51.997] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+81ms\u001b[39m"
+[00:03:51.997] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
+  where: {
+    id: "cmkyiukoc0002uu5dxx1mo4bn"
+  }
+}) "\u001b[31m+0ms\u001b[39m"
+[00:03:51.997] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
+[00:03:51.997] Server  WARN    prisma:client {
+  "modelName": "SupplierProduct",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "cmkyiukoc0002uu5dxx1mo4bn"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+1ms\u001b[39m"
+[00:03:52.005] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+7ms\u001b[39m"
+[00:03:52.016] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:03:52.039] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+35ms\u001b[39m"
+[00:03:52.040] Server  WARN    prisma:client prisma.appConfig.findUnique({
+  where: {
+    id: "default"
+  }
+}) "\u001b[31m+0ms\u001b[39m"
+[00:03:52.040] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
+[00:03:52.041] Server  WARN    prisma:client {
+  "modelName": "AppConfig",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "default"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+0ms\u001b[39m"
+[00:03:52.041] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
+[00:03:52.047] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:03:52.070] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+28ms\u001b[39m"
+[00:03:52.070] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
+  where: {
+    id: "cmkyiukoc0002uu5dxx1mo4bn"
+  }
+}) "\u001b[31m+0ms\u001b[39m"
+[00:03:52.070] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
+[00:03:52.071] Server  WARN    prisma:client {
+  "modelName": "SupplierProduct",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "cmkyiukoc0002uu5dxx1mo4bn"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+0ms\u001b[39m"
+[00:03:52.078] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+7ms\u001b[39m"
+[00:03:52.081] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:03:52.092] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+15ms\u001b[39m"
+[00:03:52.093] Server  WARN    prisma:client prisma.appConfig.findUnique({
+  where: {
+    id: "default"
+  }
+}) "\u001b[31m+0ms\u001b[39m"
+[00:03:52.093] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
+[00:03:52.094] Server  WARN    prisma:client {
+  "modelName": "AppConfig",
+  "action": "findUnique",
+  "query": {
+    "arguments": {
+      "where": {
+        "id": "default"
+      }
+    },
+    "selection": {
+      "$composites": true,
+      "$scalars": true
+    }
+  }
+}
+ "\u001b[31m+1ms\u001b[39m"
+[00:03:52.095] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
+[00:03:52.098] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"

@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('Seed starting...');
     try {
-        const email = 'admin@cocina.com';
-        const password = 'admin';
-        const name = 'Admin User';
+        const email = 'gerencia@sotodelprior.com';
+        const password = '123456';
+        const name = 'Gerencia';
 
         // Explicitly using env var from process if needed, but Prisma Client should pick it up from .env
         // or we can pass it manually for debugging.
