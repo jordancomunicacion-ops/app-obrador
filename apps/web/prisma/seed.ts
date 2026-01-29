@@ -32,6 +32,26 @@ async function main() {
         } else {
             console.log(`User ${email} already exists.`);
         }
+
+        // 2. Categories
+        const categories = ['Principal', 'Entrante', 'Postre', 'Salsa', 'Guarnicion'];
+        for (const catName of categories) {
+            const exists = await prisma.recipeCategory.findUnique({ where: { name: catName } });
+            if (!exists) {
+                await prisma.recipeCategory.create({ data: { name: catName } });
+                console.log(`Created Category: ${catName}`);
+            }
+        }
+
+        // 3. Packaging
+        const packaging = ['Tupper', 'Bolsa Vacio', 'Caja', 'Gastronorm'];
+        for (const packName of packaging) {
+            const exists = await prisma.recipePackaging.findUnique({ where: { name: packName } });
+            if (!exists) {
+                await prisma.recipePackaging.create({ data: { name: packName } });
+                console.log(`Created Packaging: ${packName}`);
+            }
+        }
     } catch (e) {
         console.error('Seed Error:', e);
         process.exit(1);

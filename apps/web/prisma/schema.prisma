@@ -88,6 +88,9 @@ model Ingredient {
   // New Relation: Ingredient comes from a Transformation Output
   transformationOutputs TransformationOutput[]
 
+  // New Relation: Ingredient variants (SupplierProducts)
+  supplierProducts SupplierProduct[]
+
   // Storage Location
   storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
   storageLocationId String?
@@ -137,6 +140,10 @@ model SupplierProduct {
   // New Relation to canonical Supplier entity
   supplierEntity   Supplier? @relation(fields: [supplierId], references: [id])
   supplierId String?
+
+  // Relation to Canonical Ingredient
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId String?
 
   // New Relation to canonical MasterProduct
   masterProduct   MasterProduct? @relation(fields: [masterProductId], references: [id])
@@ -450,4 +457,39 @@ model SalesData {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// 11. TIMBRE CONFIGURATION & MISE EN PLACE
+model Timbre {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Timbre Zona Caliente"
+  shelves     Shelf[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Shelf {
+  id          String   @id @default(cuid())
+  timbreId    String
+  timbre      Timbre   @relation(fields: [timbreId], references: [id], onDelete: Cascade)
+  position    Int      // 1 (top) to N (bottom)
+  height      Int      // Available height in mm
+  items       MiseItem[]
+}
+
+model MiseItem {
+  id            String   @id @default(cuid())
+  name          String
+  volume        Float    // Volume in Liters
+  category      String   // e.g., "topping", "garnish", "medium", "large", "production"
+  serviceRhythm String   @default("medio") // "bajo", "medio", "alto"
+  
+  // Calculated/Assigned values
+  shelfId       String?
+  shelf         Shelf?   @relation(fields: [shelfId], references: [id])
+  assignedGN    String?  // e.g., "1/6", "1/3"
+  assignedDepth Int?     // e.g., 65, 100, 150
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

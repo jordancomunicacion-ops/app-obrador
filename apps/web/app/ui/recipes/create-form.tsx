@@ -38,7 +38,12 @@ type IngredientWithSources = Ingredient & {
         transformation: {
             sourceProduct: SupplierProduct
         }
-    })[]
+    })[];
+    supplierProducts: (SupplierProduct & {
+        supplierEntity: {
+            name: string;
+        } | null;
+    })[];
 };
 
 type RecipeItemInput = {
@@ -467,7 +472,12 @@ export default function Form({
                                 {/* Source/Provider Selection (if available for this ingredient) */}
                                 {(() => {
                                     const selectedIng = ingredients.find(i => i.id === item.ingredientId);
-                                    if (selectedIng && selectedIng.transformationOutputs && selectedIng.transformationOutputs.length > 0) {
+
+                                    // Combine sources: TransformationOutputs AND SupplierProducts
+                                    const transformationSources = selectedIng?.transformationOutputs || [];
+                                    const supplierSources = selectedIng?.supplierProducts || [];
+
+                                    if (transformationSources.length > 0 || supplierSources.length > 0) {
                                         return (
                                             <div className="flex-grow w-full md:w-auto">
                                                 <select
@@ -476,14 +486,31 @@ export default function Form({
                                                     onChange={(e) => updateItem(index, 'sourceProductId', e.target.value)}
                                                 >
                                                     <option value="">-- Origen Genérico --</option>
-                                                    {selectedIng.transformationOutputs.map(output => (
-                                                        <option key={output.transformation.sourceProduct.id} value={output.transformation.sourceProduct.id}>
-                                                            {output.transformation.sourceProduct.supplier ? (
-                                                                `${output.transformation.sourceProduct.supplier} - `
-                                                            ) : ''}
-                                                            {output.transformation.sourceProduct.name} ({output.percentage.toFixed(0)}%)
-                                                        </option>
-                                                    ))}
+
+                                                    {/* OptGroup for Buying Options (Direct Suppliers) */}
+                                                    {supplierSources.length > 0 && (
+                                                        <optgroup label="Proveedores (Compra Directa)">
+                                                            {supplierSources.map(prod => (
+                                                                <option key={prod.id} value={prod.id}>
+                                                                    {prod.supplier || prod.supplierEntity?.name || 'Proveedor N/D'} - {prod.name} ({prod.price}€/{prod.unit})
+                                                                </option>
+                                                            ))}
+                                                        </optgroup>
+                                                    )}
+
+                                                    {/* OptGroup for Transformations (Yield Tests) */}
+                                                    {transformationSources.length > 0 && (
+                                                        <optgroup label="Transformaciones (Rendimientos)">
+                                                            {transformationSources.map(output => (
+                                                                <option key={output.transformation.sourceProduct.id} value={output.transformation.sourceProduct.id}>
+                                                                    {output.transformation.sourceProduct.supplier ? (
+                                                                        `${output.transformation.sourceProduct.supplier} - `
+                                                                    ) : ''}
+                                                                    {output.transformation.sourceProduct.name} ({output.percentage.toFixed(0)}%)
+                                                                </option>
+                                                            ))}
+                                                        </optgroup>
+                                                    )}
                                                 </select>
                                             </div>
                                         );

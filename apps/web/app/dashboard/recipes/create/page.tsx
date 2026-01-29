@@ -16,6 +16,11 @@ export default async function Page() {
                             }
                         }
                     }
+                },
+                supplierProducts: {
+                    include: {
+                        supplierEntity: true
+                    }
                 }
             }
         }),

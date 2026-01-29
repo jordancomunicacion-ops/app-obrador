@@ -125,12 +125,30 @@ export async function createProduct(prevState: ProductFormState, formData: FormD
             // Also create as an Ingredient so it appears in recipes
             // If linked to MasterProduct, use Master Product Name? Or specific variant name?
             // For now, keep using the specific product name to allow differentiation (e.g. "Solomillo Vaca" vs "Solomillo Ternera")
-            await tx.ingredient.create({
-                data: {
-                    name: product.name,
-                    pricingUnit: product.unit,
-                    pricePerUnit: product.price,
-                }
+            // Check if Canonical Ingredient already exists
+            // Check if Canonical Ingredient already exists
+            let ingredientId = '';
+            const existingIngredient = await tx.ingredient.findFirst({
+                where: { name: { equals: product.name, mode: 'insensitive' } }
+            });
+
+            if (existingIngredient) {
+                ingredientId = existingIngredient.id;
+            } else {
+                const newIngredient = await tx.ingredient.create({
+                    data: {
+                        name: product.name,
+                        pricingUnit: product.unit,
+                        pricePerUnit: product.price,
+                    }
+                });
+                ingredientId = newIngredient.id;
+            }
+
+            // Link SupplierProduct to the Ingredient
+            await tx.supplierProduct.update({
+                where: { id: product.id },
+                data: { ingredientId: ingredientId }
             });
         });
     } catch (error) {
