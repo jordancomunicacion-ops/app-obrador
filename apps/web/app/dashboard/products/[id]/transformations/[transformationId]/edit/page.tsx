@@ -7,7 +7,10 @@ export default async function Page({ params }: { params: { id: string, transform
     const { id, transformationId } = await params;
 
     const [product, transformation, ingredients] = await Promise.all([
-        prisma.supplierProduct.findUnique({ where: { id } }),
+        prisma.masterProduct.findUnique({
+            where: { id },
+            include: { supplierProducts: true }
+        }),
         prisma.transformation.findUnique({
             where: { id: transformationId },
             include: {

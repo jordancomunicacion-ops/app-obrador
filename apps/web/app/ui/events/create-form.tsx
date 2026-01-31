@@ -62,7 +62,7 @@ export default function Form({ recipes }: { recipes: Recipe[] }) {
                             id="name"
                             name="name"
                             type="text"
-                            placeholder="Ej. Boda Carlos y Maria"
+                            placeholder=""
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
                             aria-describedby="name-error"
                         />
@@ -113,7 +113,7 @@ export default function Form({ recipes }: { recipes: Recipe[] }) {
                                 id="pax"
                                 name="pax"
                                 type="number"
-                                placeholder="100"
+                                placeholder=""
                                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                                 aria-describedby="pax-error"
                             />
@@ -141,11 +141,19 @@ export default function Form({ recipes }: { recipes: Recipe[] }) {
                                 type="number"
                                 step="0.05"
                                 defaultValue="1.1"
-                                placeholder="1.1"
+                                placeholder=""
                                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                                 aria-describedby="safetyMargin-error"
                             />
                             <ShieldCheckIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+                        </div>
+                        <div id="safetyMargin-error" aria-live="polite" aria-atomic="true">
+                            {state.errors?.safetyMargin &&
+                                state.errors.safetyMargin.map((error: string) => (
+                                    <p key={error} className="mt-2 text-sm text-red-500">
+                                        {error}
+                                    </p>
+                                ))}
                         </div>
                         <p className="mt-1 text-xs text-gray-500">1.1 = +10% extra comida</p>
                     </div>
@@ -177,12 +185,33 @@ export default function Form({ recipes }: { recipes: Recipe[] }) {
                                         ))}
                                     </select>
                                 </div>
+                                {/* Pax Override */}
+                                <div className="w-full md:w-32">
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            placeholder=""
+                                            className="block w-full rounded-md border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
+                                            value={item.servingsOverride || ''}
+                                            onChange={(e) => updateItem(index, 'servingsOverride', e.target.value === '' ? null : Number(e.target.value))}
+                                        />
+                                        <p className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">platos</p>
+                                    </div>
+                                </div>
                                 {/* Remove Action */}
                                 <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 p-1">
                                     <TrashIcon className="w-5" />
                                 </button>
                             </div>
                         ))}
+                    </div>
+                    <div id="menuItems-error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.menuItems &&
+                            state.errors.menuItems.map((error: string) => (
+                                <p key={error} className="mt-2 text-sm text-red-500">
+                                    {error}
+                                </p>
+                            ))}
                     </div>
                 </div>
 

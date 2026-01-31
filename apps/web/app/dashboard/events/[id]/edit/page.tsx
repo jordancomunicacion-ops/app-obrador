@@ -13,6 +13,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             include: { menuItems: true },
         }),
         prisma.recipe.findMany({
+            where: { category: 'ELABORACION_FINAL' },
             orderBy: { name: 'asc' },
         }),
     ]);

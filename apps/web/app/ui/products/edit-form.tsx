@@ -3,148 +3,217 @@
 import { updateProduct, ProductFormState } from '@/app/lib/actions/products';
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { SupplierProduct } from '@prisma/client';
+import { MasterProduct, SupplierProduct } from '@prisma/client';
 
-export default function EditForm({ product }: { product: SupplierProduct }) {
+export default function EditForm({ product }: { product: MasterProduct & { supplierProducts: SupplierProduct[] } }) {
     const initialState: ProductFormState = { message: '', errors: {} };
     const updateProductWithId = updateProduct.bind(null, product.id);
     const [state, formAction] = useActionState(updateProductWithId, initialState);
 
-    const [unit, setUnit] = useState(product.unit || 'KG');
-    const isPack = unit === 'CAJA' || unit === 'PACK' || unit === 'BOTELLA';
+    const [suppliers, setSuppliers] = useState<{ id?: string, supplierName: string, price: number, unit: string, quantityPerUnit: number | null }[]>(
+        product.supplierProducts.map(sp => ({
+            id: sp.id,
+            supplierName: sp.supplier || '',
+            price: sp.price,
+            unit: sp.unit,
+            quantityPerUnit: sp.quantityPerUnit
+        }))
+    );
+
+    const addSupplier = () => {
+        setSuppliers([...suppliers, { id: undefined, supplierName: '', price: 0, unit: 'KG', quantityPerUnit: null }]);
+    };
+
+    const removeSupplier = (index: number) => {
+        if (suppliers.length > 1) {
+            setSuppliers(suppliers.filter((_, i) => i !== index));
+        }
+    };
+
+    const updateSupplier = (index: number, field: string, value: any) => {
+        const newSuppliers = [...suppliers];
+        (newSuppliers[index] as any)[field] = value;
+        setSuppliers(newSuppliers);
+    };
 
     return (
         <form action={formAction}>
-            <div className="rounded-md bg-gray-50 p-4 md:p-6">
+            <input type="hidden" name="suppliersJson" value={JSON.stringify(suppliers)} />
 
-                {/* Product Name */}
-                <div className="mb-4">
-                    <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                        Nombre del Producto (Compra)
-                    </label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        defaultValue={product.name}
-                        placeholder="Ej. Solomillo Vaca Rubia"
-                        className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                        aria-describedby="name-error"
-                    />
-                    <div id="name-error" aria-live="polite" aria-atomic="true">
-                        {state.errors?.name &&
-                            state.errors.name.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">
-                                    {error}
-                                </p>
-                            ))}
-                    </div>
-                </div>
+            <div className="rounded-md bg-white p-4 md:p-6 border border-gray-200 shadow-sm mb-6">
+                <h2 className="text-lg font-bold mb-4 border-b pb-2">Información del Producto</h2>
 
-                {/* Supplier */}
-                <div className="mb-4">
-                    <label htmlFor="supplier" className="mb-2 block text-sm font-medium">
-                        Proveedor
-                    </label>
-                    <input
-                        id="supplier"
-                        name="supplierId"
-                        type="text"
-                        defaultValue={product.supplier || ''}
-                        placeholder="Ej. Makro, Carnicería Pepe..."
-                        className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                    />
-                </div>
-
-                {/* Price and Unit Grid */}
-                <div className="mb-4 grid grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="price" className="mb-2 block text-sm font-medium">
-                            Precio de Compra (€)
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Product Name */}
+                    <div className="mb-4">
+                        <label htmlFor="name" className="mb-2 block text-sm font-medium">
+                            Nombre del Producto (Genérico)
                         </label>
                         <input
-                            id="price"
-                            name="price"
-                            type="number"
-                            step="0.01"
-                            defaultValue={product.price}
-                            placeholder="0.00"
+                            id="name"
+                            name="name"
+                            type="text"
+                            defaultValue={product.name}
+                            placeholder="Ej. Solomillo de Vaca"
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                            aria-describedby="price-error"
+                            aria-describedby="name-error"
                         />
-                        <div id="price-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.price &&
-                                state.errors.price.map((error: string) => (
+                        <div id="name-error" aria-live="polite" aria-atomic="true">
+                            {state.errors?.name &&
+                                state.errors.name.map((error: string) => (
                                     <p key={error} className="mt-2 text-sm text-red-500">
                                         {error}
                                     </p>
                                 ))}
                         </div>
                     </div>
-                    <div>
-                        <label htmlFor="unit" className="mb-2 block text-sm font-medium">
-                            Unidad de Compra
+
+                    {/* Category */}
+                    <div className="mb-4">
+                        <label htmlFor="category" className="mb-2 block text-sm font-medium">
+                            Categoría / Familia
                         </label>
                         <select
-                            id="unit"
-                            name="unit"
+                            id="category"
+                            name="category"
+                            defaultValue={product.category || ''}
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                            defaultValue={product.unit}
-                            onChange={(e) => setUnit(e.target.value)}
                         >
-                            <option value="KG">KG</option>
-                            <option value="L">Litros</option>
-                            <option value="UD">Unidad</option>
-                            <option value="CAJA">Caja</option>
-                            <option value="PACK">Pack</option>
-                            <option value="BOTELLA">Botella</option>
+                            <option value="" disabled>-- Seleccionar Categoría --</option>
+                            <option value="Carnes">Carnes</option>
+                            <option value="Pescados">Pescados</option>
+                            <option value="Mariscos / Moluscos">Mariscos / Moluscos</option>
+                            <option value="Lácteos">Lácteos</option>
+                            <option value="Verduras">Verduras</option>
+                            <option value="Frutas">Frutas</option>
+                            <option value="Cereales / Legumbres">Cereales / Legumbres</option>
+                            <option value="Aceites / Grasas">Aceites / Grasas</option>
+                            <option value="Especias / Condimentos">Especias / Condimentos</option>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                    {/* Sapiens World */}
+                    <div className="mb-4">
+                        <label htmlFor="sapiensWorld" className="mb-2 block text-sm font-medium">
+                            Mundo (Sapiens)
+                        </label>
+                        <select
+                            id="sapiensWorld"
+                            name="sapiensWorld"
+                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                            defaultValue={product.supplierProducts[0]?.sapiensWorld || ''}
+                        >
+                            <option value="" disabled>-- Seleccionar Mundo --</option>
+                            <option value="Reino Animal">Reino Animal</option>
+                            <option value="Reino Vegetal">Reino Vegetal</option>
+                            <option value="Reino Fungi">Reino Fungi</option>
+                            <option value="Mundo Mineral">Mundo Mineral</option>
+                            <option value="Agua">Agua</option>
+                            <option value="Elaborados / Mixto">Elaborados / Mixto</option>
                         </select>
                     </div>
                 </div>
+            </div>
 
-                {isPack && (
-                    <div className="mb-4">
-                        <label htmlFor="quantityPerUnit" className="mb-2 block text-sm font-medium">
-                            {unit === 'CAJA' ? 'Unidades/Kilos por Caja' :
-                                unit === 'BOTELLA' ? 'Capacidad (ml)' : 'Unidades por Pack'}
-                        </label>
-                        <input
-                            id="quantityPerUnit"
-                            name="quantityPerUnit"
-                            type="number"
-                            step="0.01"
-                            defaultValue={(product as any).quantityPerUnit}
-                            placeholder={unit === 'BOTELLA' ? "Ej. 750" : "Ej. 12"}
-                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                        />
-                    </div>
-                )}
-
-                {/* Sapiens World */}
-                <div className="mb-4">
-                    <label htmlFor="sapiensWorld" className="mb-2 block text-sm font-medium">
-                        Mundo (Metodología Sapiens)
-                    </label>
-                    <select
-                        id="sapiensWorld"
-                        name="sapiensWorld"
-                        className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                        defaultValue={product.sapiensWorld || ''}
+            <div className="rounded-md bg-white p-4 md:p-6 border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                    <h2 className="text-lg font-bold">Proveedores y Precios</h2>
+                    <button
+                        type="button"
+                        onClick={addSupplier}
+                        className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 transition-colors font-medium border border-blue-200"
                     >
-                        <option value="">-- Seleccionar Mundo --</option>
-                        <option value="Reino Animal">Reino Animal</option>
-                        <option value="Reino Vegetal">Reino Vegetal</option>
-                        <option value="Reino Fungi">Reino Fungi</option>
-                        <option value="Mundo Mineral">Mundo Mineral</option>
-                        <option value="Otros">Otros</option>
-                    </select>
+                        + Añadir Proveedor
+                    </button>
                 </div>
 
-                <div aria-live="polite" aria-atomic="true">
-                    {state.message && (
-                        <p className="mt-2 text-sm text-red-500">{state.message}</p>
-                    )}
+                <div className="space-y-4">
+                    {suppliers.map((s, index) => (
+                        <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100 relative group">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="mb-1 block text-xs font-semibold text-gray-600 uppercase">
+                                        Proveedor
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={s.supplierName}
+                                        onChange={(e) => updateSupplier(index, 'supplierName', e.target.value)}
+                                        placeholder="Ej. Makro, Carnicería Pepe..."
+                                        className="block w-full rounded-md border border-gray-200 py-2 px-3 text-sm"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold text-gray-600 uppercase">
+                                        Precio (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={s.price}
+                                        onChange={(e) => updateSupplier(index, 'price', e.target.value)}
+                                        placeholder="0.00"
+                                        className="block w-full rounded-md border border-gray-200 py-2 px-3 text-sm"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold text-gray-600 uppercase">
+                                        Unidad
+                                    </label>
+                                    <select
+                                        value={s.unit}
+                                        onChange={(e) => updateSupplier(index, 'unit', e.target.value)}
+                                        className="block w-full rounded-md border border-gray-200 py-2 px-3 text-sm"
+                                    >
+                                        <option value="KG">KG</option>
+                                        <option value="L">Litros</option>
+                                        <option value="UD">Unidad</option>
+                                        <option value="CAJA">Caja</option>
+                                        <option value="PACK">Pack</option>
+                                        <option value="BOTELLA">Botella</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {(s.unit === 'CAJA' || s.unit === 'PACK' || s.unit === 'BOTELLA') && (
+                                <div className="mt-4 max-w-xs">
+                                    <label className="mb-1 block text-xs font-semibold text-gray-600 uppercase">
+                                        {s.unit === 'CAJA' ? 'Unidades/Kilos por Caja' :
+                                            s.unit === 'BOTELLA' ? 'Capacidad (ml)' : 'Unidades por Pack'}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={s.quantityPerUnit || ''}
+                                        onChange={(e) => updateSupplier(index, 'quantityPerUnit', e.target.value)}
+                                        placeholder={s.unit === 'BOTELLA' ? "Ej. 750" : "Ej. 12"}
+                                        className="block w-full rounded-md border border-gray-200 py-2 px-3 text-sm"
+                                    />
+                                </div>
+                            )}
+
+                            {suppliers.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() => removeSupplier(index)}
+                                    className="absolute -top-2 -right-2 bg-red-100 text-red-600 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border border-red-200 shadow-sm"
+                                >
+                                    &times;
+                                </button>
+                            )}
+                        </div>
+                    ))}
                 </div>
+            </div>
+
+            <div aria-live="polite" aria-atomic="true">
+                {state.message && (
+                    <p className="mt-4 text-sm text-red-500">{state.message}</p>
+                )}
             </div>
 
             <div className="mt-6 flex justify-end gap-4">

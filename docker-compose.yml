@@ -26,7 +26,7 @@ services:
     networks:
       - cocina-internal-net
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-cocina_user}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-cocina_user} -d ${DB_NAME:-cocina}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,6 +36,7 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      target: deps
     container_name: cocina-web
     restart: unless-stopped
     environment:
@@ -60,7 +61,6 @@ services:
       - "traefik.http.routers.cocina-web.entrypoints=websecure"
       - "traefik.http.routers.cocina-web.tls=true"
       - "traefik.http.routers.cocina-web.tls.certresolver=le"
-      - "traefik.http.routers.cocina-web.service=cocina-web-svc"
       - "traefik.http.services.cocina-web-svc.loadbalancer.server.port=3000"
 
       # Redirect HTTP -> HTTPS
@@ -69,6 +69,13 @@ services:
       - "traefik.http.routers.cocina-web-http.middlewares=cocina-https-redirect"
       - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.permanent=true"
+
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+
+    command: sh -c "npx prisma generate && npx next dev -p 3000 --webpack"
 
     extra_hosts:
       - "cocina.sotodelprior.com:host-gateway"

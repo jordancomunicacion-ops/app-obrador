@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 export default async function Page() {
     const recipes = await prisma.recipe.findMany({
+        where: { category: 'ELABORACION_FINAL' },
         orderBy: { name: 'asc' },
     });
 

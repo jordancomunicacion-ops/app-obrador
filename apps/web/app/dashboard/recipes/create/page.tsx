@@ -12,7 +12,11 @@ export default async function Page() {
                     include: {
                         transformation: {
                             include: {
-                                sourceProduct: true
+                                sourceProduct: {
+                                    include: {
+                                        masterProduct: true
+                                    }
+                                }
                             }
                         }
                     }
@@ -38,13 +42,13 @@ export default async function Page() {
             where: {
                 transformations: { some: {} }
             },
-            select: { name: true }
+            select: { ingredientId: true }
         })
     ]);
 
     // Filter out ingredients that correspond to products with active transformations (yield tests)
-    const excludedNames = new Set(transformedProducts.map(p => p.name));
-    const ingredients = ingredientsRaw.filter(i => !excludedNames.has(i.name));
+    const excludedIds = new Set(transformedProducts.map(p => p.ingredientId).filter(Boolean));
+    const ingredients = ingredientsRaw.filter(i => !excludedIds.has(i.id));
 
     return (
         <main>

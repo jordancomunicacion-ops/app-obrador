@@ -31,6 +31,11 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
         yieldQuantity: formData.get('yieldQuantity'),
         yieldUnit: formData.get('yieldUnit'),
         instructions: formData.get('instructions'),
+        isGlutenFree: formData.get('isGlutenFree') === 'on',
+        isVegan: formData.get('isVegan') === 'on',
+        isVegetarian: formData.get('isVegetarian') === 'on',
+        isLactoseFree: formData.get('isLactoseFree') === 'on',
+        allergens: formData.get('allergens'),
         items: itemsRaw,
         steps: stepsRaw,
     });
@@ -44,7 +49,8 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
 
     const {
         name, category, classification, packaging, portions, prepTime, cookTime,
-        yieldQuantity, yieldUnit, instructions, items, steps
+        yieldQuantity, yieldUnit, instructions, items, steps,
+        isGlutenFree, isVegan, isVegetarian, isLactoseFree, allergens
     } = validatedFields.data;
 
     try {
@@ -60,6 +66,11 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
                 yieldQuantity: yieldQuantity || 1,
                 yieldUnit: yieldUnit as any || 'UD',
                 instructions: instructions || '',
+                isGlutenFree,
+                isVegan,
+                isVegetarian,
+                isLactoseFree,
+                allergens,
                 items: {
                     create: items?.map(item => ({
                         type: item.type,
@@ -72,17 +83,19 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
                 },
                 steps: {
                     create: steps?.map(step => {
-                        // Determine if the "ingredientId" passed from UI is actually a subRecipe ID
-                        // We check if any item in the recipe list with TYPE=SUB_RECIPE has this ID
-                        const linkedItemIsSubRecipe = items?.some(i => i.type === 'SUB_RECIPE' && i.subRecipeId === step.ingredientId);
-
                         return {
                             order: step.order,
                             description: step.description || '',
                             action: step.action || null,
                             subAction: step.subAction || null,
-                            ingredientId: linkedItemIsSubRecipe ? null : (step.ingredientId || null),
-                            subRecipeId: linkedItemIsSubRecipe ? step.ingredientId : null
+                            stepIngredients: {
+                                create: step.ingredients?.map(ing => ({
+                                    ingredientId: ing.type === 'INGREDIENT' ? ing.id : undefined,
+                                    subRecipeId: ing.type === 'SUB_RECIPE' ? ing.id : undefined,
+                                    action: ing.action || null,
+                                    subAction: ing.subAction || null
+                                }))
+                            }
                         };
                     })
                 }
@@ -122,6 +135,11 @@ export async function updateRecipe(
         yieldQuantity: formData.get('yieldQuantity'),
         yieldUnit: formData.get('yieldUnit'),
         instructions: formData.get('instructions'),
+        isGlutenFree: formData.get('isGlutenFree') === 'on',
+        isVegan: formData.get('isVegan') === 'on',
+        isVegetarian: formData.get('isVegetarian') === 'on',
+        isLactoseFree: formData.get('isLactoseFree') === 'on',
+        allergens: formData.get('allergens'),
         items: itemsRaw,
         steps: stepsRaw,
     });
@@ -135,7 +153,8 @@ export async function updateRecipe(
 
     const {
         name, category, classification, packaging, portions, prepTime, cookTime,
-        yieldQuantity, yieldUnit, instructions, items, steps
+        yieldQuantity, yieldUnit, instructions, items, steps,
+        isGlutenFree, isVegan, isVegetarian, isLactoseFree, allergens
     } = validatedFields.data;
 
     try {
@@ -156,6 +175,11 @@ export async function updateRecipe(
                     yieldQuantity: yieldQuantity || 1,
                     yieldUnit: yieldUnit as any || 'UD',
                     instructions: instructions || '',
+                    isGlutenFree,
+                    isVegan,
+                    isVegetarian,
+                    isLactoseFree,
+                    allergens,
                 }
             });
 
@@ -185,21 +209,27 @@ export async function updateRecipe(
             }
 
             // Create new steps
+            // Create new steps
             if (steps && steps.length > 0) {
-                await tx.recipeStep.createMany({
-                    data: steps.map(step => {
-                        const linkedItemIsSubRecipe = items?.some(i => i.type === 'SUB_RECIPE' && i.subRecipeId === step.ingredientId);
-                        return {
+                for (const step of steps) {
+                    await tx.recipeStep.create({
+                        data: {
                             recipeId: id,
                             order: step.order,
                             description: step.description || '',
                             action: step.action || null,
                             subAction: step.subAction || null,
-                            ingredientId: linkedItemIsSubRecipe ? null : (step.ingredientId || null),
-                            subRecipeId: linkedItemIsSubRecipe ? step.ingredientId : null
-                        };
-                    })
-                });
+                            stepIngredients: {
+                                create: step.ingredients?.map(ing => ({
+                                    ingredientId: ing.type === 'INGREDIENT' ? ing.id : undefined,
+                                    subRecipeId: ing.type === 'SUB_RECIPE' ? ing.id : undefined,
+                                    action: ing.action || null,
+                                    subAction: ing.subAction || null
+                                }))
+                            }
+                        }
+                    });
+                }
             }
         });
 

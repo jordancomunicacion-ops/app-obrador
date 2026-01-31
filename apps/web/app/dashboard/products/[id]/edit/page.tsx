@@ -6,8 +6,9 @@ import { notFound } from 'next/navigation';
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
 
-    const product = await prisma.supplierProduct.findUnique({
+    const product = await prisma.masterProduct.findUnique({
         where: { id },
+        include: { supplierProducts: true }
     });
 
     if (!product) {

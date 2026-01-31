@@ -2,7 +2,7 @@
 
 import { updateTransformation, TransformationFormState } from '@/app/lib/actions/transformations';
 import { useActionState, useState } from 'react';
-import { Ingredient, SupplierProduct, Transformation, TransformationOutput, Ingredient as OutputIngredient } from '@prisma/client';
+import { Ingredient, SupplierProduct, Transformation, TransformationOutput, Ingredient as OutputIngredient, MasterProduct } from '@prisma/client';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 type ExtendedIngredient = Ingredient & {
@@ -20,7 +20,7 @@ type ExtendedTransformation = Transformation & {
 };
 
 type Props = {
-    product: SupplierProduct;
+    product: MasterProduct & { supplierProducts: SupplierProduct[] };
     transformation: ExtendedTransformation;
     ingredients: ExtendedIngredient[];
 };
@@ -38,50 +38,21 @@ export default function EditTransformationForm({ product, transformation, ingred
     const updateAction = updateTransformation.bind(null, transformation.id);
     const [state, formAction] = useActionState(updateAction, initialState);
 
-    // Initialize with existing data. We need to calculate what the "testQuantity" was.
-    // Actually, we don't store "testQuantity" in DB explicitly on Transformation model (based on schema I recalled? check schema).
-    // Ah, schema check:
-    // model Transformation { ... sourceProductId ... outputs ... }
-    // model TransformationOutput { ... percentage ... }
-    // We DON'T store the input weight (testQuantity) in the DB? 
-    // Wait, let's check schema details from memory or file.
-    // If we don't store it, we can't show it back easily unless we infer it from one output? A bit tricky.
-    // Let's check schema.prisma first just to be sure. 
-    // If it's missing, I might have to calculate it: 
-    // OutputWeight = testQuantity * (percentage/100) => testQuantity = OutputWeight / (percentage/100).
-    // But we need the absolute weight of at least one output to know the input weight if we assume the user enters absolute input weight.
-    // Wait, the creating form asks for "Cantidad" (testQuantity).
-    // And saves "percentage". 
-    // We DO NOT seem to store `testQuantity` in `Transformation` model in `schema.prisma` I saw earlier.
-    // Let me check schema.
+    const [selectedSupplierId, setSelectedSupplierId] = useState(transformation.sourceProductId || '');
+    const selectedSupplier = product.supplierProducts.find(sp => sp.id === selectedSupplierId);
 
-    // Assuming for now we recover it from the first output if available.
-    // testQuantity = (output[0].weight / output[0].percentage) * 100? 
-    // But we don't store output absolute weight either! We store `percentage`.
-    // We only store `percentage`.
-    // So on Edit, we can't show the original "Input Weight" and "Output Weights". We can only show Percentages.
-    // Unless we ask the user to input a "Base Weight" again to calculate the weights, OR we just let them edit Percentages directly?
-    // But the UI was designed to input weights.
-
-    // If I cannot recover the weights, I will have to default Test Quantity to 100 (representing 100%) and show weights as percentages.
-
-    const [testQuantity, setTestQuantity] = useState<number>(1); // Defaulting to 1 unit (1kg for example) implies weights are percentages/fractions.
+    // Initialize with existing data.
+    const [testQuantity, setTestQuantity] = useState<number | string>(transformation.testQuantity);
 
     const [outputs, setOutputs] = useState<OutputRow[]>(
         transformation.outputs.map(o => ({
             key: o.id,
             ingredientId: o.ingredientId,
             newIngredientName: o.ingredient.name,
-            weight: (o.percentage * testQuantity) / 100, // Re-calculate simulated weight
+            weight: (o.percentage * transformation.testQuantity) / 100,
             costAllocation: o.costAllocation
         }))
     );
-
-    // Recalculate weights if testQuantity changes?
-    // Actually if user changes testQuantity, should we scale weights or keep weights and change percentages?
-    // Usually in a test, you enter the input weight, then measuring the outputs.
-    // Since we lost the original input weight, showing "1" and weights as "0.XX" (which equals percentage/100) is a safe bet.
-    // Or 100 and weights as percentage.
 
     const addOutput = () => {
         setOutputs([...outputs, { key: crypto.randomUUID(), ingredientId: '', newIngredientName: '', weight: '', costAllocation: 1 }]);
@@ -100,14 +71,41 @@ export default function EditTransformationForm({ product, transformation, ingred
     };
 
     const totalOutputWeight = outputs.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
-    const yieldPercentage = testQuantity > 0 ? (totalOutputWeight / testQuantity) * 100 : 0;
+    const testQtyNum = Number(testQuantity) || 0;
+    const yieldPercentage = testQtyNum > 0 ? (totalOutputWeight / testQtyNum) * 100 : 0;
 
     return (
         <form action={formAction}>
-            <input type="hidden" name="sourceProductId" value={product.id} />
-            <input type="hidden" name="outputs" value={JSON.stringify(outputs)} />
+            {/* Source Product Select */}
+            <div className="rounded-md bg-blue-50 border border-blue-100 p-4 md:p-6 mb-6">
+                <h3 className="text-sm font-semibold text-blue-800 uppercase mb-3">1. Proveedor utilizado en el Test</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="sourceProductId" className="block text-sm font-medium mb-1">Proveedor / Lote</label>
+                        <select
+                            id="sourceProductId"
+                            name="sourceProductId"
+                            value={selectedSupplierId}
+                            onChange={(e) => setSelectedSupplierId(e.target.value)}
+                            className="w-full rounded-md border-gray-200 py-2 pl-4 text-sm"
+                            required
+                        >
+                            {product.supplierProducts.map(sp => (
+                                <option key={sp.id} value={sp.id}>
+                                    {sp.supplier} - {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(sp.price)} / {sp.unit}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-            <div className="rounded-md bg-gray-50 p-4 md:p-6 mb-6">
+            <input type="hidden" name="outputs" value={JSON.stringify(outputs)} />
+            <input type="hidden" name="testUnit" value={selectedSupplier?.unit || 'KG'} />
+
+            <div className="rounded-md bg-gray-50 p-4 md:p-6 mb-6 border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">2. Datos del Test</h3>
+
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Nombre de la Transformación</label>
                     <input
@@ -117,31 +115,29 @@ export default function EditTransformationForm({ product, transformation, ingred
                         placeholder="Ej. Limpieza Standard..."
                         className="w-full rounded-md border-gray-200 py-2 pl-4 text-sm"
                     />
+                    {state.errors?.name && state.errors.name.map((error: string) => (
+                        <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
+                    ))}
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Cantidad Base para Cálculo</label>
+                    <label className="block text-sm font-medium mb-1">Cantidad Base para Recálculo</label>
                     <div className="flex items-center gap-2">
                         <input
                             name="testQuantity"
                             type="number"
                             step="any"
                             value={testQuantity}
-                            onChange={(e) => {
-                                const newVal = parseFloat(e.target.value);
-                                setTestQuantity(newVal);
-                                // Optional: Update weights to maintain percentages?
-                                // Or keep weights and let percentages update?
-                                // Let's keep weights fixed (as if user is adjusting the input size but output weights are fixed? No, that changes percentage).
-                                // If I change input size, and I want to KEEP the percentage from DB, I should scale weights.
-                                // But here we are editing. Code simplicity: Just update input, weights stay literal, percentages update.
-                            }}
+                            onChange={(e) => setTestQuantity(e.target.value === '' ? 0 : parseFloat(e.target.value))}
                             className="w-32 rounded-md border-gray-200 py-2 pl-4 text-sm"
                         />
-                        <span className="font-bold text-gray-600">{product.unit}</span>
+                        <span className="font-bold text-gray-600">{selectedSupplier?.unit || 'KG'}</span>
                     </div>
+                    {state.errors?.testQuantity && state.errors.testQuantity.map((error: string) => (
+                        <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
+                    ))}
                     <p className="text-xs text-gray-500 mt-1">
-                        * Al editar, por defecto usaremos cantidad 1 para mostrar los rendimientos como proporción.
+                        * Al editar, puedes ajustar la cantidad base para que los pesos de las salidas sean más cómodos de leer.
                     </p>
                 </div>
             </div>
@@ -154,7 +150,7 @@ export default function EditTransformationForm({ product, transformation, ingred
                             Rendimiento Total: {yieldPercentage.toFixed(1)}%
                         </span>
                         <span className="text-gray-400 mx-2">|</span>
-                        <span>Total Peso: {totalOutputWeight.toFixed(3)} {product.unit}</span>
+                        <span>Total Peso: {totalOutputWeight.toFixed(3)} {selectedSupplier?.unit || 'KG'}</span>
                     </div>
                 </div>
 
@@ -170,7 +166,7 @@ export default function EditTransformationForm({ product, transformation, ingred
 
                     {outputs.map((row, index) => {
                         const weightNum = Number(row.weight) || 0;
-                        const rowPercentage = testQuantity > 0 ? (weightNum / testQuantity) * 100 : 0;
+                        const rowPercentage = testQtyNum > 0 ? (weightNum / testQtyNum) * 100 : 0;
 
                         return (
                             <div key={row.key} className="grid grid-cols-12 gap-2 items-center bg-gray-50 p-2 rounded">
@@ -240,7 +236,22 @@ export default function EditTransformationForm({ product, transformation, ingred
 
             <div aria-live="polite" aria-atomic="true" className="mt-4">
                 {state.message && (
-                    <p className="text-sm text-red-500">{state.message}</p>
+                    <div className="bg-red-100 border-l-4 border-red-500 p-4 rounded shadow-md">
+                        <p className="text-sm text-red-700 font-bold mb-2">⚠ {state.message}</p>
+                        {state.errors && Object.keys(state.errors).length > 0 && (
+                            <div className="mt-2 p-2 bg-white rounded border border-red-200">
+                                <p className="text-xs font-semibold text-red-800 mb-1">Detalles técnicos:</p>
+                                <ul className="text-[10px] text-red-600 list-disc list-inside space-y-1">
+                                    {Object.entries(state.errors).map(([field, errors]) => (
+                                        <li key={field}><span className="font-bold uppercase">{field}:</span> {errors.join(', ')}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        <p className="mt-3 text-[10px] text-red-500 italic">
+                            Tip: Si no ves los detalles técnicos arriba, asegúrate de haber reiniciado Docker con el botón TEST.bat.
+                        </p>
+                    </div>
                 )}
             </div>
 

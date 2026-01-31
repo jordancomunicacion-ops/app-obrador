@@ -15,31 +15,28 @@ const MasterProductSchema = z.object({
 const CreateMasterProduct = MasterProductSchema.omit({ id: true });
 const UpdateMasterProduct = MasterProductSchema;
 
-// --- Supplier Product Schemas ---
-const ProductSchema = z.object({
-    id: z.string(),
-    name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
-    // supplier: z.string().optional(), // Legacy: We still accept it for compatibility but new flow prefers supplierId
-    supplierId: z.string().optional(),
-    masterProductId: z.string().optional(),
-    price: z.coerce.number().min(0, { message: 'El precio debe ser mayor o igual a 0.' }),
+// --- Unified Product Flow Schemas ---
+const SupplierEntrySchema = z.object({
+    id: z.string().optional(), // For updates
+    supplierName: z.string().min(1, { message: 'El proveedor es obligatorio.' }),
+    price: z.coerce.number().min(0, { message: 'El precio debe ser >= 0.' }),
     unit: z.string().min(1, { message: 'La unidad es obligatoria.' }),
     quantityPerUnit: z.coerce.number().optional().nullable(),
-    sapiensWorld: z.string().optional(),
 });
 
-const CreateProduct = ProductSchema.omit({ id: true });
-const UpdateProduct = ProductSchema;
+const ProductFlowSchema = z.object({
+    name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
+    category: z.string().optional(),
+    sapiensWorld: z.string().optional(),
+    suppliers: z.array(SupplierEntrySchema).min(1, { message: 'Debes añadir al menos un proveedor.' }),
+});
 
 export type ProductFormState = {
     errors?: {
         name?: string[];
-        supplierId?: string[];
-        masterProductId?: string[];
-        price?: string[];
-        unit?: string[];
-        quantityPerUnit?: string[];
+        category?: string[];
         sapiensWorld?: string[];
+        suppliers?: string[];
     };
     message: string;
 };
@@ -81,146 +78,206 @@ export async function createMasterProduct(prevState: any, formData: FormData) {
 // --- SUPPLIER PRODUCT ACTIONS ---
 
 export async function createProduct(prevState: ProductFormState, formData: FormData): Promise<ProductFormState> {
-    const validatedFields = CreateProduct.safeParse({
+    let suppliersJson = formData.get('suppliersJson') as string;
+    let suppliers = [];
+    try {
+        suppliers = JSON.parse(suppliersJson || '[]');
+    } catch (e) {
+        return { message: 'Error en el formato de proveedores.' };
+    }
+
+    const validatedFields = ProductFlowSchema.safeParse({
         name: formData.get('name'),
-        supplierId: formData.get('supplierId'),
-        masterProductId: formData.get('masterProductId'),
-        price: formData.get('price'),
-        unit: formData.get('unit'),
-        quantityPerUnit: formData.get('quantityPerUnit'),
+        category: formData.get('category'),
         sapiensWorld: formData.get('sapiensWorld'),
+        suppliers: suppliers,
     });
 
     if (!validatedFields.success) {
         return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios. Error al crear producto.',
+            errors: validatedFields.error.flatten().fieldErrors as any,
+            message: 'Faltan campos obligatorios.',
         };
     }
 
-    const { name, supplierId, masterProductId, price, unit, quantityPerUnit, sapiensWorld } = validatedFields.data;
+    const { name, category, sapiensWorld, suppliers: validatedSuppliers } = validatedFields.data;
 
     try {
         await prisma.$transaction(async (tx) => {
-            // Find supplier name if ID is provided, for legacy field population
-            let supplierName = '';
-            if (supplierId) {
-                const s = await tx.supplier.findUnique({ where: { id: supplierId } });
-                if (s) supplierName = s.name;
-            }
-
-            const product = await tx.supplierProduct.create({
+            // 1. Create Master Product
+            const masterProduct = await tx.masterProduct.create({
                 data: {
                     name,
-                    supplier: supplierName, // Legacy
-                    supplierId,
-                    masterProductId,
-                    price,
-                    unit,
-                    quantityPerUnit: quantityPerUnit || null,
-                    sapiensWorld,
+                    category,
                 },
             });
 
-            // Also create as an Ingredient so it appears in recipes
-            // If linked to MasterProduct, use Master Product Name? Or specific variant name?
-            // For now, keep using the specific product name to allow differentiation (e.g. "Solomillo Vaca" vs "Solomillo Ternera")
-            // Check if Canonical Ingredient already exists
-            // Check if Canonical Ingredient already exists
-            let ingredientId = '';
-            const existingIngredient = await tx.ingredient.findFirst({
-                where: { name: { equals: product.name, mode: 'insensitive' } }
-            });
+            // 2. Create Supplier Products
+            for (const s of validatedSuppliers) {
+                // Find or create supplier
+                const supplierObj = await tx.supplier.upsert({
+                    where: { name: s.supplierName },
+                    update: {},
+                    create: { name: s.supplierName },
+                });
 
-            if (existingIngredient) {
-                ingredientId = existingIngredient.id;
-            } else {
-                const newIngredient = await tx.ingredient.create({
+                // Create SupplierProduct
+                const supplierProduct = await tx.supplierProduct.create({
                     data: {
-                        name: product.name,
-                        pricingUnit: product.unit,
-                        pricePerUnit: product.price,
+                        name: `${name} (${s.supplierName})`,
+                        supplier: s.supplierName,
+                        supplierId: supplierObj.id,
+                        masterProductId: masterProduct.id,
+                        price: s.price,
+                        unit: s.unit,
+                        quantityPerUnit: s.quantityPerUnit,
+                        sapiensWorld,
+                    },
+                });
+
+                // Create/Find base ingredient for direct use
+                // NOTE: For now we create one ingredient per supplier product if they are used directly.
+                // In the yield test flow, they will produce a common transformed ingredient.
+                await tx.ingredient.create({
+                    data: {
+                        name: supplierProduct.name,
+                        pricingUnit: s.unit,
+                        pricePerUnit: s.price,
+                        supplierProducts: {
+                            connect: { id: supplierProduct.id }
+                        }
                     }
                 });
-                ingredientId = newIngredient.id;
             }
-
-            // Link SupplierProduct to the Ingredient
-            await tx.supplierProduct.update({
-                where: { id: product.id },
-                data: { ingredientId: ingredientId }
-            });
         });
     } catch (error) {
+        console.error(error);
         return {
             message: 'Error de base de datos: No se pudo crear el producto.',
         };
     }
 
     revalidatePath('/dashboard/products');
-    // If we have a master product view, we might want to stay there, but for now redirecting to main list is fine
     redirect('/dashboard/products');
     return { message: '' };
 }
 
 export async function updateProduct(id: string, prevState: ProductFormState, formData: FormData): Promise<ProductFormState> {
-    const validatedFields = UpdateProduct.safeParse({
-        id: id,
+    const suppliersJson = formData.get('suppliersJson') as string;
+    let suppliersInput = [];
+    try {
+        suppliersInput = JSON.parse(suppliersJson || '[]');
+    } catch (e) {
+        return { message: 'Error en el formato de proveedores.' };
+    }
+
+    const validatedFields = ProductFlowSchema.safeParse({
         name: formData.get('name'),
-        supplierId: formData.get('supplierId'),
-        masterProductId: formData.get('masterProductId'),
-        price: formData.get('price'),
-        unit: formData.get('unit'),
-        quantityPerUnit: formData.get('quantityPerUnit'),
+        category: formData.get('category'),
         sapiensWorld: formData.get('sapiensWorld'),
+        suppliers: suppliersInput,
     });
 
     if (!validatedFields.success) {
         return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios. Error al actualizar producto.',
+            errors: validatedFields.error.flatten().fieldErrors as any,
+            message: 'Faltan campos obligatorios.',
         };
     }
 
-    const { name, supplierId, masterProductId, price, unit, quantityPerUnit, sapiensWorld } = validatedFields.data;
+    const { name, category, sapiensWorld, suppliers } = validatedFields.data;
 
     try {
         await prisma.$transaction(async (tx) => {
-            // Find supplier name
-            let supplierName = undefined;
-            if (supplierId) {
-                const s = await tx.supplier.findUnique({ where: { id: supplierId } });
-                if (s) supplierName = s.name;
-            }
-
-            await tx.supplierProduct.update({
+            // Update Master Product
+            await tx.masterProduct.update({
                 where: { id },
                 data: {
                     name,
-                    supplier: supplierName, // Updates legacy name if supplierId changed
-                    supplierId,
-                    masterProductId,
-                    price,
-                    unit,
-                    quantityPerUnit: quantityPerUnit || null,
-                    sapiensWorld,
+                    category,
                 },
             });
 
-            // Try to update corresponding Ingredient
-            try {
-                await tx.ingredient.updateMany({
-                    where: { name: name },
-                    data: {
-                        pricePerUnit: price,
-                        pricingUnit: unit
-                    }
+            // Handle Suppliers: Get current ones to identify what to remove
+            const currentSuppliers = await tx.supplierProduct.findMany({
+                where: { masterProductId: id }
+            });
+
+            const supplierIdsToKeep = suppliers.filter(s => s.id).map(s => s.id);
+
+            // Delete removed suppliers
+            await tx.supplierProduct.deleteMany({
+                where: {
+                    masterProductId: id,
+                    id: { notIn: supplierIdsToKeep as string[] }
+                }
+            });
+
+            // Update or Create suppliers
+            for (const s of suppliers) {
+                // Find or create global supplier entity
+                const supplierObj = await tx.supplier.upsert({
+                    where: { name: s.supplierName },
+                    update: {},
+                    create: { name: s.supplierName },
                 });
-            } catch (e) {
-                console.warn("Could not sync ingredient", e);
+
+                if (s.id) {
+                    const sp = await tx.supplierProduct.update({
+                        where: { id: s.id },
+                        data: {
+                            name: `${name} (${s.supplierName})`,
+                            supplier: s.supplierName,
+                            supplierId: supplierObj.id,
+                            price: s.price,
+                            unit: s.unit,
+                            quantityPerUnit: s.quantityPerUnit,
+                            sapiensWorld,
+                        },
+                        include: { ingredient: true }
+                    });
+
+                    // Sync the linked ingredient
+                    if (sp.ingredientId) {
+                        await tx.ingredient.update({
+                            where: { id: sp.ingredientId },
+                            data: {
+                                name: sp.name,
+                                pricingUnit: sp.unit,
+                                pricePerUnit: sp.price
+                            }
+                        });
+                    }
+                } else {
+                    const sp = await tx.supplierProduct.create({
+                        data: {
+                            name: `${name} (${s.supplierName})`,
+                            supplier: s.supplierName,
+                            supplierId: supplierObj.id,
+                            masterProductId: id,
+                            price: s.price,
+                            unit: s.unit,
+                            quantityPerUnit: s.quantityPerUnit,
+                            sapiensWorld,
+                        }
+                    });
+
+                    // Create base ingredient
+                    await tx.ingredient.create({
+                        data: {
+                            name: sp.name,
+                            pricingUnit: sp.unit,
+                            pricePerUnit: sp.price,
+                            supplierProducts: {
+                                connect: { id: sp.id }
+                            }
+                        }
+                    });
+                }
             }
         });
     } catch (error) {
+        console.error(error);
         return {
             message: 'Error de base de datos: No se pudo actualizar el producto.',
         };
@@ -233,11 +290,12 @@ export async function updateProduct(id: string, prevState: ProductFormState, for
 
 export async function deleteProduct(id: string) {
     try {
-        await prisma.supplierProduct.delete({
+        await prisma.masterProduct.delete({
             where: { id },
         });
         revalidatePath('/dashboard/products');
     } catch (error) {
+        console.error(error);
         return { message: 'Error de base de datos: No se pudo borrar el producto.' };
     }
 }

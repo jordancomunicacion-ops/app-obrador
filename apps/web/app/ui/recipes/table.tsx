@@ -25,7 +25,18 @@ export default async function RecipesTable({
         include: {
             items: {
                 include: {
-                    ingredient: true
+                    ingredient: true,
+                    sourceProduct: true,
+                    subRecipe: {
+                        include: {
+                            items: {
+                                include: {
+                                    ingredient: true,
+                                    sourceProduct: true
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -72,8 +83,35 @@ export default async function RecipesTable({
                                         className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                                     >
                                         <td className="whitespace-nowrap py-3 pl-6 pr-3">
-                                            <div className="flex items-center gap-3">
-                                                <p>{recipe.name}</p>
+                                            <div className="flex flex-col">
+                                                <p className="font-medium text-gray-900">{recipe.name}</p>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {recipe.isGlutenFree && (
+                                                        <span className="inline-flex items-center rounded-md bg-yellow-50 px-1.5 py-0.5 text-[10px] font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20" title="Sin Gluten">
+                                                            🌾 SG
+                                                        </span>
+                                                    )}
+                                                    {recipe.isVegan && (
+                                                        <span className="inline-flex items-center rounded-md bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20" title="Vegano">
+                                                            🌱 Vg
+                                                        </span>
+                                                    )}
+                                                    {recipe.isVegetarian && (
+                                                        <span className="inline-flex items-center rounded-md bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/10" title="Vegetariano">
+                                                            🥗 Vt
+                                                        </span>
+                                                    )}
+                                                    {recipe.isLactoseFree && (
+                                                        <span className="inline-flex items-center rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10" title="Sin Lactosa">
+                                                            🥛 SL
+                                                        </span>
+                                                    )}
+                                                    {recipe.allergens && (
+                                                        <span className="inline-flex items-center rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-700 ring-1 ring-inset ring-red-600/10" title={recipe.allergens}>
+                                                            ⚠️ Alérgenos
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3">
@@ -88,7 +126,7 @@ export default async function RecipesTable({
                                                 </span>
                                             )}
                                             {recipe.category === 'ELABORACION_FINAL' && (
-                                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
                                                     Final
                                                 </span>
                                             )}

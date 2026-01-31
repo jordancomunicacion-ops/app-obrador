@@ -49,7 +49,13 @@ export const RecipeStepSchema = z.object({
     description: z.string().optional(),
     action: z.string().optional(),
     subAction: z.string().optional(),
-    ingredientId: z.string().optional().nullable(),
+    // ingredientId: z.string().optional().nullable(), // Deprecated
+    ingredients: z.array(z.object({
+        id: z.string(),
+        type: z.enum(['INGREDIENT', 'SUB_RECIPE']),
+        action: z.string().optional(),
+        subAction: z.string().optional(),
+    })).optional(),
 });
 
 export const RecipeSchema = z.object({
@@ -82,6 +88,13 @@ export const RecipeSchema = z.object({
     yieldUnit: z.enum(['KG', 'G', 'L', 'ML', 'UD']).optional(),
     instructions: z.string().optional(), // Keeping for backward compatibility or simple notes
 
+    // Diet & Allergens
+    isGlutenFree: z.boolean().default(false),
+    isVegan: z.boolean().default(false),
+    isVegetarian: z.boolean().default(false),
+    isLactoseFree: z.boolean().default(false),
+    allergens: z.string().optional().nullable(),
+
     items: z.array(RecipeItemSchema).optional(),
     steps: z.array(RecipeStepSchema).optional(),
 });
@@ -101,6 +114,11 @@ export type RecipeFormState = {
         yieldQuantity?: string[];
         yieldUnit?: string[];
         instructions?: string[];
+        isGlutenFree?: string[];
+        isVegan?: string[];
+        isVegetarian?: string[];
+        isLactoseFree?: string[];
+        allergens?: string[];
         items?: string[];
         steps?: string[];
     };
@@ -118,7 +136,7 @@ export const EventMenuItemSchema = z.object({
 export const EventSchema = z.object({
     id: z.string(),
     name: z.string().min(1, { message: 'El nombre del evento es obligatorio.' }),
-    date: z.string().transform((str) => new Date(str)),
+    date: z.string().min(1, { message: 'La fecha es obligatoria.' }).refine((str) => !isNaN(new Date(str).getTime()), { message: 'Fecha inválida.' }).transform((str) => new Date(str)),
     pax: z.coerce.number().gt(0, { message: 'El número de personas debe ser mayor a 0.' }),
     safetyMargin: z.coerce.number().min(1, { message: 'El margen debe ser al menos 1.0 (100%).' }),
     status: z.enum(['DRAFT', 'CONFIRMED', 'COMPLETED']).optional(),

@@ -1,6 +1,22 @@
-import { PencilIcon, PlusIcon, TrashIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PlusIcon, TrashIcon, ClipboardDocumentListIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteEvent } from '@/app/lib/actions/events';
+import { deleteEvent, confirmEvent } from '@/app/lib/actions/events';
+
+export function ConfirmEvent({ id }: { id: string }) {
+    const confirmEventWithId = confirmEvent.bind(null, id);
+
+    return (
+        <form action={confirmEventWithId}>
+            <button
+                className="rounded-md border p-2 hover:bg-green-100 text-green-600"
+                title="Confirmar Evento"
+            >
+                <span className="sr-only">Confirmar</span>
+                <CheckIcon className="w-5" />
+            </button>
+        </form>
+    );
+}
 
 export function CreateEvent() {
     return (

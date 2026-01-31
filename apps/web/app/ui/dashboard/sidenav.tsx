@@ -12,20 +12,56 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { links } from './nav-links';
-import { PowerIcon, UserIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { groups } from './nav-links';
+import {
+    PowerIcon,
+    UserIcon,
+    ArrowRightOnRectangleIcon,
+    ChevronDownIcon,
+    ChevronRightIcon
+} from '@heroicons/react/24/outline';
 import { signOutAction } from '@/app/lib/actions';
+import { useState, useEffect } from 'react';
 
 export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: string | null }) {
     const pathname = usePathname();
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-    // Filter links based on role
-    const filteredLinks = links.filter(link => {
-        if (link.name === 'Empleados') {
-            return user?.role === 'ADMIN';
+    // Filter groups and items based on role
+    const filteredGroups = groups.map(group => ({
+        ...group,
+        items: group.items.filter(item => {
+            if (item.name === 'Empleados') {
+                return user?.role === 'ADMIN';
+            }
+            return true;
+        })
+    })).filter(group => group.items.length > 0);
+
+    // Initialize/Auto-expand section containing the active link
+    useEffect(() => {
+        const newOpenSections: Record<string, boolean> = { ...openSections };
+        let changed = false;
+
+        filteredGroups.forEach(group => {
+            const hasActiveLink = group.items.some(item => pathname === item.href);
+            if (hasActiveLink && !openSections[group.name]) {
+                newOpenSections[group.name] = true;
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            setOpenSections(newOpenSections);
         }
-        return true;
-    });
+    }, [pathname, filteredGroups]);
+
+    const toggleSection = (name: string) => {
+        setOpenSections(prev => ({
+            ...prev,
+            [name]: !prev[name]
+        }));
+    };
 
     return (
         <aside className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed left-0 top-0 z-30 shadow-sm">
@@ -46,39 +82,65 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
             </div>
 
             {/* NAVIGATION */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {filteredLinks.map((link) => {
-                    const LinkIcon = link.icon;
+            <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+                {filteredGroups.map((group) => {
+                    const isOpen = openSections[group.name];
                     return (
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className={clsx(
-                                'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                                {
-                                    'bg-indigo-50 text-indigo-700': pathname === link.href,
-                                    'text-gray-600 hover:bg-gray-50 hover:text-gray-900': pathname !== link.href,
-                                },
+                        <div key={group.name} className="space-y-1">
+                            {/* Group Header */}
+                            <button
+                                onClick={() => toggleSection(group.name)}
+                                className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+                            >
+                                <span>{group.name}</span>
+                                {isOpen ? (
+                                    <ChevronDownIcon className="w-3 h-3" />
+                                ) : (
+                                    <ChevronRightIcon className="w-3 h-3" />
+                                )}
+                            </button>
+
+                            {/* Group Items */}
+                            {isOpen && (
+                                <div className="space-y-1 mt-1">
+                                    {group.items.map((item) => {
+                                        const LinkIcon = item.icon;
+                                        const isActive = pathname === item.href;
+                                        return (
+                                            <Link
+                                                key={item.name}
+                                                href={item.href}
+                                                className={clsx(
+                                                    'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                                                    {
+                                                        'bg-indigo-50 text-indigo-700 shadow-sm': isActive,
+                                                        'text-gray-600 hover:bg-gray-50 hover:text-gray-900': !isActive,
+                                                    },
+                                                )}
+                                            >
+                                                <LinkIcon className="w-5" />
+                                                {item.name}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                             )}
-                        >
-                            <LinkIcon className="w-5" />
-                            {link.name}
-                        </Link>
+                        </div>
                     );
                 })}
             </nav>
 
             {/* FOOTER */}
-            <div className="p-4 border-t border-gray-100 space-y-2">
+            <div className="p-4 border-t border-gray-100 space-y-1">
                 <Link
                     href="/dashboard/profile"
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                     <UserIcon className="w-5" />
                     <span>Mi Perfil</span>
                 </Link>
                 <form action={signOutAction}>
-                    <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:text-red-700 rounded-lg hover:bg-red-50">
+                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors">
                         <ArrowRightOnRectangleIcon className="w-5" />
                         <span>Cerrar Sesión</span>
                     </button>

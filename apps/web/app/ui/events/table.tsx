@@ -1,4 +1,4 @@
-import { UpdateEvent, DeleteEvent, ViewShoppingList } from '@/app/ui/events/buttons';
+import { UpdateEvent, DeleteEvent, ViewShoppingList, ConfirmEvent } from '@/app/ui/events/buttons';
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -72,11 +72,16 @@ export default async function EventsTable({
                                                 },
                                             )}
                                         >
-                                            {event.status}
+                                            {event.status === 'DRAFT' ? 'BORRADOR' :
+                                                event.status === 'CONFIRMED' ? 'CONFIRMADO' :
+                                                    event.status === 'COMPLETED' ? 'COMPLETADO' : event.status}
                                         </span>
                                     </td>
                                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                         <div className="flex justify-end gap-3">
+                                            {event.status === 'DRAFT' && (
+                                                <ConfirmEvent id={event.id} />
+                                            )}
                                             <ViewShoppingList id={event.id} />
                                             <UpdateEvent id={event.id} />
                                             <DeleteEvent id={event.id} />

@@ -1,0 +1,206 @@
+'use client';
+
+import { createMenuService, MenuServiceFormState } from '@/app/lib/actions/menu-service';
+import Link from 'next/link';
+import {
+    CalendarIcon,
+    PlusIcon,
+    TrashIcon,
+} from '@heroicons/react/24/outline';
+import { useActionState, useState } from 'react';
+import { Recipe } from '@prisma/client';
+
+type MenuItemInput = {
+    key: string;
+    recipeId: string;
+    estimatedPax: number;
+};
+
+export default function Form({ recipes }: { recipes: Recipe[] }) {
+    const initialState: MenuServiceFormState = { message: null, errors: {} };
+    const [state, formAction] = useActionState(createMenuService, initialState);
+
+    const [menuItems, setMenuItems] = useState<MenuItemInput[]>([]);
+
+    const addItem = () => {
+        setMenuItems([
+            ...menuItems,
+            {
+                key: crypto.randomUUID(),
+                recipeId: '',
+                estimatedPax: 0,
+            },
+        ]);
+    };
+
+    const removeItem = (index: number) => {
+        const newItems = [...menuItems];
+        newItems.splice(index, 1);
+        setMenuItems(newItems);
+    };
+
+    const updateItem = (index: number, field: keyof MenuItemInput, value: any) => {
+        const newItems = [...menuItems];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setMenuItems(newItems);
+    };
+
+    return (
+        <form action={formAction}>
+            <div className="rounded-md bg-gray-50 p-4 md:p-6">
+                <input type="hidden" name="items" value={JSON.stringify(menuItems)} />
+
+                {/* Service Name */}
+                <div className="mb-4">
+                    <label htmlFor="name" className="mb-2 block text-sm font-medium">
+                        Nombre del Servicio (ej. Almuerzo, Cena)
+                    </label>
+                    <div className="relative mt-2 rounded-md">
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            placeholder="Almuerzo"
+                            className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                            aria-describedby="name-error"
+                        />
+                        <div id="name-error" aria-live="polite" aria-atomic="true">
+                            {state.errors?.name &&
+                                state.errors.name.map((error: string) => (
+                                    <p key={error} className="mt-2 text-sm text-red-500">
+                                        {error}
+                                    </p>
+                                ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Date Range */}
+                <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <label htmlFor="startDate" className="mb-2 block text-sm font-medium">
+                            Desde
+                        </label>
+                        <div className="relative mt-2 rounded-md">
+                            <input
+                                id="startDate"
+                                name="startDate"
+                                type="date"
+                                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                aria-describedby="startDate-error"
+                            />
+                            <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+                        </div>
+                        <div id="startDate-error" aria-live="polite" aria-atomic="true">
+                            {state.errors?.startDate &&
+                                state.errors.startDate.map((error: string) => (
+                                    <p key={error} className="mt-2 text-sm text-red-500">
+                                        {error}
+                                    </p>
+                                ))}
+                        </div>
+                    </div>
+                    <div>
+                        <label htmlFor="endDate" className="mb-2 block text-sm font-medium">
+                            Hasta
+                        </label>
+                        <div className="relative mt-2 rounded-md">
+                            <input
+                                id="endDate"
+                                name="endDate"
+                                type="date"
+                                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                                aria-describedby="endDate-error"
+                            />
+                            <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+                        </div>
+                        <div id="endDate-error" aria-live="polite" aria-atomic="true">
+                            {state.errors?.endDate &&
+                                state.errors.endDate.map((error: string) => (
+                                    <p key={error} className="mt-2 text-sm text-red-500">
+                                        {error}
+                                    </p>
+                                ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Menu Selection */}
+                <div className="mb-4 mt-8">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-bold">Platos del Menú / Carta</h3>
+                        <button type="button" onClick={addItem} className="flex items-center gap-1 rounded bg-blue-100 px-3 py-1 text-sm text-blue-600 hover:bg-blue-200">
+                            <PlusIcon className="w-4" /> Añadir Plato
+                        </button>
+                    </div>
+                    {menuItems.length === 0 && <p className="text-gray-500 italic text-sm">No hay platos definidos.</p>}
+
+                    <div className="space-y-2">
+                        {menuItems.map((item, index) => (
+                            <div key={item.key} className="flex flex-col md:flex-row gap-2 items-start md:items-center p-3 bg-white rounded border border-gray-200">
+                                {/* Recipe Select */}
+                                <div className="flex-grow w-full md:w-auto">
+                                    <select
+                                        className="block w-full rounded-md border-gray-200 text-sm"
+                                        value={item.recipeId}
+                                        onChange={(e) => updateItem(index, 'recipeId', e.target.value)}
+                                    >
+                                        <option value="">Seleccionar Receta...</option>
+                                        {recipes.map(recipe => (
+                                            <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {/* Estimated Pax */}
+                                <div className="w-full md:w-40">
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            placeholder="Pax Estimados"
+                                            className="block w-full rounded-md border-gray-200 py-2 pl-2 text-sm outline-2 placeholder:text-gray-500"
+                                            value={item.estimatedPax || ''}
+                                            onChange={(e) => updateItem(index, 'estimatedPax', Number(e.target.value))}
+                                        />
+                                        <p className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">pax est.</p>
+                                    </div>
+                                </div>
+                                {/* Remove Action */}
+                                <button type="button" onClick={() => removeItem(index)} className="text-red-500 hover:text-red-700 p-1">
+                                    <TrashIcon className="w-5" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <div id="items-error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.items &&
+                            state.errors.items.map((error: string) => (
+                                <p key={error} className="mt-2 text-sm text-red-500">
+                                    {error}
+                                </p>
+                            ))}
+                    </div>
+                </div>
+
+                <div aria-live="polite" aria-atomic="true">
+                    {state.message && (
+                        <p className="mt-2 text-sm text-red-500">{state.message}</p>
+                    )}
+                </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-4">
+                <Link
+                    href="/dashboard/menu-planning"
+                    className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+                >
+                    Cancelar
+                </Link>
+                <button
+                    type="submit"
+                    className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+                >
+                    Crear Servicio
+                </button>
+            </div>
+        </form>
+    );
+}

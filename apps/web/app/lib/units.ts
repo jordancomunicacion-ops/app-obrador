@@ -1,4 +1,4 @@
-export type UnitType = 'KG' | 'G' | 'L' | 'ML' | 'UD';
+export type UnitType = 'KG' | 'G' | 'L' | 'ML' | 'UD' | 'BOTELLA' | 'CL' | 'PACK' | 'CAJA';
 
 export const UNITS = {
     KG: 'KG',
@@ -6,6 +6,10 @@ export const UNITS = {
     L: 'L',
     ML: 'ML',
     UD: 'UD',
+    BOTELLA: 'BOTELLA',
+    CL: 'CL',
+    PACK: 'PACK',
+    CAJA: 'CAJA',
 } as const;
 
 export const UNIT_LABELS = {
@@ -14,6 +18,10 @@ export const UNIT_LABELS = {
     [UNITS.L]: 'Litros',
     [UNITS.ML]: 'Mililitros',
     [UNITS.UD]: 'Unidades',
+    [UNITS.BOTELLA]: 'Botella',
+    [UNITS.CL]: 'Centilitros',
+    [UNITS.PACK]: 'Pack',
+    [UNITS.CAJA]: 'Caja',
 };
 
 // Base units: KG for mass, L for volume, UD for count.
@@ -24,6 +32,10 @@ const CONVERSION_FACTORS: Record<UnitType, number> = {
     L: 1,
     ML: 0.001,
     UD: 1,
+    BOTELLA: 1,
+    CL: 0.01,
+    PACK: 1,
+    CAJA: 1,
 };
 
 export function convertTo(amount: number, fromUnit: UnitType, toUnit: UnitType): number | null {
@@ -36,18 +48,18 @@ export function convertTo(amount: number, fromUnit: UnitType, toUnit: UnitType):
     }
 
     // Volume to Volume
-    if ((fromUnit === 'L' || fromUnit === 'ML') && (toUnit === 'L' || toUnit === 'ML')) {
+    if ((fromUnit === 'L' || fromUnit === 'ML' || fromUnit === 'CL') && (toUnit === 'L' || toUnit === 'ML' || toUnit === 'CL')) {
         const amountInL = amount * CONVERSION_FACTORS[fromUnit];
         return amountInL / CONVERSION_FACTORS[toUnit];
     }
 
-    // Unit to Unit (Identity)
-    if (fromUnit === 'UD' && toUnit === 'UD') {
+    // Unit to Unit (Identity or Count units swap)
+    const countUnits = ['UD', 'BOTELLA', 'PACK', 'CAJA'];
+    if (countUnits.includes(fromUnit) && countUnits.includes(toUnit)) {
         return amount;
     }
 
     // Incompatible types (e.g. Mass to Volume without density)
-    // For MVP we assume water density if we REALLY need to (1kg = 1L) but safer to return null
     return null;
 }
 

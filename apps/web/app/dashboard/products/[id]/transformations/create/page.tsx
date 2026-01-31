@@ -6,8 +6,9 @@ export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
 
     const [product, ingredients] = await Promise.all([
-        prisma.supplierProduct.findUnique({
+        prisma.masterProduct.findUnique({
             where: { id },
+            include: { supplierProducts: true }
         }),
         prisma.ingredient.findMany({
             orderBy: { name: 'asc' },

@@ -63,10 +63,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 </div>
             </div>
 
-            <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg bg-green-50 p-4 border border-green-100">
+            <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg bg-blue-50 p-4 border border-blue-100">
                 <div>
-                    <p className="text-sm text-green-600 font-semibold">Coste Estimado Total Materia Prima</p>
-                    <p className="text-3xl font-bold text-green-800">{formatCurrency(totalEstimatedCost)}</p>
+                    <p className="text-sm text-blue-600 font-semibold">Coste Estimado Total Materia Prima</p>
+                    <p className="text-3xl font-bold text-blue-800">{formatCurrency(totalEstimatedCost)}</p>
                 </div>
             </div>
 
@@ -93,17 +93,37 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {shoppingList.map((item) => (
-                                        <tr key={item.ingredient.id}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                                {item.ingredient.name}
+                                        <tr key={item.ingredient.id} className={item.isTransformation ? 'bg-blue-50/30' : ''}>
+                                            <td className="py-4 pl-4 pr-3 text-sm sm:pl-6">
+                                                <div className="font-medium text-gray-900">{item.ingredient.name}</div>
+                                                {item.isTransformation && item.sourceProduct && (
+                                                    <div className="mt-1 flex flex-col gap-1">
+                                                        <span className="text-[11px] font-semibold text-blue-700 uppercase tracking-wider">
+                                                            A PARTIR DE: {item.sourceProduct.name}
+                                                        </span>
+                                                        <span className="text-xs text-blue-600">
+                                                            Requiere comprar: <span className="font-bold">{item.sourceProduct.requiredQty.toFixed(2)} {item.sourceProduct.unit}</span>
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                                 {item.ingredient.category}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-bold">
-                                                {item.totalQuantity.toFixed(2)} {item.unit}
+                                            <td className="px-3 py-4 text-sm text-gray-500">
+                                                <div className="font-bold text-gray-900">{item.totalQuantity.toFixed(2)} {item.unit}</div>
+                                                {item.byproducts && item.byproducts.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <p className="text-[10px] font-bold text-blue-700 uppercase">Sobrantes / Subproductos:</p>
+                                                        <ul className="text-[11px] text-blue-600 list-disc list-inside">
+                                                            {item.byproducts.map((b, idx) => (
+                                                                <li key={idx}>{b.name}: {b.quantity.toFixed(2)} {b.unit}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-medium">
                                                 {formatCurrency(item.estimatedCost)}
                                             </td>
                                         </tr>

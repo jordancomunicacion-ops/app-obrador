@@ -6,22 +6,40 @@ import {
     ClipboardDocumentCheckIcon,
     ArchiveBoxIcon,
     Cog6ToothIcon,
-    ShoppingCartIcon
+    ShoppingCartIcon,
+    TableCellsIcon
 } from '@heroicons/react/24/outline';
 
-export const links = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+export const groups = [
     {
-        name: 'Productos',
-        href: '/dashboard/products',
-        icon: ArchiveBoxIcon,
+        name: 'Principal',
+        items: [
+            { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+            { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
+            { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
+            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon },
+        ]
     },
-    { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon },
-    { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
-    { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon },
-    { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
-    { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
-    { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
-    { name: 'Empleados', href: '/dashboard/employees', icon: UserGroupIcon },
-    { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
+    {
+        name: 'Catálogo',
+        items: [
+            { name: 'Productos', href: '/dashboard/products', icon: ArchiveBoxIcon },
+            { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon },
+        ]
+    },
+    {
+        name: 'Operaciones',
+        items: [
+            { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon },
+            { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
+            { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
+        ]
+    },
+    {
+        name: 'Administración',
+        items: [
+            { name: 'Empleados', href: '/dashboard/employees', icon: UserGroupIcon },
+            { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
+        ]
+    }
 ];

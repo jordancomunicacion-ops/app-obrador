@@ -51,14 +51,79 @@ export async function createTask(prevState: TaskFormState, formData: FormData) {
     redirect('/dashboard/tasks');
 }
 
-export async function updateTaskStatus(id: string, status: string) {
+export async function updateTaskStatus(id: string, status: string, _formData?: FormData) {
     try {
+        const data: any = {
+            status,
+            issueReason: null // Clear reason when moving out of ISSUE or just normal status update
+        };
+
+        if (status === 'IN_PROGRESS') {
+            data.realStart = new Date();
+        } else if (status === 'DONE') {
+            data.realEnd = new Date();
+        }
+
         await prisma.task.update({
             where: { id },
-            data: { status },
+            data,
         });
         revalidatePath('/dashboard/tasks');
     } catch (error) {
         console.error('Failed to update task status:', error);
+    }
+}
+
+export async function reportTaskIssue(id: string, reason: string) {
+    try {
+        await prisma.task.update({
+            where: { id },
+            data: {
+                status: 'ISSUE',
+                issueReason: reason
+            } as any,
+        });
+        revalidatePath('/dashboard/tasks');
+    } catch (error) {
+        console.error('Failed to report task issue:', error);
+    }
+}
+
+export async function assignAndStartTask(taskId: string, userId: string, plannedStart: Date, plannedEnd: Date) {
+    try {
+        await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                assignedToUserId: userId,
+                plannedStart: plannedStart,
+                plannedEnd: plannedEnd,
+                status: 'IN_PROGRESS'
+            }
+        });
+        revalidatePath('/dashboard/tasks');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to assign and start task:', error);
+        return { success: false, message: 'Failed to assign task' };
+    }
+}
+
+export async function assignTask(taskId: string, userId: string, plannedStart: Date, plannedEnd: Date) {
+    try {
+        await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                assignedToUserId: userId,
+                plannedStart: plannedStart,
+                plannedEnd: plannedEnd,
+                status: 'PENDING', // Always reset to PENDING when (re)assigning
+                issueReason: null // Clear any issue reason
+            } as any
+        });
+        revalidatePath('/dashboard/tasks');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to assign task:', error);
+        return { success: false, message: 'Failed to assign task' };
     }
 }

@@ -13,6 +13,8 @@ export default function GenerateTasksButton({
 }) {
     const [isPending, startTransition] = useTransition();
 
+    console.log('generateTasksForEvent type:', typeof generateTasksForEvent);
+
     const handleClick = () => {
         startTransition(async () => {
             const result = await generateTasksForEvent(eventId);

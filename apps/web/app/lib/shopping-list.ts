@@ -1,105 +1,82 @@
 import { prisma } from '@/lib/prisma';
-import { convertTo, UnitType } from '@/app/lib/units';
+import { UnitType } from '@/app/lib/units';
 import { Ingredient } from '@prisma/client';
+import { getRequirementsForEvents, resolveTransformations, Requirement, TransformationResult } from './production';
 
-type ShoppingItem = {
+export type ShoppingListItem = {
     ingredient: Ingredient;
     totalQuantity: number;
     unit: UnitType;
     estimatedCost: number;
+    isTransformation?: boolean;
+    sourceProduct?: {
+        name: string;
+        requiredQty: number;
+        unit: string;
+    };
+    byproducts?: {
+        name: string;
+        quantity: number;
+        unit: string;
+    }[];
 };
 
-export async function generateShoppingList(eventId: string): Promise<ShoppingItem[]> {
-    const event = await prisma.event.findUnique({
-        where: { id: eventId },
-        include: {
-            menuItems: {
-                include: {
-                    recipe: {
-                        include: {
-                            items: {
-                                include: {
-                                    ingredient: true,
-                                    subRecipe: {
-                                        include: {
-                                            items: {
-                                                include: { ingredient: true }
-                                            }
-                                        }
-                                    }
-                                },
-                            },
-                        },
-                    },
-                },
+export async function generateShoppingList(eventId: string): Promise<ShoppingListItem[]> {
+    const requirements = await getRequirementsForEvents([eventId]);
+    const { purchases, leftovers } = await resolveTransformations(requirements);
+
+    const list: ShoppingListItem[] = [];
+
+    // Add Resolved Transformations (Purchases of whole pieces)
+    for (const p of purchases.values()) {
+        const primaryIngredient = await prisma.ingredient.findUnique({ where: { id: p.ingredientId } });
+        if (!primaryIngredient) continue;
+
+        // Fetch the source product to get the real buy price
+        const sourceProduct = await prisma.supplierProduct.findUnique({
+            where: { id: p.sourceProductId }
+        });
+
+        const pricePerUnit = sourceProduct?.price || 0;
+
+        list.push({
+            ingredient: primaryIngredient,
+            totalQuantity: p.targetQty,
+            unit: p.sourceUnit,
+            estimatedCost: p.requiredSourceQty * pricePerUnit,
+            isTransformation: true,
+            sourceProduct: {
+                name: p.sourceProductName,
+                requiredQty: p.requiredSourceQty,
+                unit: p.sourceUnit
             },
-        },
-    });
+            byproducts: p.byproducts.map(b => ({
+                name: b.name,
+                quantity: b.quantity,
+                unit: b.unit
+            }))
+        });
+    }
 
-    if (!event) return [];
+    // Add leftovers (raw purchases)
+    for (const l of leftovers) {
+        const ingredient = await prisma.ingredient.findUnique({ where: { id: l.ingredientId } });
+        if (!ingredient) continue;
 
-    const shoppingMap = new Map<string, ShoppingItem>();
-
-    for (const menuItem of event.menuItems) {
-        const recipe = menuItem.recipe;
-
-        // Determine how many times we need to make the recipe
-        // If servingsOverride is set, use it. Otherwise use event PAX.
-        // NOTE: In really advanced logic, we check if recipe.yieldQuantity fits into servings.
-        // Simple logic: Needs = (Pax * SafetyMargin) / RecipeYield
-
-        const targetServings = (menuItem.servingsOverride || event.pax) * event.safetyMargin;
-        const factor = targetServings / (recipe.yieldQuantity || 1);
-
-        // Process Recipe Items
-        for (const item of recipe.items) {
-            if (item.type === 'INGREDIENT' && item.ingredient) {
-                addIngredientToMap(shoppingMap, item.ingredient, item.quantityGross * factor, item.unit as UnitType);
-            } else if (item.type === 'SUB_RECIPE' && item.subRecipe) {
-                // Recursive logic (1 level deep handled here for simplicity, ideally recursive function)
-                // SubRecipe Quantity Needed = Item Quantity * Factor
-                // SubRecipe Yield = subRecipe.yield
-                // SubRecipe Factor = (Item Quantity * Factor) / SubRecipe Yield
-                const subRecipe = item.subRecipe;
-                const subFactor = (item.quantityGross * factor) / (subRecipe.yieldQuantity || 1);
-
-                for (const subItem of subRecipe.items) {
-                    if (subItem.type === 'INGREDIENT' && subItem.ingredient) {
-                        addIngredientToMap(shoppingMap, subItem.ingredient, subItem.quantityGross * subFactor, subItem.unit as UnitType);
-                    }
-                }
-            }
+        const existing = list.find(i => i.ingredient.id === l.ingredientId);
+        if (existing) {
+            existing.totalQuantity += l.quantity;
+            existing.estimatedCost += l.quantity * (ingredient.pricePerUnit || 0);
+        } else {
+            list.push({
+                ingredient,
+                totalQuantity: l.quantity,
+                unit: l.unit,
+                estimatedCost: l.quantity * (ingredient.pricePerUnit || 0),
+                isTransformation: false
+            });
         }
     }
 
-    return Array.from(shoppingMap.values());
-}
-
-function addIngredientToMap(
-    map: Map<string, ShoppingItem>,
-    ingredient: Ingredient,
-    quantity: number,
-    unit: UnitType
-) {
-    const existing = map.get(ingredient.id);
-    // Convert incoming quantity to Ingredient's preferred Purchasing Unit/Pricing Unit
-    const targetUnit = ingredient.pricingUnit as UnitType;
-    const convertedQuantity = convertTo(quantity, unit, targetUnit);
-
-    if (convertedQuantity === null) {
-        console.warn(`Could not convert ${unit} to ${targetUnit} for ${ingredient.name}`);
-        return;
-    }
-
-    if (existing) {
-        existing.totalQuantity += convertedQuantity;
-        existing.estimatedCost += convertedQuantity * ingredient.pricePerUnit;
-    } else {
-        map.set(ingredient.id, {
-            ingredient,
-            totalQuantity: convertedQuantity,
-            unit: targetUnit,
-            estimatedCost: convertedQuantity * ingredient.pricePerUnit
-        });
-    }
+    return list;
 }

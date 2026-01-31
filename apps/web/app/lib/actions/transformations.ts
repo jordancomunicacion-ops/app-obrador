@@ -39,12 +39,13 @@ export async function createTransformation(prevState: TransformationFormState, f
     const validatedFields = TransformationSchema.safeParse({
         sourceProductId: formData.get('sourceProductId'),
         name: formData.get('name'),
-        testQuantity: Number(formData.get('testQuantity')),
-        testUnit: formData.get('testUnit'),
+        testQuantity: formData.get('testQuantity'),
+        testUnit: formData.get('testUnit') || 'KG',
         outputs: outputsData
     });
 
     if (!validatedFields.success) {
+        console.error('Validation Error (Create):', validatedFields.error.flatten());
         return {
             errors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>,
             message: 'Error de validación. Revise los datos.',
@@ -54,14 +55,14 @@ export async function createTransformation(prevState: TransformationFormState, f
     const { sourceProductId, name, testQuantity, testUnit, outputs } = validatedFields.data;
 
     try {
-        // Get source product to calculate pricing
+        // Get source product to calculate pricing and redirection
         const sourceProduct = await prisma.supplierProduct.findUnique({
             where: { id: sourceProductId },
-            select: { price: true, unit: true }
+            select: { price: true, unit: true, masterProductId: true }
         });
 
-        if (!sourceProduct) {
-            return { message: 'Producto fuente no encontrado.' };
+        if (!sourceProduct || !sourceProduct.masterProductId) {
+            return { message: 'Producto fuente o maestro no encontrado.' };
         }
 
         await prisma.$transaction(async (tx) => {
@@ -92,11 +93,6 @@ export async function createTransformation(prevState: TransformationFormState, f
                         ingredientId = existingIng.id;
                     } else {
                         // 2. Create new if not found
-                        // Calculate price per unit based on source product
-                        // Formula: (sourcePrice / testQuantity) * costAllocation
-                        // This gives the cost per KG of this output (Assuming KG output)
-                        // If testUnit is different, we might need conversion?
-                        // For MVP, we assume the cost allocation handles the value distribution regardless of units.
                         const calculatedPrice = (sourceProduct.price / testQuantity) * output.costAllocation;
 
                         const newIng = await tx.ingredient.create({
@@ -127,15 +123,21 @@ export async function createTransformation(prevState: TransformationFormState, f
                     });
                 }
             }
+
+            // 3. Recalculate Prices
+            await recalculateIngredientPrices(transformation.id, tx);
         });
 
+        revalidatePath(`/dashboard/products/${sourceProduct.masterProductId}`);
+        redirect(`/dashboard/products/${sourceProduct.masterProductId}`);
+
     } catch (error) {
+        if ((error as any).digest?.startsWith('NEXT_REDIRECT')) {
+            throw error;
+        }
         console.error(error);
         return { message: 'Error al guardar la transformación.' };
     }
-
-    revalidatePath(`/dashboard/products/${sourceProductId}`);
-    redirect(`/dashboard/products/${sourceProductId}`);
 }
 
 export async function updateTransformation(id: string, prevState: TransformationFormState, formData: FormData) {
@@ -147,15 +149,16 @@ export async function updateTransformation(id: string, prevState: Transformation
         id: id,
         sourceProductId: formData.get('sourceProductId'),
         name: formData.get('name'),
-        testQuantity: Number(formData.get('testQuantity')),
-        testUnit: formData.get('testUnit'),
+        testQuantity: formData.get('testQuantity'),
+        testUnit: formData.get('testUnit') || 'KG',
         outputs: outputsData
     });
 
     if (!validatedFields.success) {
+        console.error('Validation Error (Update):', validatedFields.error.flatten());
         return {
             errors: validatedFields.error.flatten().fieldErrors as Record<string, string[]>,
-            message: 'Error de validación. Revise los datos.',
+            message: 'Error de validación. Revise los datos (ID: ' + id + ')',
         };
     }
 
@@ -208,22 +211,42 @@ export async function updateTransformation(id: string, prevState: Transformation
                     });
                 }
             }
+
+            // 4. Recalculate Prices
+            await recalculateIngredientPrices(id, tx);
         });
 
+        // Get masterProductId for correct redirection
+        const sourceProd = await prisma.supplierProduct.findUnique({
+            where: { id: sourceProductId },
+            select: { masterProductId: true }
+        });
+
+        const redirectPath = sourceProd?.masterProductId
+            ? `/dashboard/products/${sourceProd.masterProductId}`
+            : `/dashboard/products`;
+
+        revalidatePath(redirectPath);
+        redirect(redirectPath);
+
     } catch (error) {
+        if ((error as any).digest?.startsWith('NEXT_REDIRECT')) {
+            throw error;
+        }
         console.error(error);
         return { message: 'Error al actualizar la transformación.' };
     }
-
-    revalidatePath(`/dashboard/products/${sourceProductId}`);
-    redirect(`/dashboard/products/${sourceProductId}`);
 }
 
 export async function deleteTransformation(id: string) {
     try {
         const transformation = await prisma.transformation.findUnique({
             where: { id },
-            select: { sourceProductId: true }
+            select: {
+                sourceProduct: {
+                    select: { masterProductId: true }
+                }
+            }
         });
 
         if (!transformation) {
@@ -234,9 +257,55 @@ export async function deleteTransformation(id: string) {
             where: { id },
         });
 
-        revalidatePath(`/dashboard/products/${transformation.sourceProductId}`);
+        if (transformation?.sourceProduct?.masterProductId) {
+            revalidatePath(`/dashboard/products/${transformation.sourceProduct.masterProductId}`);
+        }
     } catch (error) {
         console.error('Error deleting transformation:', error);
         throw error;
+    }
+}
+
+/**
+ * Recalculates and updates the pricePerUnit of all ingredients produced by this transformation.
+ * Formula: (SourceProductPrice * TestQuantity * CostAllocation) / OutputWeight
+ */
+async function recalculateIngredientPrices(transformationId: string, tx: any) {
+    const transformation = await tx.transformation.findUnique({
+        where: { id: transformationId },
+        include: {
+            sourceProduct: true,
+            outputs: true
+        }
+    });
+
+    if (!transformation || !transformation.sourceProduct) return;
+
+    const sourcePrice = transformation.sourceProduct.price || 0;
+    const testQty = transformation.testQuantity;
+
+    const totalInputCost = sourcePrice * testQty;
+
+    let totalWeightedMass = 0;
+    for (const output of transformation.outputs) {
+        if (output.weight > 0) {
+            totalWeightedMass += output.weight * (output.costAllocation || 1);
+        }
+    }
+
+    if (totalWeightedMass === 0) return;
+
+    const costPerWeightedUnit = totalInputCost / totalWeightedMass;
+
+    for (const output of transformation.outputs) {
+        if (output.weight > 0) {
+            const newPricePerUnit = costPerWeightedUnit * (output.costAllocation || 1);
+            await tx.ingredient.update({
+                where: { id: output.ingredientId },
+                data: {
+                    pricePerUnit: newPricePerUnit
+                }
+            });
+        }
     }
 }

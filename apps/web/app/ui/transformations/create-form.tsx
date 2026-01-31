@@ -2,7 +2,7 @@
 
 import { createTransformation, TransformationFormState } from '@/app/lib/actions/transformations';
 import { useActionState, useState } from 'react';
-import { Ingredient, SupplierProduct, TransformationOutput, Transformation } from '@prisma/client';
+import { Ingredient, SupplierProduct, TransformationOutput, Transformation, MasterProduct } from '@prisma/client';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 type ExtendedIngredient = Ingredient & {
@@ -14,7 +14,7 @@ type ExtendedIngredient = Ingredient & {
 };
 
 type Props = {
-    product: SupplierProduct;
+    product: MasterProduct & { supplierProducts: SupplierProduct[] };
     ingredients: ExtendedIngredient[];
 };
 
@@ -30,9 +30,12 @@ export default function TransformationForm({ product, ingredients }: Props) {
     const initialState: TransformationFormState = { message: null, errors: {} };
     const [state, formAction] = useActionState(createTransformation, initialState);
 
+    const [selectedSupplierId, setSelectedSupplierId] = useState(product.supplierProducts[0]?.id || '');
+    const selectedSupplier = product.supplierProducts.find(sp => sp.id === selectedSupplierId);
+
     // Default Input Test Quantity (e.g. 1 unit/kg)
     const [testQuantity, setTestQuantity] = useState<number | string>(1);
-    const [testUnit, setTestUnit] = useState<string>(product.unit || 'KG');
+    const [testUnit, setTestUnit] = useState<string>(selectedSupplier?.unit || 'KG');
 
     const [outputs, setOutputs] = useState<OutputRow[]>([
         { key: '1', ingredientId: '', newIngredientName: '', weight: '', costAllocation: 1 }
@@ -60,15 +63,41 @@ export default function TransformationForm({ product, ingredients }: Props) {
 
     return (
         <form action={formAction}>
-            <input type="hidden" name="sourceProductId" value={product.id} />
-            {/* Pass complex object as JSON */}
+            {/* Source Product Select */}
+            <div className="rounded-md bg-blue-50 border border-blue-100 p-4 md:p-6 mb-6">
+                <h3 className="text-sm font-semibold text-blue-800 uppercase mb-3">1. Elegir Proveedor para el Test</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="sourceProductId" className="block text-sm font-medium mb-1">Proveedor / Lote</label>
+                        <select
+                            id="sourceProductId"
+                            name="sourceProductId"
+                            value={selectedSupplierId}
+                            onChange={(e) => {
+                                setSelectedSupplierId(e.target.value);
+                                const sp = product.supplierProducts.find(s => s.id === e.target.value);
+                                if (sp) setTestUnit(sp.unit);
+                            }}
+                            className="w-full rounded-md border-gray-200 py-2 pl-4 text-sm"
+                            required
+                        >
+                            {product.supplierProducts.map(sp => (
+                                <option key={sp.id} value={sp.id}>
+                                    {sp.supplier} - {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(sp.price)} / {sp.unit}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <input type="hidden" name="outputs" value={JSON.stringify(outputs)} />
 
-            <div className="rounded-md bg-gray-50 p-4 md:p-6 mb-6">
-
+            <div className="rounded-md bg-gray-50 p-4 md:p-6 mb-6 border border-gray-200 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">2. Datos del Test</h3>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Nombre de la Transformación</label>
+                    <label className="block text-sm font-medium mb-1">Nombre de la Transformación / Test</label>
                     <input
                         name="name"
                         type="text"

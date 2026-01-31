@@ -7,6 +7,7 @@ import {
     PlusIcon,
     TrashIcon,
     Bars3Icon,
+    TagIcon,
 } from '@heroicons/react/24/outline';
 import { useActionState, useState } from 'react';
 import { Ingredient, Recipe, RecipeItem, RecipeStep, TransformationOutput, SupplierProduct, RecipeCategory, RecipePackaging } from '@prisma/client';
@@ -34,9 +35,16 @@ import { CSS } from '@dnd-kit/utilities';
 type IngredientWithSources = Ingredient & {
     transformationOutputs: (TransformationOutput & {
         transformation: {
-            sourceProduct: SupplierProduct
+            sourceProduct: SupplierProduct & {
+                masterProduct: { name: string } | null
+            }
         }
-    })[]
+    })[];
+    supplierProducts: (SupplierProduct & {
+        supplierEntity: {
+            name: string;
+        } | null;
+    })[];
 };
 
 type RecipeItemInput = {
@@ -50,6 +58,17 @@ type RecipeItemInput = {
     unit: string;
 };
 
+// Define ExtendedRecipe locally to ensure type safety even if Prisma client is stale
+type ExtendedRecipe = Recipe & {
+    items: RecipeItem[];
+    steps: RecipeStep[];
+    isGlutenFree?: boolean;
+    isVegan?: boolean;
+    isVegetarian?: boolean;
+    isLactoseFree?: boolean;
+    allergens?: string | null;
+};
+
 export default function EditForm({
     recipe,
     ingredients,
@@ -57,7 +76,7 @@ export default function EditForm({
     packaging,
     availableSubRecipes = []
 }: {
-    recipe: Recipe & { items: RecipeItem[], steps: RecipeStep[] },
+    recipe: ExtendedRecipe,
     ingredients: IngredientWithSources[],
     categories: RecipeCategory[],
     packaging: RecipePackaging[],
@@ -66,6 +85,7 @@ export default function EditForm({
     const initialState: RecipeFormState = { message: null, errors: {} };
     const updateRecipeWithId = updateRecipe.bind(null, recipe.id);
     const [state, formAction] = useActionState(updateRecipeWithId, initialState);
+    const dndContextId = `dnd-steps-${recipe.id}`;
 
     // Yield state for cost calc
     const [yieldVal, setYieldVal] = useState(recipe.yieldQuantity || 1);
@@ -125,22 +145,37 @@ export default function EditForm({
     };
 
     // Steps State
+    // Steps State
     type StepInput = {
         key: string;
         order: number;
         description: string;
-        action?: string;
-        subAction?: string;
-        ingredientId?: string;
+        action?: string;   // Deprecated
+        subAction?: string; // Deprecated
+        ingredients?: {
+            id: string,
+            type: 'INGREDIENT' | 'SUB_RECIPE',
+            action?: string,
+            subAction?: string
+        }[];
     };
     const [steps, setSteps] = useState<StepInput[]>(
-        (recipe.steps || []).sort((a, b) => a.order - b.order).map(step => ({
+        (recipe.steps || []).sort((a: any, b: any) => a.order - b.order).map((step: any) => ({
             key: step.id,
             order: step.order,
             description: step.description,
             action: step.action || '',
             subAction: step.subAction || '',
-            ingredientId: step.ingredientId || ''
+            ingredients: (step.stepIngredients && step.stepIngredients.length > 0)
+                ? step.stepIngredients.map((si: any) => ({
+                    id: si.ingredientId || si.subRecipeId,
+                    type: si.ingredientId ? 'INGREDIENT' : 'SUB_RECIPE',
+                    action: si.action || '',
+                    subAction: si.subAction || ''
+                }))
+                : (step.ingredientId
+                    ? [{ id: step.ingredientId, type: 'INGREDIENT', action: step.action, subAction: step.subAction }]
+                    : (step.subRecipeId ? [{ id: step.subRecipeId, type: 'SUB_RECIPE', action: step.action, subAction: step.subAction }] : []))
         }))
     );
 
@@ -149,11 +184,11 @@ export default function EditForm({
         'DESPIEZAR': ['Filetear', 'Picar', 'Limpiar', 'Deshuesar'],
         'COCCION': ['Directa', 'Indirecta', 'Al vacío', 'Hervir', 'Sofreír', 'Asar'],
         'MEZCLAR': ['Batir', 'Remover', 'Amasar'],
-        'OTROS': ['Marinar', 'Reposar', 'Emplatar']
+        'OTROS': ['Marinar', 'Reposar', 'Emplatar', 'Reducir', 'Colar']
     };
 
     const addStep = () => {
-        setSteps([...steps, { key: crypto.randomUUID(), order: steps.length + 1, description: '', action: '', subAction: '', ingredientId: '' }]);
+        setSteps([...steps, { key: crypto.randomUUID(), order: steps.length + 1, description: '', action: '', subAction: '', ingredients: [] }]);
     };
 
     const removeStep = (index: number) => {
@@ -181,6 +216,54 @@ export default function EditForm({
         if (item.type === 'INGREDIENT' && item.ingredientId) {
             const ingredient = ingredients.find(i => i.id === item.ingredientId);
             if (ingredient) {
+                // 1. Try Specific Source Product Cost
+                if (item.sourceProductId) {
+                    const sp = ingredient.supplierProducts.find(p => p.id === item.sourceProductId);
+                    if (sp) {
+                        // usageQuantity: item.quantityGross (e.g. 0.5)
+                        // usageUnit: item.unit (e.g. L)
+                        // sp.price: (e.g. 5 EUR)
+                        // sp.unit: (e.g. UD - Bottle)
+                        // sp.quantityPerUnit: (e.g. 0.75 - implies L/Kg based on context, usually matching ingredient dimension)
+
+                        // Case A: Units match
+                        if (sp.unit === item.unit) {
+                            return sum + (item.quantityGross * sp.price);
+                        }
+
+                        // Case B: SP is UD, Item is Mass/Vol, SP has conversion info (quantityPerUnit)
+                        if (sp.unit === 'UD' && sp.quantityPerUnit && sp.quantityPerUnit > 0) {
+                            // Assume sp.quantityPerUnit represents the amount in base units (L/Kg) of the ingredient
+                            // Cost = (Usage / QtyPerUnit) * PricePerUnit
+                            // e.g. (0.5 L / 0.75 L) * 5 EUR
+
+                            // Check item unit vs ingredient pricing unit (assuming QtyPerUnit matches pricing unit dim)
+                            const convertedUsage = convertTo(item.quantityGross, item.unit as UnitType, 'L'); // Try L
+                            const convertedUsageKg = convertTo(item.quantityGross, item.unit as UnitType, 'KG'); // Try KG
+
+                            // Heuristic: If ingredient defaults to L/ML, use L conversion. If KG/G use KG.
+                            // If pricingUnit is UD, we are blind, but usually liquids (Vino) are L.
+
+                            let ratio = 0;
+                            // Try to normalize usage to the number inside the unit.
+                            // Simplified: We assume quantityPerUnit is in the SAME dimension as item.unit if compatible
+
+                            // Try direct conversion mechanism
+                            // If item is 0.5 L and QtyPerUnit is 0.75 (L implied)
+                            if (['L', 'ML'].includes(item.unit) || ['KG', 'G'].includes(item.unit)) {
+                                // Convert item quantity to a standard "1" unit (L or KG) to match QtyPerUnit magnitude?
+                                // Let's assume QtyPerUnit is in L or KG.
+                                let usageInStd = item.quantityGross;
+                                if (item.unit === 'ML' || item.unit === 'G') usageInStd /= 1000;
+
+                                ratio = usageInStd / sp.quantityPerUnit;
+                                return sum + (ratio * sp.price);
+                            }
+                        }
+                    }
+                }
+
+                // 2. Fallback to Ingredient Pricing Unit
                 const quantityInPricingUnit = convertTo(item.quantityGross, item.unit as UnitType, ingredient.pricingUnit as UnitType);
                 if (quantityInPricingUnit !== null) {
                     return sum + (quantityInPricingUnit * ingredient.pricePerUnit);
@@ -197,16 +280,21 @@ export default function EditForm({
 
     // Helper to get ingredient name from ID
     const getIngredientOptions = () => {
-        return items.map(item => {
+        const rawOptions = items.map(item => {
             if (item.type === 'INGREDIENT') {
                 const ing = ingredients.find(i => i.id === item.ingredientId);
-                return ing ? { id: ing.id, name: ing.name } : null;
+                return ing ? { id: ing.id, name: ing.name, type: 'INGREDIENT' } : null;
             } else if (item.type === 'SUB_RECIPE') {
                 const sub = availableSubRecipes.find(r => r.id === item.subRecipeId);
-                return sub ? { id: sub.id, name: sub.name } : null;
+                return sub ? { id: sub.id, name: sub.name, type: 'SUB_RECIPE' } : null;
             }
             return null;
-        }).filter(Boolean) as { id: string, name: string }[];
+        }).filter(Boolean) as { id: string, name: string, type: 'INGREDIENT' | 'SUB_RECIPE' }[];
+
+        // Deduplicate
+        const unique = new Map();
+        rawOptions.forEach(op => unique.set(op.id, op));
+        return Array.from(unique.values());
     };
 
     const availableIngredients = getIngredientOptions();
@@ -273,7 +361,7 @@ export default function EditForm({
                             name="name"
                             type="text"
                             defaultValue={recipe.name}
-                            placeholder="Ej. Salsa Boloñesa"
+                            placeholder=""
                             className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
                             aria-describedby="name-error"
                         />
@@ -357,40 +445,82 @@ export default function EditForm({
                             ))}
                         </div>
                     </div>
-                    <div>
-                        <label htmlFor="portions" className="mb-2 block text-sm font-medium">
-                            {isPack ? 'Unidades por Caja/Pack' : 'Nº Raciones'}
-                        </label>
-                        <input id="portions" name="portions" type="number" defaultValue={recipe.portions || ''} placeholder={isPack ? "Ej. 12" : "Ej. 36"} className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
-                        <div id="portions-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.portions && state.errors.portions.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-                            ))}
+                </div>
+
+                {/* Yield & Portions Section */}
+                <div className="mb-6 border-b pb-6 border-gray-200">
+                    <h3 className="text-md font-semibold text-gray-700 mb-3">Rendimiento y Raciones</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Portions */}
+                        <div>
+                            <label htmlFor="portions" className="mb-2 block text-sm font-medium">
+                                {isPack ? 'Unidades por Caja/Pack' : 'Nº Raciones'}
+                            </label>
+                            <input
+                                id="portions"
+                                name="portions"
+                                type="number"
+                                defaultValue={recipe.portions || ''}
+                                placeholder=""
+                                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500"
+                                onChange={(e) => {
+                                    // Update state for calculation if needed, though mostly visual
+                                }}
+                            />
+                            <div id="portions-error" aria-live="polite" aria-atomic="true">
+                                {state.errors?.portions && state.errors.portions.map((error: string) => (
+                                    <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label htmlFor="prepTime" className="mb-2 block text-sm font-medium">Tiempo Preparación (mins)</label>
-                        <input id="prepTime" name="prepTime" type="number" defaultValue={recipe.prepTime || ''} placeholder="15" className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
-                        <div id="prepTime-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.prepTime && state.errors.prepTime.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-                            ))}
+
+                        {/* Yield Quantity */}
+                        <div>
+                            <label htmlFor="yieldQuantity" className="mb-2 block text-sm font-medium">
+                                Cantidad Resultante (Total)
+                            </label>
+                            <input
+                                id="yieldQuantity"
+                                name="yieldQuantity"
+                                type="number"
+                                step="any"
+                                value={yieldVal}
+                                onChange={(e) => setYieldVal(parseFloat(e.target.value) || 0)}
+                                placeholder=""
+                                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500"
+                            />
                         </div>
-                    </div>
-                    <div>
-                        <label htmlFor="cookTime" className="mb-2 block text-sm font-medium">Tiempo Cocción (mins)</label>
-                        <input id="cookTime" name="cookTime" type="number" defaultValue={recipe.cookTime || ''} placeholder="27" className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
-                        <div id="cookTime-error" aria-live="polite" aria-atomic="true">
-                            {state.errors?.cookTime && state.errors.cookTime.map((error: string) => (
-                                <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-                            ))}
+
+                        {/* Yield Unit */}
+                        <div>
+                            <label htmlFor="yieldUnit" className="mb-2 block text-sm font-medium">Unidad Resultante</label>
+                            <select
+                                id="yieldUnit"
+                                name="yieldUnit"
+                                defaultValue={recipe.yieldUnit || 'L'}
+                                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
+                            >
+                                <option value="KG">KG</option>
+                                <option value="G">G</option>
+                                <option value="L">L</option>
+                                <option value="ML">ML</option>
+                                <option value="UD">UD</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                {/* Yield Section - HIDDEN: Always 1 UD, quantity determined by Events/Tasks */}
-                <input type="hidden" name="yieldQuantity" value={recipe.yieldQuantity || 1} />
-                <input type="hidden" name="yieldUnit" value={recipe.yieldUnit || "UD"} />
+                {/* Preparation Times */}
+                <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6 border-gray-200">
+                    <div>
+                        <label htmlFor="prepTime" className="mb-2 block text-sm font-medium">Tiempo Preparación (mins)</label>
+                        <input id="prepTime" name="prepTime" type="number" defaultValue={recipe.prepTime || ''} placeholder="" className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
+                    </div>
+                    <div>
+                        <label htmlFor="cookTime" className="mb-2 block text-sm font-medium">Tiempo Cocción (mins)</label>
+                        <input id="cookTime" name="cookTime" type="number" defaultValue={recipe.cookTime || ''} placeholder="" className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm placeholder:text-gray-500" />
+                    </div>
+                </div>
 
                 {/* Instructions */}
                 <div className="mb-4">
@@ -402,8 +532,77 @@ export default function EditForm({
                         name="instructions"
                         rows={3}
                         defaultValue={recipe.instructions || ''}
+                        placeholder=""
                         className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
                     ></textarea>
+                </div>
+
+                {/* Diet & Allergens Section */}
+                <div className="mb-6 border-b pb-6 border-gray-200 bg-white p-4 rounded-lg shadow-sm">
+                    <h3 className="text-md font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <TagIcon className="w-5 h-5 text-blue-500" />
+                        Dieta y Alérgenos
+                    </h3>
+
+                    {/* Dietary Flags */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        {[
+                            { id: 'isGlutenFree', label: 'Sin Gluten', icon: '🌾', initial: (recipe as any).isGlutenFree },
+                            { id: 'isVegan', label: 'Vegano', icon: '🌱', initial: (recipe as any).isVegan },
+                            { id: 'isVegetarian', label: 'Vegetariano', icon: '🥗', initial: (recipe as any).isVegetarian },
+                            { id: 'isLactoseFree', label: 'Sin Lactosa', icon: '🥛', initial: (recipe as any).isLactoseFree },
+                        ].map((diet) => (
+                            <label key={diet.id} className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    defaultChecked={diet.initial}
+                                    onChange={(e) => {
+                                        const hiddenInput = document.getElementById(`hidden_${diet.id}`) as HTMLInputElement;
+                                        if (hiddenInput) hiddenInput.value = String(e.target.checked);
+                                    }}
+                                />
+                                <input type="hidden" id={`hidden_${diet.id}`} name={diet.id} value={String(diet.initial)} />
+                                <span className="text-sm font-medium text-gray-700">
+                                    <span className="mr-1">{diet.icon}</span> {diet.label}
+                                </span>
+                            </label>
+                        ))}
+                    </div>
+
+                    {/* Allergens Checklist */}
+                    <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-700">Alérgenos Obligatorios (UE)</label>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                            {(() => {
+                                const activeAllergens = recipe.allergens ? recipe.allergens.split(',') : [];
+                                return [
+                                    'Altramuces', 'Apio', 'Cacahuetes', 'Crustáceos', 'Frutos de Cáscara', 'Gluten',
+                                    'Granos de Sésamo', 'Huevo', 'Leche', 'Moluscos', 'Mostaza', 'Pescado', 'Soja', 'Sulfitos'
+                                ].map((allergen) => (
+                                    <label key={allergen} className="flex items-center gap-2 px-2 py-1.5 border border-gray-100 rounded hover:bg-gray-50 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300"
+                                            defaultChecked={activeAllergens.includes(allergen)}
+                                            onChange={(e) => {
+                                                const allergensInput = document.getElementById('allergens_input') as HTMLInputElement;
+                                                let currentAllergens = allergensInput.value ? allergensInput.value.split(',') : [];
+                                                if (e.target.checked) {
+                                                    if (!currentAllergens.includes(allergen)) currentAllergens.push(allergen);
+                                                } else {
+                                                    currentAllergens = currentAllergens.filter(a => a !== allergen);
+                                                }
+                                                allergensInput.value = currentAllergens.join(',');
+                                            }}
+                                        />
+                                        <span className="text-xs text-gray-600">{allergen}</span>
+                                    </label>
+                                ));
+                            })()}
+                        </div>
+                        <input type="hidden" id="allergens_input" name="allergens" defaultValue={recipe.allergens || ''} />
+                    </div>
                 </div>
 
                 {/* Dynamic Items List */}
@@ -450,26 +649,101 @@ export default function EditForm({
 
                                     {item.type === 'INGREDIENT' ? (
                                         <SearchableSelect
-                                            options={[
-                                                ...ingredients.filter(i => (!i.transformationOutputs || i.transformationOutputs.length === 0)).map(ing => ({
-                                                    value: ing.id,
-                                                    label: ing.name,
-                                                    group: 'Productos No Elaborados'
-                                                })),
-                                                ...ingredients.filter(i => (i.transformationOutputs && i.transformationOutputs.length > 0)).map(ing => {
-                                                    let displayName = ing.name;
-                                                    const sources = ing.transformationOutputs?.map(o => o.transformation.sourceProduct.name);
-                                                    if (sources && sources.length > 0) {
-                                                        const uniqueSources = Array.from(new Set(sources));
-                                                        displayName = `${uniqueSources.join(' / ')} - ${ing.name}`;
+                                            options={(() => {
+                                                const rawOptions = [
+                                                    ...ingredients.filter(i => (!i.transformationOutputs || i.transformationOutputs.length === 0)).map(ing => {
+                                                        // Clean name: remove content in parentheses and trim for display
+                                                        const cleanName = ing.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+                                                        return {
+                                                            value: ing.id,
+                                                            label: cleanName,
+                                                            group: 'Productos No Elaborados'
+                                                        };
+                                                    }),
+                                                    ...ingredients.filter(i => (i.transformationOutputs && i.transformationOutputs.length > 0)).map(ing => {
+                                                        let displayName = ing.name;
+                                                        const sources = ing.transformationOutputs?.map(o =>
+                                                            o.transformation.sourceProduct.masterProduct?.name ||
+                                                            o.transformation.sourceProduct.name
+                                                        );
+                                                        if (sources && sources.length > 0) {
+                                                            // Helper to normalize strings for comparison (remove stop words, lowercase)
+                                                            const normalize = (s: string) => s.toLowerCase()
+                                                                .replace(/\b(de|del|la|el|los|las|y|o)\b/g, '') // Remove Spanish stop words
+                                                                .replace(/[^a-z0-9áéíóúñ]/g, '') // Remove special chars
+                                                                .trim();
+
+                                                            // 1. Clean and Dedup Sources
+                                                            const uniqueMap = new Map<string, string>();
+                                                            sources.forEach(s => {
+                                                                // Basic clean first
+                                                                const cleanS = s.replace(/\s*\(.*?\)\s*/g, '').trim();
+                                                                const key = normalize(cleanS);
+                                                                if (!uniqueMap.has(key)) {
+                                                                    uniqueMap.set(key, cleanS);
+                                                                }
+                                                            });
+
+                                                            const uniqueCleanSources = Array.from(uniqueMap.values());
+                                                            const prefix = uniqueCleanSources.join(' / ');
+
+                                                            // 2. Smartly remove prefix from ingredient name
+                                                            const tokenize = (s: string) => s.split(/\s+/).filter(t => t.length > 0);
+                                                            const normalizeToken = (t: string) => t.toLowerCase().replace(/[^a-z0-9áéíóúñ]/g, '');
+                                                            const isStopWord = (t: string) => /^(de|del|la|el|los|las|y|o)$/i.test(t);
+
+                                                            const ingWords = tokenize(ing.name);
+                                                            const refPrefixWords = tokenize(uniqueCleanSources[0] || '');
+
+                                                            let pIdx = 0;
+                                                            let iIdx = 0;
+
+                                                            while (pIdx < refPrefixWords.length && iIdx < ingWords.length) {
+                                                                const pToken = normalizeToken(refPrefixWords[pIdx]);
+                                                                const iTokenRaw = ingWords[iIdx];
+
+                                                                if (isStopWord(iTokenRaw)) {
+                                                                    iIdx++;
+                                                                    continue;
+                                                                }
+                                                                if (isStopWord(refPrefixWords[pIdx])) {
+                                                                    pIdx++;
+                                                                    continue;
+                                                                }
+
+                                                                const iToken = normalizeToken(iTokenRaw);
+
+                                                                if (pToken === iToken) {
+                                                                    pIdx++;
+                                                                    iIdx++;
+                                                                } else {
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            const remainingIngName = ingWords.slice(iIdx).join(' ');
+
+                                                            displayName = remainingIngName
+                                                                ? `${prefix} ${remainingIngName}`
+                                                                : prefix;
+                                                        }
+                                                        return {
+                                                            value: ing.id,
+                                                            label: displayName,
+                                                            group: 'Despieces / Elaboraciones'
+                                                        };
+                                                    })
+                                                ];
+
+                                                const unique = new Map();
+                                                rawOptions.forEach(op => {
+                                                    const key = op.label.replace(/[^a-z0-9]/gi, '').toLowerCase();
+                                                    if (!unique.has(key)) {
+                                                        unique.set(key, op);
                                                     }
-                                                    return {
-                                                        value: ing.id,
-                                                        label: displayName,
-                                                        group: 'Despieces / Elaboraciones'
-                                                    };
-                                                })
-                                            ]}
+                                                });
+                                                return Array.from(unique.values());
+                                            })()}
                                             value={item.ingredientId}
                                             onChange={(value) => updateItem(index, 'ingredientId', value)}
                                             placeholder="Buscar ingrediente..."
@@ -503,7 +777,12 @@ export default function EditForm({
                                 {/* Source/Provider Selection (if available for this ingredient) */}
                                 {(() => {
                                     const selectedIng = ingredients.find(i => i.id === item.ingredientId);
-                                    if (selectedIng && selectedIng.transformationOutputs && selectedIng.transformationOutputs.length > 0) {
+
+                                    // Combine sources: TransformationOutputs AND SupplierProducts
+                                    const transformationSources = selectedIng?.transformationOutputs || [];
+                                    const supplierSources = selectedIng?.supplierProducts || [];
+
+                                    if (transformationSources.length > 0 || supplierSources.length > 0) {
                                         return (
                                             <div className="flex-grow w-full md:w-auto">
                                                 <select
@@ -512,14 +791,49 @@ export default function EditForm({
                                                     onChange={(e) => updateItem(index, 'sourceProductId', e.target.value)}
                                                 >
                                                     <option value="">-- Origen Genérico --</option>
-                                                    {selectedIng.transformationOutputs.map(output => (
-                                                        <option key={output.transformation.sourceProduct.id} value={output.transformation.sourceProduct.id}>
-                                                            {output.transformation.sourceProduct.supplier ? (
-                                                                `${output.transformation.sourceProduct.supplier} - `
-                                                            ) : ''}
-                                                            {output.transformation.sourceProduct.name} ({output.percentage.toFixed(0)}%)
-                                                        </option>
-                                                    ))}
+
+                                                    {/* OptGroup for Buying Options (Direct Suppliers) */}
+                                                    {supplierSources.length > 0 && (
+                                                        <optgroup label="Proveedores (Compra Directa)">
+                                                            {supplierSources.map(prod => {
+                                                                const quantityDisplay = prod.quantityPerUnit
+                                                                    ? (
+                                                                        (prod.unit === 'L' && prod.quantityPerUnit < 1) ? `${prod.quantityPerUnit * 1000}ml` :
+                                                                            (prod.unit === 'KG' && prod.quantityPerUnit < 1) ? `${prod.quantityPerUnit * 1000}g` :
+                                                                                `${prod.quantityPerUnit}${prod.unit}`
+                                                                    )
+                                                                    : prod.unit;
+
+                                                                return (
+                                                                    <option key={prod.id} value={prod.id}>
+                                                                        {prod.supplier || prod.supplierEntity?.name || 'Proveedor N/D'} ({quantityDisplay})
+                                                                    </option>
+                                                                );
+                                                            })}
+                                                        </optgroup>
+                                                    )}
+
+                                                    {/* OptGroup for Transformations (Yield Tests) */}
+                                                    {(() => {
+                                                        const uniqueSources = new Map();
+                                                        transformationSources.forEach(output => {
+                                                            const spId = output.transformation.sourceProduct.id;
+                                                            if (!uniqueSources.has(spId)) {
+                                                                uniqueSources.set(spId, output);
+                                                            }
+                                                        });
+                                                        const distinctSources = Array.from(uniqueSources.values());
+
+                                                        return distinctSources.length > 0 && (
+                                                            <optgroup label="Transformaciones (Rendimientos)">
+                                                                {distinctSources.map(output => (
+                                                                    <option key={output.id} value={output.transformation.sourceProduct.id}>
+                                                                        {output.transformation.sourceProduct.supplier || output.transformation.sourceProduct.supplierEntity?.name || 'Proveedor N/D'} ({output.percentage.toFixed(0)}%)
+                                                                    </option>
+                                                                ))}
+                                                            </optgroup>
+                                                        );
+                                                    })()}
                                                 </select>
                                             </div>
                                         );
@@ -574,6 +888,7 @@ export default function EditForm({
                     {steps.length === 0 && <p className="text-gray-500 italic text-sm">No hay pasos definidos.</p>}
 
                     <DndContext
+                        id={dndContextId}
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
@@ -667,38 +982,98 @@ function SortableStep({ step, index, updateStep, removeStep, ACTIONS, availableI
                 </button>
             </div>
 
-            {/* Structured Data / Tags */}
-            <div className="ml-10 flex flex-wrap gap-2 items-center">
-                <select
-                    className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
-                    value={step.action || ''}
-                    onChange={(e) => updateStep('action', e.target.value)}
-                >
-                    <option value="">-- Acción --</option>
-                    {Object.keys(ACTIONS).map(act => <option key={act} value={act}>{act}</option>)}
-                </select>
+            {/* Ingredients List with Actions */}
+            <div className="ml-10 flex flex-col gap-2 w-full">
+                {step.ingredients?.length > 0 && (
+                    <div className="space-y-2">
+                        {step.ingredients.map((ingRef: any, iIndex: number) => {
+                            const ingName = availableIngredients.find((ai: any) => ai.id === ingRef.id)?.name || 'Desconocido';
+                            return (
+                                <div key={`${ingRef.id}-${iIndex}`} className="flex flex-wrap items-center gap-2 bg-gray-50 p-2 rounded border border-gray-100">
+                                    <span className="text-sm font-medium text-gray-700 min-w-[150px]">
+                                        {ingName}
+                                    </span>
 
-                {step.action && ACTIONS[step.action] && (
-                    <select
-                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
-                        value={step.subAction || ''}
-                        onChange={(e) => updateStep('subAction', e.target.value)}
-                    >
-                        <option value="">-- Técnica --</option>
-                        {ACTIONS[step.action].map((sub: string) => <option key={sub} value={sub}>{sub}</option>)}
-                    </select>
+                                    {/* Action Selector */}
+                                    <select
+                                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
+                                        value={ingRef.action || ''}
+                                        onChange={(e) => {
+                                            const newAction = e.target.value;
+                                            const newIngredients = [...(step.ingredients || [])];
+                                            newIngredients[iIndex] = {
+                                                ...newIngredients[iIndex],
+                                                action: newAction,
+                                                subAction: '' // Reset subAction on action change
+                                            };
+                                            updateStep('ingredients', newIngredients);
+                                        }}
+                                    >
+                                        <option value="">-- Acción --</option>
+                                        {Object.keys(ACTIONS).map(act => <option key={act} value={act}>{act}</option>)}
+                                    </select>
+
+                                    {/* SubAction Selector */}
+                                    {ingRef.action && ACTIONS[ingRef.action] && (
+                                        <select
+                                            className="text-xs rounded border-gray-200 py-1 pl-2 pr-6"
+                                            value={ingRef.subAction || ''}
+                                            onChange={(e) => {
+                                                const newIngredients = [...(step.ingredients || [])];
+                                                newIngredients[iIndex] = { ...newIngredients[iIndex], subAction: e.target.value };
+                                                updateStep('ingredients', newIngredients);
+                                            }}
+                                        >
+                                            <option value="">-- Técnica --</option>
+                                            {ACTIONS[ingRef.action].map((sub: string) => <option key={sub} value={sub}>{sub}</option>)}
+                                        </select>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newIngredients = [...step.ingredients];
+                                            newIngredients.splice(iIndex, 1);
+                                            updateStep('ingredients', newIngredients);
+                                        }}
+                                        className="text-red-400 hover:text-red-600 ml-auto"
+                                    >
+                                        <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
                 )}
 
-                <select
-                    className="text-xs rounded border-gray-200 py-1 pl-2 pr-6 max-w-[150px]"
-                    value={step.ingredientId || ''}
-                    onChange={(e) => updateStep('ingredientId', e.target.value)}
-                >
-                    <option value="">-- Ingrediente Relacionado --</option>
-                    {availableIngredients.map((ing: any) => (
-                        <option key={ing.id} value={ing.id}>{ing.name}</option>
-                    ))}
-                </select>
+                {/* Add Ingredient Logic */}
+                <div className="max-w-[250px]">
+                    <select
+                        className="text-xs rounded border-gray-200 py-1 pl-2 pr-6 w-full"
+                        value=""
+                        onChange={(e) => {
+                            const selectedId = e.target.value;
+                            if (!selectedId) return;
+
+                            const selectedOption = availableIngredients.find((ai: any) => ai.id === selectedId);
+                            if (selectedOption) {
+                                const currentIngredients = step.ingredients || [];
+                                // Check if this ingredient is already here with empty action? 
+                                // Actually, allow duplicates in edit too if needed, but sticking to no-duplicates logic for now unless requested.
+                                // Actually, I should probably allow duplicates now that actions make them distinct.
+                                // But keeping logic consistent with create form: unique by ID for now.
+                                if (!currentIngredients.some((i: any) => i.id === selectedId)) {
+                                    updateStep('ingredients', [...currentIngredients, { id: selectedId, type: selectedOption.type, action: '', subAction: '' }]);
+                                }
+                            }
+                        }}
+                    >
+                        <option value="">+ Añadir Ingrediente</option>
+                        {availableIngredients.map((ing: any) => (
+                            <option key={ing.id} value={ing.id}>{ing.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
         </div>
     );

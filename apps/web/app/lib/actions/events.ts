@@ -4,53 +4,61 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { CreateEventSchema, UpdateEventSchema, EventFormState } from '@/app/lib/definitions';
+import { CreateEventSchema, UpdateEventSchema, type EventFormState } from '@/app/lib/definitions';
+import { syncAggregatedTasks } from '@/app/lib/production';
+export type { EventFormState };
 
 // --- EVENTS ---
 
 export async function createEvent(prevState: EventFormState, formData: FormData) {
     const menuItemsJson = formData.get('menuItems') as string;
     const menuItemsRaw = menuItemsJson ? JSON.parse(menuItemsJson) : [];
+    // Filter out items without a recipe selection to avoid validation errors on empty rows
+    const menuItemsFiltered = menuItemsRaw.filter((item: any) => item.recipeId && item.recipeId !== '');
 
     const validatedFields = CreateEventSchema.safeParse({
         name: formData.get('name'),
         date: formData.get('date'),
         pax: formData.get('pax'),
         safetyMargin: formData.get('safetyMargin'),
-        status: formData.get('status'),
-        menuItems: menuItemsRaw,
+        status: formData.get('status') || undefined,
+        menuItems: menuItemsFiltered,
     });
 
     if (!validatedFields.success) {
+        const errors = validatedFields.error.flatten().fieldErrors;
         return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios o datos inválidos.',
+            errors,
+            message: "Datos inválidos.",
         };
     }
 
     const { name, date, pax, safetyMargin, status, menuItems } = validatedFields.data;
 
     try {
-        await prisma.event.create({
+        const event = await prisma.event.create({
             data: {
                 name,
                 date,
-                pax,
+                pax: Math.ceil(pax),
                 safetyMargin,
                 status: status || 'DRAFT',
                 menuItems: {
                     create: menuItems?.map(item => ({
                         recipeId: item.recipeId,
-                        servingsOverride: item.servingsOverride || null
+                        servingsOverride: item.servingsOverride ? Math.ceil(item.servingsOverride) : null
                     }))
                 }
             },
         });
-    } catch (error) {
+
+        // Auto-generate tasks if confirmed
+        if (event.status === 'CONFIRMED') {
+            await syncAggregatedTasks([event.id]);
+        }
+    } catch (error: any) {
         console.error('Database Error:', error);
-        return {
-            message: 'Error de base de datos: No se pudo crear el evento.',
-        };
+        return { message: "Error al crear evento." };
     }
 
     revalidatePath('/dashboard/events');
@@ -64,6 +72,8 @@ export async function updateEvent(
 ) {
     const menuItemsJson = formData.get('menuItems') as string;
     const menuItemsRaw = menuItemsJson ? JSON.parse(menuItemsJson) : [];
+    // Filter out items without a recipe selection
+    const menuItemsFiltered = menuItemsRaw.filter((item: any) => item.recipeId && item.recipeId !== '');
 
     const validatedFields = UpdateEventSchema.safeParse({
         id: id,
@@ -71,53 +81,42 @@ export async function updateEvent(
         date: formData.get('date'),
         pax: formData.get('pax'),
         safetyMargin: formData.get('safetyMargin'),
-        status: formData.get('status'),
-        menuItems: menuItemsRaw,
+        status: formData.get('status') || undefined,
+        menuItems: menuItemsFiltered,
     });
 
     if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios.',
-        };
+        return { errors: validatedFields.error.flatten().fieldErrors, message: "Datos inválidos." };
     }
 
     const { name, date, pax, safetyMargin, status, menuItems } = validatedFields.data;
 
     try {
-        await prisma.$transaction(async (tx) => {
-            // Update basic info
-            await tx.event.update({
-                where: { id },
-                data: {
-                    name,
-                    date,
-                    pax,
-                    safetyMargin,
-                    status,
-                }
-            });
-
-            // Sync for Menu Items: Delete all and Re-create (Simplified sync)
-            await tx.eventMenuItem.deleteMany({
-                where: { eventId: id }
-            });
-
-            if (menuItems && menuItems.length > 0) {
-                await tx.eventMenuItem.createMany({
-                    data: menuItems.map(item => ({
-                        eventId: id,
+        const event = await prisma.event.update({
+            where: { id },
+            data: {
+                name,
+                date,
+                pax: Math.ceil(pax),
+                safetyMargin,
+                status,
+                menuItems: {
+                    deleteMany: {},
+                    create: menuItems?.map(item => ({
                         recipeId: item.recipeId,
-                        servingsOverride: item.servingsOverride || null
+                        servingsOverride: item.servingsOverride ? Math.ceil(item.servingsOverride) : null
                     }))
-                });
+                }
             }
         });
-    } catch (error) {
+
+        // Auto-generate tasks if confirmed
+        if (event.status === 'CONFIRMED') {
+            await syncAggregatedTasks([event.id]);
+        }
+    } catch (error: any) {
         console.error('Database Error:', error);
-        return {
-            message: 'Error de base de datos: No se pudo actualizar el evento.',
-        };
+        return { message: "Error al actualizar evento." };
     }
 
     revalidatePath('/dashboard/events');
@@ -137,55 +136,79 @@ export async function deleteEvent(id: string) {
     }
 }
 
-
-// --- TASK GENERATION ---
-
-export async function generateTasksForEvent(eventId: string) {
+export async function confirmEvent(id: string) {
     try {
-        const event = await prisma.event.findUnique({
-            where: { id: eventId },
-            include: {
-                menuItems: {
-                    include: {
-                        recipe: true
-                    }
-                }
-            }
+        await prisma.event.update({
+            where: { id },
+            data: { status: 'CONFIRMED' },
         });
 
-        if (!event) throw new Error('Event not found');
+        // Trigger task generation
+        await syncAggregatedTasks([id]);
 
-        const tasksCreated = [];
-
-        for (const item of event.menuItems) {
-            const targetQty = item.servingsOverride || event.pax;
-            const recipeName = item.recipe.name;
-
-            // Check if task already exists for this recipe in this event context
-            // Since there is no direct link Event->Task in schema, we check title pattern or we add a link if needed.
-            // For now, simpler approach: Create a task.
-
-            const taskTitle = `PROD: ${recipeName} (${targetQty} pax)`;
-
-            const task = await prisma.task.create({
-                data: {
-                    title: taskTitle,
-                    description: `Generado desde Evento: ${event.name}`,
-                    status: 'PENDING',
-                    recipeId: item.recipeId,
-                    targetQuantity: targetQty,
-                    plannedEnd: event.date, // Due date is event date
-                }
-            });
-            tasksCreated.push(task);
-        }
-
-        revalidatePath(`/dashboard/events/${eventId}`);
-        revalidatePath('/dashboard/tasks');
-        return { message: `${tasksCreated.length} tareas generadas correctamente.` };
-
+        revalidatePath('/dashboard/events');
+        return { message: 'Evento confirmado y tareas generadas.' };
     } catch (error) {
-        console.error('Generation Error:', error);
+        console.error('Database Error:', error);
+        return { message: 'Error al confirmar el evento.' };
+    }
+}
+
+
+// --- BULK PRODUCTION ---
+
+
+export async function generateTasksForEvent(eventId: string) {
+    console.log('Server Action generateTasksForEvent called for:', eventId);
+    try {
+        await syncAggregatedTasks([eventId]);
+        revalidatePath('/dashboard/events');
+        return { message: 'Tareas generadas correctamente.' };
+    } catch (error) {
+        console.error('Task Generation Error:', error);
         return { message: 'Error al generar tareas.' };
+    }
+}
+
+export async function generateAllProductionTasks() {
+
+    try {
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+
+        // Fetch Confirmed Events for next 7 days
+        const events = await prisma.event.findMany({
+            where: {
+                status: 'CONFIRMED',
+                date: { gte: today, lte: nextWeek }
+            },
+            select: { id: true }
+        });
+        const eventIds = events.map(e => e.id);
+
+        // Fetch Menu Services for next 7 days
+        const menuServices = await prisma.menuService.findMany({
+            where: {
+                startDate: { gte: today, lte: nextWeek }
+                // Assuming we want all planned services. Or filter by status 'PLANNED'/'ACTIVE'?
+                // For production, PLANNED is good.
+            },
+            select: { id: true }
+        });
+        const menuServiceIds = menuServices.map(s => s.id);
+
+        if (eventIds.length === 0 && menuServiceIds.length === 0) return { message: 'No hay eventos ni servicios confirmados para la próxima semana.' };
+
+        await syncAggregatedTasks(eventIds, menuServiceIds);
+
+        revalidatePath('/dashboard/tasks');
+        revalidatePath('/dashboard/events');
+        revalidatePath('/dashboard/menu-planning');
+
+        return { message: `Producción generada: ${events.length} eventos, ${menuServices.length} servicios.` };
+    } catch (error) {
+        console.error('Bulk Generation Error:', error);
+        return { message: 'Error al generar producción global.' };
     }
 }

@@ -12,7 +12,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             where: { id },
             include: {
                 items: true,
-                steps: true
+                steps: {
+                    include: {
+                        stepIngredients: true
+                    }
+                }
             },
         }),
         prisma.ingredient.findMany({
@@ -22,7 +26,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     include: {
                         transformation: {
                             include: {
-                                sourceProduct: true
+                                sourceProduct: {
+                                    include: {
+                                        masterProduct: true
+                                    }
+                                }
                             }
                         }
                     }
@@ -49,7 +57,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             where: {
                 transformations: { some: {} }
             },
-            select: { name: true }
+            select: { ingredientId: true }
         })
     ]);
 
@@ -58,8 +66,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     }
 
     // Filter out ingredients that correspond to products with active transformations (yield tests)
-    const excludedNames = new Set(transformedProducts.map(p => p.name));
-    const ingredients = ingredientsRaw.filter(i => !excludedNames.has(i.name));
+    const excludedIds = new Set(transformedProducts.map(p => p.ingredientId).filter(Boolean));
+    const ingredients = ingredientsRaw.filter(i => !excludedIds.has(i.id));
 
     return (
         <main>

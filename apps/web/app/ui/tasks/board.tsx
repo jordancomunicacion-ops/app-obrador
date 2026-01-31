@@ -1,4 +1,5 @@
-import { TaskStatusButton } from '@/app/ui/tasks/buttons';
+import { TaskStatusButton, AssignTaskButton } from '@/app/ui/tasks/buttons';
+import TimeInfo from './time-info';
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
@@ -23,6 +24,10 @@ export default async function TaskBoard() {
         orderBy: { createdAt: 'desc' },
     });
 
+    const users = await prisma.user.findMany({
+        orderBy: { name: 'asc' }
+    });
+
     const columns = [
         { id: 'PENDING', title: 'Pendiente', color: 'bg-gray-50 border-gray-200' },
         { id: 'IN_PROGRESS', title: 'En Curso', color: 'bg-blue-50 border-blue-200' },
@@ -31,16 +36,16 @@ export default async function TaskBoard() {
     ];
 
     return (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto min-w-[800px] pb-4">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto min-w-[800px] pb-4 h-[calc(100vh-200px)]">
             {columns.map(col => (
-                <div key={col.id} className={`rounded-lg border p-4 ${col.color} min-h-[500px]`}>
+                <div key={col.id} className={`rounded-lg border p-4 ${col.color} flex flex-col h-full max-h-full`}>
                     <h3 className="font-bold text-gray-700 mb-4 flex justify-between items-center">
                         {col.title}
                         <span className="bg-white px-2 py-0.5 rounded text-sm text-gray-500 border">
                             {tasks.filter(t => t.status === col.id).length}
                         </span>
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-3 overflow-y-auto flex-1 pr-2">
                         {tasks.filter(t => t.status === col.id).map(task => (
                             <div key={task.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
                                 <h4 className="font-semibold text-gray-900">{task.title}</h4>
@@ -59,13 +64,38 @@ export default async function TaskBoard() {
                                     )}
                                 </div>
 
+                                <TimeInfo
+                                    plannedStart={task.plannedStart}
+                                    plannedEnd={task.plannedEnd}
+                                    realStart={task.realStart}
+                                    realEnd={task.realEnd}
+                                    status={task.status}
+                                />
+
                                 <div className="mt-3 flex justify-end gap-1 pt-2 border-t border-gray-50">
                                     {/* Status Transitions */}
-                                    {task.status === 'PENDING' && <TaskStatusButton id={task.id} status="IN_PROGRESS" currentStatus={task.status} />}
+                                    {task.status === 'PENDING' && (
+                                        <>
+                                            <AssignTaskButton id={task.id} users={users} taskTitle={task.title} />
+                                            <TaskStatusButton
+                                                id={task.id}
+                                                status="IN_PROGRESS"
+                                                currentStatus={task.status}
+                                                users={users}
+                                                taskTitle={task.title}
+                                                isAssigned={!!task.assignedTo}
+                                            />
+                                        </>
+                                    )}
                                     {task.status === 'IN_PROGRESS' && <TaskStatusButton id={task.id} status="DONE" currentStatus={task.status} />}
                                     {task.status === 'IN_PROGRESS' && <TaskStatusButton id={task.id} status="ISSUE" currentStatus={task.status} />}
-                                    {task.status === 'ISSUE' && <TaskStatusButton id={task.id} status="PENDING" currentStatus={task.status} />}
-                                    {task.status === 'ISSUE' && <TaskStatusButton id={task.id} status="DONE" currentStatus={task.status} />}
+                                    {task.status === 'ISSUE' && (
+                                        <>
+                                            <AssignTaskButton id={task.id} users={users} taskTitle={task.title} />
+                                            <TaskStatusButton id={task.id} status="PENDING" currentStatus={task.status} />
+                                            <TaskStatusButton id={task.id} status="DONE" currentStatus={task.status} />
+                                        </>
+                                    )}
                                     {/* Anyone can move back to pending if needed or other transitions */}
                                 </div>
                             </div>

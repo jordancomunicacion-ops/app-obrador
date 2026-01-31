@@ -91,6 +91,9 @@ model Ingredient {
   // New Relation: Ingredient variants (SupplierProducts)
   supplierProducts SupplierProduct[]
 
+  // New Relation: Ingredient used in StepIngredients
+  recipeStepIngredients RecipeStepIngredient[]
+
   // Storage Location
   storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
   storageLocationId String?
@@ -234,6 +237,13 @@ model Recipe {
   prepTime  Int? // Minutes
   cookTime  Int? // Minutes
 
+  // Diet & Allergens
+  isGlutenFree  Boolean @default(false)
+  isVegan       Boolean @default(false)
+  isVegetarian  Boolean @default(false)
+  isLactoseFree Boolean @default(false)
+  allergens     String?
+
   steps RecipeStep[]
 
   items RecipeItem[] @relation("RecipeToItems")
@@ -252,6 +262,11 @@ model Recipe {
 
   // Inverse relation: This recipe used as a sub-recipe in steps
   usedInSteps RecipeStep[] @relation("SubRecipeStep")
+
+  // Inverse relation: This recipe used as a sub-recipe in step ingredients
+  usedInStepIngredients RecipeStepIngredient[]
+  menuServiceItems      MenuServiceItem[]
+  salesRecords          SalesRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -275,6 +290,28 @@ model RecipeStep {
 
   subRecipe    Recipe?     @relation("SubRecipeStep", fields: [subRecipeId], references: [id])
   subRecipeId  String?
+
+  // New Relation: Multiple Ingredients/SubRecipes per step
+  stepIngredients RecipeStepIngredient[]
+}
+
+model RecipeStepIngredient {
+  id String @id @default(cuid())
+
+  step      RecipeStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  stepId    String
+
+  // Link to Ingredient
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId String?
+
+  // Link to SubRecipe
+  subRecipe    Recipe?     @relation(fields: [subRecipeId], references: [id])
+  subRecipeId  String?
+
+  // Action per ingredient
+  action    String?
+  subAction String?
 }
 
 // Lines in a recipe (Ingredients or other Recipes)
@@ -316,6 +353,7 @@ model Event {
   status       String   @default("DRAFT") // DRAFT, CONFIRMED, COMPLETED
 
   menuItems EventMenuItem[]
+  tasks     Task[]          @relation("EventTasks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -342,6 +380,7 @@ model Task {
   assignedToUserId String?
 
   status String @default("PENDING") // PENDING, IN_PROGRESS, DONE, ISSUE
+  issueReason String?
 
   plannedStart DateTime?
   plannedEnd   DateTime?
@@ -352,6 +391,14 @@ model Task {
   recipe         Recipe? @relation(fields: [recipeId], references: [id])
   recipeId       String?
   targetQuantity Float? // How much to produce
+  unit           String? // KG, UD, etc.
+
+  // Granular Metadata
+  action    String? // CORTAR, DESPIEZAR, COCCION, etc.
+  technique String? // BRUNOISSE, AL_VACIO, etc.
+
+  // Many-to-Many Relationship with Events (for aggregation)
+  events Event[] @relation("EventTasks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -473,16 +520,18 @@ model Shelf {
   timbreId    String
   timbre      Timbre   @relation(fields: [timbreId], references: [id], onDelete: Cascade)
   position    Int      // 1 (top) to N (bottom)
-  height      Int      // Available height in mm
-  items       MiseItem[]
+  height      Int      // Available height in mm (availableHeight)
+  partitions  Partition[]
 }
 
-model MiseItem {
+model Partition {
   id            String   @id @default(cuid())
   name          String
-  volume        Float    // Volume in Liters
-  category      String   // e.g., "topping", "garnish", "medium", "large", "production"
-  serviceRhythm String   @default("medio") // "bajo", "medio", "alto"
+  
+  // Characteristics
+  type          String   // PartitionType: "topping", "garnish", "medium", "large", "production"
+  volumeLevel   String   // VolumeLevel: "bajo", "medio", "alto"
+  serviceRhythm String   // ServiceRhythm: "bajo", "medio", "alto"
   
   // Calculated/Assigned values
   shelfId       String?
@@ -492,4 +541,56 @@ model MiseItem {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// 6. Daily Menu & POS Integration
+model MenuService {
+  id     String   @id @default(cuid())
+  name   String // e.g., "Almuerzo", "Cena"
+  startDate   DateTime
+  endDate     DateTime
+  status String   @default("PLANNED") // PLANNED, ACTIVE, COMPLETED
+
+  items MenuServiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MenuServiceItem {
+  id            String      @id @default(cuid())
+  menuServiceId String
+  menuService   MenuService @relation(fields: [menuServiceId], references: [id], onDelete: Cascade)
+
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+
+  estimatedPax Int  @default(0)
+  realPax      Int? // Actual sales from POS
+}
+
+model POSIntegration {
+  id        String @id @default(cuid())
+  provider  String // e.g., "REVO", "SQUARE"
+  apiKey    String
+  apiSecret String?
+  baseUrl   String?
+  isActive  Boolean   @default(true)
+  lastSync  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesRecord {
+  id           String   @id @default(cuid())
+  date         DateTime
+  recipeId     String
+  recipe       Recipe   @relation(fields: [recipeId], references: [id])
+  quantitySold Int
+  totalRevenue Float
+
+  source String // e.g., "REVO"
+
+  createdAt DateTime @default(now())
 }

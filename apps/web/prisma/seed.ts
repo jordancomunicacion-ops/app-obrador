@@ -43,13 +43,33 @@ async function main() {
             }
         }
 
-        // 3. Packaging
-        const packaging = ['Tupper', 'Bolsa Vacio', 'Caja', 'Gastronorm'];
-        for (const packName of packaging) {
-            const exists = await prisma.recipePackaging.findUnique({ where: { name: packName } });
+        // 3. Packaging & Molds
+        const packagingItems = [
+            { name: 'Tupper', type: 'ENVASE' },
+            { name: 'Bolsa Vacio', type: 'ENVASE' },
+            { name: 'Caja', type: 'ENVASE' },
+            { name: 'Gastronorm Generico', type: 'ENVASE' },
+            // Molds (GN Sizes)
+            { name: 'GN 1/1 (Bandeja)', type: 'MOLDE' },
+            { name: 'GN 1/2', type: 'MOLDE' },
+            { name: 'GN 1/3', type: 'MOLDE' },
+            { name: 'GN 1/4', type: 'MOLDE' },
+            { name: 'GN 1/6', type: 'MOLDE' },
+            { name: 'GN 1/9', type: 'MOLDE' },
+            { name: 'GN 2/3', type: 'MOLDE' },
+            { name: 'GN 2/1', type: 'MOLDE' }
+        ];
+
+        for (const item of packagingItems) {
+            const exists = await prisma.recipePackaging.findUnique({ where: { name: item.name } });
             if (!exists) {
-                await prisma.recipePackaging.create({ data: { name: packName } });
-                console.log(`Created Packaging: ${packName}`);
+                await prisma.recipePackaging.create({
+                    data: {
+                        name: item.name,
+                        type: item.type
+                    }
+                });
+                console.log(`Created Packaging/Mold: ${item.name}`);
             }
         }
     } catch (e) {

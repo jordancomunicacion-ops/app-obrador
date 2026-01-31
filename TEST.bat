@@ -4,7 +4,7 @@ setlocal
 echo [DEBUG] Script de inicio ejecutandose...
 
 :: Verificar si docker esta disponible
-docker --version >nul 2>&1
+docker info >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Docker no detectado. Asegurate de que Docker Desktop este abierto.
     pause
@@ -42,8 +42,8 @@ if errorlevel 1 (
 echo.
 echo ======================================================
 echo [INFO] Contenedores Docker en marcha.
-echo [INFO] La web estara disponible en: https://cocina.sotodelprior.com (o localhost:3002)
-echo.
+echo [INFO] ACCEDE AQUI: http://localhost:3002
+echo [INFO] Nota: El login te redirigira correctamente a localhost.
 echo [INFO] Para ejecutar migraciones manualmente si es necesario:
 echo cd apps/web
 echo npx prisma migrate deploy
