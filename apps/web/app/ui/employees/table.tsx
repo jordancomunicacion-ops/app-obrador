@@ -20,12 +20,24 @@ export default async function EmployeesTable({
     currentPage: number;
     tab?: string;
 }) {
-    // Filter by role based on tab
-    // Team: ADMIN, CHEF, EMPLOYEE, etc.
-    // Requests/Clients: USER (registered via web)
-    const roleFilter = tab === 'team'
-        ? { notIn: ['USER'] }
-        : { equals: 'USER' };
+    let whereClause: any = {};
+
+    if (tab === 'requests') {
+        // Clients / Tenants
+        whereClause = {
+            role: 'ADMIN',
+            adminId: null,
+            // Exclude Master Admin from list if desired, though usually filtered by query
+        };
+    } else {
+        // Fallback or explicit team view if used here (though List handles team usually)
+        // If we reuse this table for team:
+        // whereClause = { NOT: { role: 'ADMIN' } }; // Old logic
+        // But better to leave empty or handled by properties if reused.
+        // Given existing code context, let's keep it safe.
+        // Actually, if tab != requests, we shouldn't really be here via main page logic, but let's default to USERs to be safe.
+        whereClause = { role: 'USER' };
+    }
 
     let employees: any[] = [];
     let dbError = false;
@@ -34,7 +46,7 @@ export default async function EmployeesTable({
         employees = await prisma.user.findMany({
             where: {
                 AND: [
-                    { role: roleFilter as any },
+                    whereClause,
                     {
                         OR: [
                             { name: { contains: query, mode: 'insensitive' } },
@@ -43,7 +55,7 @@ export default async function EmployeesTable({
                     }
                 ]
             },
-            orderBy: { name: 'asc' },
+            orderBy: { createdAt: 'desc' }, // Newest first for requests
         });
     } catch (e) {
         console.error("Database connection failed in table:", e);

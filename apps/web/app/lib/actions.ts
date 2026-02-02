@@ -48,7 +48,7 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
         name: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
-        role: 'USER', // Default role
+        role: 'ADMIN', // New registrations are Tenants (Admins)
     });
 
     if (!validatedFields.success) {
@@ -63,15 +63,23 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
 
     const isMasterAdmin = email === 'gerencia@sotodelprior.com';
 
+    // Default permissions for a new Tenant (Everything)
+    const defaultPermissions = [
+        'dashboard', 'events', 'tasks', 'menu-planning',
+        'products', 'recipes', 'purchasing', 'storage',
+        'mise-en-place', 'employees', 'settings'
+    ];
+
     try {
         await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                role: isMasterAdmin ? 'ADMIN' : 'USER',
-                approved: isMasterAdmin, // Automatically approve master admin
-                permissions: [],
+                role: 'ADMIN',
+                approved: isMasterAdmin, // Require manual approval for new Tenants
+                permissions: defaultPermissions,
+                // adminId is null for Tenants (they are the root)
             },
         });
     } catch (error) {

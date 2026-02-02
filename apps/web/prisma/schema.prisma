@@ -40,6 +40,17 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Multi-Tenancy Relations (Owned Data)
+  ownedEvents        Event[]           @relation("EventOwner")
+  ownedRecipes       Recipe[]          @relation("RecipeOwner")
+  ownedIngredients   Ingredient[]      @relation("IngredientOwner")
+  ownedSuppliers     Supplier[]        @relation("SupplierOwner")
+  ownedTasks         Task[]            @relation("TaskOwner")
+  ownedMenuServices  MenuService[]     @relation("MenuServiceOwner")
+  ownedAppConfigs    AppConfig[]       @relation("AppConfigOwner")
+  ownedStorage       StorageLocation[] @relation("StorageOwner")
+  ownedMiseEnPlace   MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
 }
 
 // 7. App Configuration
@@ -48,6 +59,9 @@ model AppConfig {
   logoUrl String? // URL to app logo
 
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("AppConfigOwner", fields: [ownerId], references: [id])
 }
 
 model RecipeCategory {
@@ -108,6 +122,9 @@ model Ingredient {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("IngredientOwner", fields: [ownerId], references: [id])
 }
 
 // -----------------------------------------------------------------------------
@@ -138,6 +155,9 @@ model Supplier {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("SupplierOwner", fields: [ownerId], references: [id])
 }
 
 // Lo que compras (SupplierProduct) - Specific variant from a supplier
@@ -278,6 +298,9 @@ model Recipe {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("RecipeOwner", fields: [ownerId], references: [id])
 }
 
 model RecipeStep {
@@ -365,6 +388,9 @@ model Event {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("EventOwner", fields: [ownerId], references: [id])
 }
 
 model EventMenuItem {
@@ -410,6 +436,9 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id])
 }
 
 // 6. Audit & Logs
@@ -452,6 +481,9 @@ model StorageLocation {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("StorageOwner", fields: [ownerId], references: [id])
 }
 
 // 9. MISE EN PLACE
@@ -498,6 +530,9 @@ model MiseEnPlaceTask {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("MiseEnPlaceOwner", fields: [ownerId], references: [id])
 }
 
 // 10. SALES DATA (SMART SHOPPING)
@@ -563,6 +598,9 @@ model MenuService {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("MenuServiceOwner", fields: [ownerId], references: [id])
 }
 
 model MenuServiceItem {

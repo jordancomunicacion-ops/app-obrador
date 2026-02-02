@@ -6,7 +6,7 @@ import Search from '@/app/ui/search';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import clsx from 'clsx';
-
+import { auth } from '@/auth';
 import EmployeesList from '@/app/ui/employees/list';
 
 export default async function Page({
@@ -18,25 +18,48 @@ export default async function Page({
         tab?: string;
     }>;
 }) {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+    const isMasterAdmin = userEmail?.toLowerCase() === 'gerencia@sotodelprior.com';
+    const userId = session?.user?.id;
+
     const params = await searchParams;
     const query = params?.query || '';
     const currentPage = Number(params?.page) || 1;
-    const tab = params?.tab || 'team'; // Default tab is team
+    const tab = params?.tab || 'team';
 
-    // Fetch counts for parity with App Ganadera
     let teamCount = 0;
     let requestsCount = 0;
     let pendingCount = 0;
 
     try {
-        const counts = await Promise.all([
-            prisma.user.count({ where: { role: { notIn: ['USER'] } } }),
-            prisma.user.count({ where: { role: 'USER' } }),
-            prisma.user.count({ where: { approved: false, role: 'USER' } }),
-        ]);
-        teamCount = counts[0];
-        requestsCount = counts[1];
-        pendingCount = counts[2];
+        if (userId) {
+            // Team: My workers (Users where I am the admin).
+            // Exclude self to match the list view.
+            teamCount = await prisma.user.count({
+                where: {
+                    adminId: userId
+                }
+            });
+        }
+
+        if (isMasterAdmin) {
+            // Requests: New Tenants (ADMIN role, no adminId, approved=false)
+            requestsCount = await prisma.user.count({
+                where: {
+                    role: 'ADMIN',
+                    adminId: null,
+                    // email: { not: 'gerencia@sotodelprior.com' } 
+                }
+            });
+            pendingCount = await prisma.user.count({
+                where: {
+                    role: 'ADMIN',
+                    adminId: null,
+                    approved: false
+                }
+            });
+        }
     } catch (e) {
         console.error("Database connection failed in counts:", e);
     }
@@ -51,7 +74,7 @@ export default async function Page({
                         Gestión de Usuarios
                     </h1>
                     <p className="mt-1 text-base text-gray-500">
-                        Administra el acceso y los permisos de la plataforma
+                        Administra el acceso y los permisos de su equipo{isMasterAdmin ? ' y clientes' : ''}.
                     </p>
                 </div>
 
@@ -70,23 +93,25 @@ export default async function Page({
                         >
                             Equipo ({teamCount})
                         </Link>
-                        <Link
-                            href="?tab=requests"
-                            className={clsx(
-                                "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all flex items-center gap-2",
-                                tab === 'requests'
-                                    ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                                    : "text-gray-500 hover:text-gray-700"
-                                , "whitespace-nowrap"
-                            )}
-                        >
-                            Solicitudes / Clientes ({requestsCount})
-                            {pendingCount > 0 && (
-                                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                    {pendingCount}
-                                </span>
-                            )}
-                        </Link>
+                        {isMasterAdmin && (
+                            <Link
+                                href="?tab=requests"
+                                className={clsx(
+                                    "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all flex items-center gap-2",
+                                    tab === 'requests'
+                                        ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
+                                        : "text-gray-500 hover:text-gray-700"
+                                    , "whitespace-nowrap"
+                                )}
+                            >
+                                Clientes / Solicitudes
+                                {pendingCount > 0 && (
+                                    <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                        {pendingCount}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
                     </div>
                     {tab === 'team' && <CreateEmployee />}
                 </div>
@@ -94,7 +119,7 @@ export default async function Page({
 
             {/* Search Bar Section */}
             <div className="relative">
-                <Search placeholder={tab === 'team' ? "Buscar empleado..." : "Buscar solicitud..."} />
+                <Search placeholder={tab === 'team' ? "Buscar empleado..." : "Buscar cliente..."} />
             </div>
 
             {/* List Section */}

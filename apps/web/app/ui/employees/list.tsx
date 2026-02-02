@@ -11,18 +11,26 @@ import {
     EnvelopeIcon
 } from '@heroicons/react/24/outline';
 
+import { auth } from '@/auth';
+
 export default async function EmployeesList({
     query,
 }: {
     query: string;
 }) {
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    // If not logged in, empty list
+    if (!userId) return <div className="p-4 text-gray-500">No autorizado.</div>;
+
     let employees: any[] = [];
 
     try {
         employees = await prisma.user.findMany({
             where: {
                 AND: [
-                    { role: { notIn: ['USER'] } }, // Workers only
+                    { adminId: userId }, // Strictly my workers
                     {
                         OR: [
                             { name: { contains: query, mode: 'insensitive' } },

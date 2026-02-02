@@ -4,7 +4,10 @@ import { startOfDay, endOfDay, addDays, format } from 'date-fns';
 import Link from 'next/link';
 import { CalendarIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 
+import { currentOrgId } from '@/auth';
+
 export default async function Page() {
+    const orgId = await currentOrgId();
     const today = new Date();
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
@@ -13,6 +16,7 @@ export default async function Page() {
     // Fetch Upcomming Events Count
     const upcomingEventsCount = await prisma.event.count({
         where: {
+            ownerId: orgId,
             date: {
                 gte: todayStart
             }
@@ -22,6 +26,7 @@ export default async function Page() {
     // Fetch Tasks (Pending, In Progress or Issue) - Show all backlog
     const tasksTodayCount = await prisma.task.count({
         where: {
+            ownerId: orgId,
             status: {
                 not: 'DONE'
             }
@@ -31,6 +36,7 @@ export default async function Page() {
     // Fetch Weekly Summary Events with Progress
     const weeklyEvents = await prisma.event.findMany({
         where: {
+            ownerId: orgId,
             date: {
                 gte: todayStart,
                 lte: sevenDaysLater
@@ -47,8 +53,8 @@ export default async function Page() {
     });
 
     const eventsWithProgress = await Promise.all(weeklyEvents.map(async (event) => {
-        const totalTasks = await prisma.task.count({ where: { events: { some: { id: event.id } } } });
-        const doneTasks = await prisma.task.count({ where: { events: { some: { id: event.id } }, status: 'DONE' } });
+        const totalTasks = await prisma.task.count({ where: { ownerId: orgId, events: { some: { id: event.id } } } });
+        const doneTasks = await prisma.task.count({ where: { ownerId: orgId, events: { some: { id: event.id } }, status: 'DONE' } });
         return {
             ...event,
             progress: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0
