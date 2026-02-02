@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   proxy-net:
     external: true
@@ -8,7 +6,8 @@ networks:
 
 volumes:
   cocina_db_data:
-
+    external: true
+    name: cocina_cocina_db_data
 
 services:
   cocina-db:
@@ -36,7 +35,6 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-      target: deps
     container_name: cocina-web
     restart: unless-stopped
     environment:
@@ -69,13 +67,6 @@ services:
       - "traefik.http.routers.cocina-web-http.middlewares=cocina-https-redirect"
       - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.permanent=true"
-
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
-      - /app/.next
-
-    command: sh -c "npx prisma generate && npx next dev -p 3000 --webpack"
 
     extra_hosts:
       - "cocina.sotodelprior.com:host-gateway"

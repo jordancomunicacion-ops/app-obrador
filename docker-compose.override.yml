@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  cocina-web:
+    build:
+      context: ./apps/web
+      target: deps
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    command: sh -c "npx prisma generate && npx next dev -p 3000 --webpack"

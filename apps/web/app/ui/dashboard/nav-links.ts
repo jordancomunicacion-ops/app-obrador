@@ -38,7 +38,7 @@ export const groups = [
     {
         name: 'Administración',
         items: [
-            { name: 'Empleados', href: '/dashboard/employees', icon: UserGroupIcon },
+            { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
     }

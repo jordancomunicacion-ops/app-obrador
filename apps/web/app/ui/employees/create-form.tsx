@@ -34,7 +34,7 @@ export default function Form() {
                                 name="name"
                                 type="text"
                                 placeholder="Ej. jperez"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 aria-describedby="name-error"
                             />
                             <div id="name-error" aria-live="polite" aria-atomic="true">
@@ -52,7 +52,7 @@ export default function Form() {
                                 name="email"
                                 type="email"
                                 placeholder="juan@cocina.com"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                             <div id="email-error" aria-live="polite" aria-atomic="true">
                                 {state.errors?.email && state.errors.email.map((error: string) => (
@@ -69,7 +69,7 @@ export default function Form() {
                                 name="password"
                                 type="password"
                                 placeholder="******"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                             <div id="password-error" aria-live="polite" aria-atomic="true">
                                 {state.errors?.password && state.errors.password.map((error: string) => (
@@ -84,7 +84,7 @@ export default function Form() {
                             <select
                                 id="role"
                                 name="role"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                                 defaultValue="EMPLOYEE"
                             >
                                 <option value="EMPLOYEE">Empleado</option>
@@ -100,21 +100,21 @@ export default function Form() {
                         <div className="grid grid-cols-2 gap-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                <input name="firstName" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none" />
+                                <input name="firstName" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-                                <input name="lastName" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none" />
+                                <input name="lastName" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">DNI / NIE</label>
-                                <input name="dni" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none" />
+                                <input name="dni" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">F. Nacimiento</label>
-                                <input name="dob" type="date" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none" />
+                                <input name="dob" type="date" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                             </div>
                         </div>
                     </div>
@@ -126,13 +126,47 @@ export default function Form() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Puesto / Cargo</label>
                             <input
                                 name="jobTitle"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="Ej: Cocinero, Camarero..."
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono Contacto</label>
-                            <input name="phone" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none" />
+                            <input name="phone" className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+                        </div>
+                    </div>
+
+                    {/* 4. Permissions Info */}
+                    <div className="space-y-4 md:col-span-2 lg:col-span-3">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider border-b pb-1">Permisos de Acceso</h4>
+                        <p className="text-xs text-gray-500 mb-2">Selecciona las secciones a las que este usuario tendrá acceso.</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {[
+                                { id: 'dashboard', label: 'Dashboard' },
+                                { id: 'events', label: 'Eventos' },
+                                { id: 'tasks', label: 'Tareas' },
+                                { id: 'menu-planning', label: 'Planificación' },
+                                { id: 'products', label: 'Productos' },
+                                { id: 'recipes', label: 'Recetas' },
+                                { id: 'purchasing', label: 'Compras' },
+                                { id: 'storage', label: 'Almacén' },
+                                { id: 'mise-en-place', label: 'Mise en place' },
+                                { id: 'employees', label: 'Empleados' },
+                                { id: 'settings', label: 'Configuración' }
+                            ].map(section => (
+                                <label key={section.id} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        name="permissions"
+                                        value={section.id}
+                                        defaultChecked={['dashboard', 'events', 'tasks'].includes(section.id)}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors">
+                                        {section.label}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
                     </div>
 

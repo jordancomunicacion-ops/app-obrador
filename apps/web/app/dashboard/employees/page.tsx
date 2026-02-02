@@ -1,6 +1,11 @@
+import { prisma } from '@/lib/prisma';
 import EmployeesTable from '@/app/ui/employees/table';
 import { CreateEmployee } from '@/app/ui/employees/buttons';
 import { Suspense } from 'react';
+import Search from '@/app/ui/search';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+import clsx from 'clsx';
 
 export default async function Page({
     searchParams,
@@ -8,22 +13,89 @@ export default async function Page({
     searchParams?: Promise<{
         query?: string;
         page?: string;
+        tab?: string;
     }>;
 }) {
     const params = await searchParams;
     const query = params?.query || '';
     const currentPage = Number(params?.page) || 1;
+    const tab = params?.tab || 'team'; // Default tab is team
+
+    // Fetch counts for parity with App Ganadera
+    let teamCount = 0;
+    let requestsCount = 0;
+    let pendingCount = 0;
+
+    try {
+        const counts = await Promise.all([
+            prisma.user.count({ where: { role: { notIn: ['USER'] } } }),
+            prisma.user.count({ where: { role: 'USER' } }),
+            prisma.user.count({ where: { approved: false, role: 'USER' } }),
+        ]);
+        teamCount = counts[0];
+        requestsCount = counts[1];
+        pendingCount = counts[2];
+    } catch (e) {
+        console.error("Database connection failed in counts:", e);
+    }
 
     return (
-        <div className="w-full">
-            <div className="flex w-full items-center justify-between">
-                <h1 className="text-2xl">Gestión de Empleados</h1>
+        <div className="w-full space-y-8 p-4 md:p-8">
+            {/* Header Section */}
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
+                        <ShieldCheckIcon className="h-9 w-9 text-blue-600" />
+                        Gestión de Usuarios
+                    </h1>
+                    <p className="mt-1 text-base text-gray-500">
+                        Administra el acceso y los permisos de la plataforma
+                    </p>
+                </div>
+
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-end">
+                    {/* Real Tab Switcher */}
+                    <div className="flex rounded-xl bg-gray-100/80 p-1 ring-1 ring-gray-200">
+                        <Link
+                            href="?tab=team"
+                            className={clsx(
+                                "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all",
+                                tab === 'team'
+                                    ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
+                                    : "text-gray-500 hover:text-gray-700"
+                            )}
+                        >
+                            Equipo ({teamCount})
+                        </Link>
+                        <Link
+                            href="?tab=requests"
+                            className={clsx(
+                                "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all flex items-center gap-2",
+                                tab === 'requests'
+                                    ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
+                                    : "text-gray-500 hover:text-gray-700"
+                            )}
+                        >
+                            Solicitudes / Clientes ({requestsCount})
+                            {pendingCount > 0 && (
+                                <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                    {pendingCount}
+                                </span>
+                            )}
+                        </Link>
+                    </div>
+                    {tab === 'team' && <CreateEmployee />}
+                </div>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-                <CreateEmployee />
+
+            {/* Search Bar Section */}
+            <div className="relative">
+                <Search placeholder={tab === 'team' ? "Buscar empleado..." : "Buscar solicitud..."} />
             </div>
-            <Suspense fallback={<div>Cargando empleados...</div>}>
-                <EmployeesTable query={query} currentPage={currentPage} />
+
+            {/* List Section */}
+            <Suspense key={tab + query} fallback={<div className="flex py-20 justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>}>
+                <EmployeesTable query={query} currentPage={currentPage} tab={tab} />
             </Suspense>
         </div>
     );

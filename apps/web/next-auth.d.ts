@@ -14,6 +14,7 @@ declare module "next-auth" {
 
     interface User {
         role: string
+        approved: boolean
     }
 }
 

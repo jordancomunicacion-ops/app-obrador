@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { MiseItem, Shelf } from '@prisma/client';
+import { Partition, Shelf } from '@prisma/client';
 
 // --- TYPES ---
 export type TimbreState = {
@@ -20,7 +20,7 @@ export async function getTimbre() {
             shelves: {
                 orderBy: { position: 'asc' },
                 include: {
-                    items: true
+                    partitions: true
                 }
             }
         }
@@ -50,7 +50,7 @@ async function createDefaultTimbre() {
         include: {
             shelves: {
                 orderBy: { position: 'asc' },
-                include: { items: true }
+                include: { partitions: true }
             }
         }
     });
@@ -81,27 +81,24 @@ export async function removeShelf(shelfId: string) {
     revalidatePath('/dashboard/mise-en-place');
 }
 
-// --- MISE ITEM ACTIONS ---
+// --- PARTITION ACTIONS ---
 
 export async function addMiseItem(formData: FormData) {
     const name = formData.get('name') as string;
-    const category = formData.get('category') as string;
+    const type = formData.get('category') as string;
     const volume = parseFloat(formData.get('volume') as string);
     const serviceRhythm = formData.get('serviceRhythm') as string || 'medio';
 
-    // Find a shelf to attach to (temporarily attach to first, or leave null)
-    // Actually we link items via Shelf, but items usually start "unassigned" until arranged?
-    // Or we just add them to the pool.
-    // We need the timbreId context? 
-    // Ideally items belong to a Timbre? No, items belong to a Shelf, or are loose. 
-    // In our schema: Item -> Shelf (Nullable).
-    // So we just create it unassigned.
+    // Map volume float to volumeLevel string
+    let volumeLevel = 'medio';
+    if (volume < 2) volumeLevel = 'bajo';
+    else if (volume > 5) volumeLevel = 'alto';
 
-    await prisma.miseItem.create({
+    await prisma.partition.create({
         data: {
             name,
-            category,
-            volume,
+            type,
+            volumeLevel,
             serviceRhythm,
         }
     });
@@ -110,7 +107,7 @@ export async function addMiseItem(formData: FormData) {
 }
 
 export async function deleteMiseItem(id: string) {
-    await prisma.miseItem.delete({ where: { id } });
+    await prisma.partition.delete({ where: { id } });
     revalidatePath('/dashboard/mise-en-place');
 }
 
@@ -118,7 +115,7 @@ export async function deleteMiseItem(id: string) {
 
 export async function autoArrangeItems() {
     const timbre = await getTimbre(); // Get the main timbre
-    const items = await prisma.miseItem.findMany(); // Get all items
+    const items = await prisma.partition.findMany(); // Get all partitions
 
     // Reset all items first
     // Transaction?
@@ -126,7 +123,11 @@ export async function autoArrangeItems() {
     const updates = [];
 
     // Helpers
-    const getBestGN = (vol: number, cat: string) => {
+    const getBestGN = (volLevel: string, type: string) => {
+        // Mapping volumeLevel to approximate liters for the old logic
+        const volumeMap: Record<string, number> = { 'bajo': 1.5, 'medio': 3.5, 'alto': 7.0 };
+        const vol = volumeMap[volLevel] || 3.5;
+
         // Simple logic based on volume
         if (vol <= 1.0) return '1/9'; // 1L
         if (vol <= 1.6) return '1/6'; // 1.6L
@@ -137,24 +138,23 @@ export async function autoArrangeItems() {
         return '1/1'; // > 9L
     };
 
-    const getBestDepth = (vol: number, rhythm: string) => {
-        if (rhythm === 'alto' && vol < 5) return 65; // Shallower for speed
+    const getBestDepth = (volLevel: string, rhythm: string) => {
+        if (rhythm === 'alto' && volLevel !== 'alto') return 65; // Shallower for speed
         if (rhythm === 'bajo') return 150; // Deeper for storage
         return 100; // Standard
     };
 
-    // Sort items: Priority categories first
-    // Custom sort order
+    // Sort items: Priority types first
     const catOrder: Record<string, number> = { 'topping': 1, 'garnish': 2, 'medium': 3, 'large': 4, 'production': 5 };
-    items.sort((a, b) => (catOrder[a.category] || 99) - (catOrder[b.category] || 99));
+    items.sort((a, b) => (catOrder[a.type] || 99) - (catOrder[b.type] || 99));
 
     // Shelves sorting: Top to bottom? Or by height?
     // Usually eye-level (top) is best for high rhythm?
     // Let's iterate shelves top-down.
 
     for (const item of items) {
-        const bestGN = getBestGN(item.volume, item.category);
-        const bestDepth = getBestDepth(item.volume, item.serviceRhythm);
+        const bestGN = getBestGN(item.volumeLevel, item.type);
+        const bestDepth = getBestDepth(item.volumeLevel, item.serviceRhythm);
 
         let assignedShelfId = null;
 
@@ -170,7 +170,7 @@ export async function autoArrangeItems() {
         }
 
         // Update item
-        await prisma.miseItem.update({
+        await prisma.partition.update({
             where: { id: item.id },
             data: {
                 assignedGN: bestGN,

@@ -7,7 +7,7 @@ echo.
 echo [1/3] Empaquetando App Cocina...
 :: Como ya estamos dentro de la carpeta de la app, empaquetamos todo (".")
 :: Excluimos node_modules locales para velocidad, .git, etc.
-tar --exclude="node_modules" --exclude=".next" --exclude=".git" --exclude=".idea" --exclude=".vscode" --exclude="dist" --exclude="build" --exclude="*.log" -czvf deploy.tar.gz .
+tar --exclude="node_modules" --exclude=".next" --exclude=".git" --exclude=".idea" --exclude=".vscode" --exclude="dist" --exclude="build" --exclude="*.log" --exclude="docker-compose.override.yml" --exclude="deploy.tar.gz" -czvf deploy.tar.gz .
 
 echo.
 echo [2/3] Subiendo al servidor...

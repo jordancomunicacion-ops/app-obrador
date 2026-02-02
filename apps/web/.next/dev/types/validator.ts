@@ -146,10 +146,37 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/dashboard/menu-planning/create/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/menu-planning/create">> = Specific
+  const handler = {} as typeof import("../../../app/dashboard/menu-planning/create/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/dashboard/menu-planning/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/menu-planning">> = Specific
+  const handler = {} as typeof import("../../../app/dashboard/menu-planning/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/dashboard/mise-en-place/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/dashboard/mise-en-place">> = Specific
   const handler = {} as typeof import("../../../app/dashboard/mise-en-place/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/dashboard/mise-en-place/timbre/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/mise-en-place/timbre">> = Specific
+  const handler = {} as typeof import("../../../app/dashboard/mise-en-place/timbre/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

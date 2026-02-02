@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { TimbreVisualizer } from '@/app/ui/timbre/timbre-visualizer';
 import { MiseItemForm } from '@/app/ui/timbre/mise-item-form';
 import { GastronormGuide } from '@/app/ui/timbre/gastronorm-guide';
-import { Timbre, Shelf, MiseItem } from '@prisma/client';
+import { Timbre, Shelf, Partition } from '@prisma/client';
 
 export default function MiseEnPlaceTabs({
     timbre
 }: {
-    timbre: Timbre & { shelves: (Shelf & { items: MiseItem[] })[] }
+    timbre: Timbre & { shelves: (Shelf & { partitions: Partition[] })[] }
 }) {
     const [activeTab, setActiveTab] = useState<'configurator' | 'guide'>('configurator');
 

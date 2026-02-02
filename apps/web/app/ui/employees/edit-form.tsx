@@ -38,7 +38,7 @@ export default function EditForm({ user }: { user: any }) {
                                 type="text"
                                 defaultValue={user.name}
                                 placeholder="Ej. jperez"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 aria-describedby="name-error"
                             />
                             <div id="name-error" aria-live="polite" aria-atomic="true">
@@ -57,7 +57,7 @@ export default function EditForm({ user }: { user: any }) {
                                 type="email"
                                 defaultValue={user.email}
                                 placeholder="juan@cocina.com"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                             <div id="email-error" aria-live="polite" aria-atomic="true">
                                 {state.errors?.email && state.errors.email.map((error: string) => (
@@ -74,7 +74,7 @@ export default function EditForm({ user }: { user: any }) {
                                 name="password"
                                 type="password"
                                 placeholder="Dejar vacía para no cambiar"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                         </div>
 
@@ -84,7 +84,7 @@ export default function EditForm({ user }: { user: any }) {
                             <select
                                 id="role"
                                 name="role"
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                                 defaultValue={user.role}
                             >
                                 <option value="EMPLOYEE">Empleado</option>
@@ -103,7 +103,7 @@ export default function EditForm({ user }: { user: any }) {
                                 <input
                                     name="firstName"
                                     defaultValue={user.firstName || ''}
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -111,7 +111,7 @@ export default function EditForm({ user }: { user: any }) {
                                 <input
                                     name="lastName"
                                     defaultValue={user.lastName || ''}
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                         </div>
@@ -121,7 +121,7 @@ export default function EditForm({ user }: { user: any }) {
                                 <input
                                     name="dni"
                                     defaultValue={user.dni || ''}
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                             <div>
@@ -131,7 +131,7 @@ export default function EditForm({ user }: { user: any }) {
                                     name="dob"
                                     type="date"
                                     defaultValue={user.dob ? new Date(user.dob).toISOString().split('T')[0] : ''}
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                         </div>
@@ -145,7 +145,7 @@ export default function EditForm({ user }: { user: any }) {
                             <input
                                 name="jobTitle"
                                 defaultValue={user.jobTitle || ''}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="Ej: Cocinero, Camarero..."
                             />
                         </div>
@@ -154,8 +154,42 @@ export default function EditForm({ user }: { user: any }) {
                             <input
                                 name="phone"
                                 defaultValue={user.phone || ''}
-                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
                             />
+                        </div>
+                    </div>
+
+                    {/* 4. Permissions Info */}
+                    <div className="space-y-4 md:col-span-2 lg:col-span-3">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider border-b pb-1">Permisos de Acceso</h4>
+                        <p className="text-xs text-gray-500 mb-2">Selecciona las secciones a las que este usuario tendrá acceso.</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {[
+                                { id: 'dashboard', label: 'Dashboard' },
+                                { id: 'events', label: 'Eventos' },
+                                { id: 'tasks', label: 'Tareas' },
+                                { id: 'menu-planning', label: 'Planificación' },
+                                { id: 'products', label: 'Productos' },
+                                { id: 'recipes', label: 'Recetas' },
+                                { id: 'purchasing', label: 'Compras' },
+                                { id: 'storage', label: 'Almacén' },
+                                { id: 'mise-en-place', label: 'Mise en place' },
+                                { id: 'employees', label: 'Empleados' },
+                                { id: 'settings', label: 'Configuración' }
+                            ].map(section => (
+                                <label key={section.id} className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        name="permissions"
+                                        value={section.id}
+                                        defaultChecked={user.permissions?.includes(section.id)}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span className="text-sm text-gray-700 group-hover:text-blue-600 transition-colors">
+                                        {section.label}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
                     </div>
 

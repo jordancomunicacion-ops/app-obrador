@@ -19,6 +19,7 @@ export async function createUser(prevState: UserFormState, formData: FormData) {
         phone: formData.get('phone'),
         jobTitle: formData.get('jobTitle'),
         dob: formData.get('dob'),
+        permissions: formData.getAll('permissions'),
     });
 
     if (!validatedFields.success) {
@@ -28,7 +29,7 @@ export async function createUser(prevState: UserFormState, formData: FormData) {
         };
     }
 
-    const { name, email, password, role, firstName, lastName, dni, phone, jobTitle, dob } = validatedFields.data;
+    const { name, email, password, role, firstName, lastName, dni, phone, jobTitle, dob, permissions } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
@@ -44,6 +45,7 @@ export async function createUser(prevState: UserFormState, formData: FormData) {
                 phone,
                 jobTitle,
                 dob: dob ? new Date(dob) : undefined,
+                permissions,
             },
         });
     } catch (error) {
@@ -74,6 +76,7 @@ export async function updateUser(
         phone: formData.get('phone'),
         jobTitle: formData.get('jobTitle'),
         dob: formData.get('dob'),
+        permissions: formData.getAll('permissions'),
     });
 
     if (!validatedFields.success) {
@@ -83,7 +86,7 @@ export async function updateUser(
         };
     }
 
-    const { name, email, password, role, firstName, lastName, dni, phone, jobTitle, dob } = validatedFields.data;
+    const { name, email, password, role, firstName, lastName, dni, phone, jobTitle, dob, permissions } = validatedFields.data;
 
     const dataToUpdate: any = {
         name,
@@ -95,6 +98,7 @@ export async function updateUser(
         phone,
         jobTitle,
         dob: dob ? new Date(dob) : null,
+        permissions,
     };
 
     if (password && password.trim() !== '') {

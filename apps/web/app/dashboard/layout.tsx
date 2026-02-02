@@ -4,9 +4,14 @@ import { prisma } from '@/lib/prisma';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
     const session = await auth();
-    const appConfig = await prisma.appConfig.findUnique({
-        where: { id: 'default' },
-    });
+    let appConfig = null;
+    try {
+        appConfig = await prisma.appConfig.findUnique({
+            where: { id: 'default' },
+        });
+    } catch (e) {
+        console.error("Database connection failed in layout:", e);
+    }
 
     return (
         <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">

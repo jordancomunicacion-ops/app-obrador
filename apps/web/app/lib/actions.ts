@@ -2,6 +2,7 @@
 
 import { signIn, signOut } from '@/auth';
 import { AuthError } from 'next-auth';
+import { prisma } from '@/lib/prisma';
 
 export async function authenticate(
     prevState: string | undefined,
@@ -40,17 +41,14 @@ export async function signOutAction() {
 // --- REGISTRATION ---
 import { CreateUserSchema, UserFormState } from './definitions';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
 import { redirect } from 'next/navigation';
-
-const prisma = new PrismaClient();
 
 export async function registerUser(prevState: UserFormState | undefined, formData: FormData): Promise<UserFormState> {
     const validatedFields = CreateUserSchema.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
         password: formData.get('password'),
-        role: formData.get('role'),
+        role: 'USER', // Default role
     });
 
     if (!validatedFields.success) {
@@ -60,8 +58,10 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
         };
     }
 
-    const { name, email, password, role } = validatedFields.data;
+    const { name, email, password } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const isMasterAdmin = email === 'gerencia@sotodelprior.com';
 
     try {
         await prisma.user.create({
@@ -69,10 +69,14 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
                 name,
                 email,
                 password: hashedPassword,
-                role: role as 'EMPLOYEE' | 'ADMIN' | 'CHEF',
+                role: isMasterAdmin ? 'ADMIN' : 'USER',
+                approved: isMasterAdmin, // Automatically approve master admin
+                permissions: [],
             },
         });
     } catch (error) {
+        console.error('Prisma Register Error:', error);
+
         // Check for unique constraint violation (P2002)
         // @ts-ignore
         if (error.code === 'P2002') {
@@ -80,8 +84,10 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
                 message: 'El email ya está uso.',
             };
         }
+
+        // Return technical message if available for debugging
         return {
-            message: 'Error de base de datos: Error al registrar usuario.',
+            message: `Error de base de datos: ${(error as any).message || 'Error al registrar usuario.'}`,
         };
     }
 

@@ -31,7 +31,7 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
     const filteredGroups = groups.map(group => ({
         ...group,
         items: group.items.filter(item => {
-            if (item.name === 'Empleados') {
+            if (item.name === 'Gestión de Usuarios') {
                 return user?.role === 'ADMIN';
             }
             return true;

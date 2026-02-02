@@ -1,277 +1,429 @@
-[00:00:02.462] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:02.710] Server  LOG     ✓ Ready in 2.2s
-[00:00:10.970] Server  WARN    prisma:tryLoadEnv Environment variables not found at null "\u001b[35m+9ms\u001b[39m"
-[00:00:10.975] Server  WARN    prisma:tryLoadEnv Environment variables loaded from C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\.env "\u001b[35m+6ms\u001b[39m"
-[00:00:10.978] Server  WARN    prisma:client checkPlatformCaching:postinstall "false" "\u001b[36m+3ms\u001b[39m"
-[00:00:10.980] Server  WARN    prisma:client checkPlatformCaching:ciName undefined "\u001b[36m+2ms\u001b[39m"
-[00:00:10.981] Server  WARN    prisma:tryLoadEnv Environment variables not found at null "\u001b[35m+1ms\u001b[39m"
-[00:00:10.982] Server  WARN    prisma:tryLoadEnv Environment variables loaded from C:\Users\Carlos\SOTOdelPRIOR\App cocina SOTOdelPRIOR\apps\web\.env "\u001b[35m+1ms\u001b[39m"
-[00:00:10.983] Server  WARN    prisma:client dirname "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\node_modules\\.prisma\\client" "\u001b[31m+1ms\u001b[39m"
-[00:00:10.984] Server  WARN    prisma:client relativePath "../../../apps/web/prisma" "\u001b[31m+1ms\u001b[39m"
-[00:00:10.985] Server  WARN    prisma:client cwd "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\apps\\web\\prisma" "\u001b[31m+2ms\u001b[39m"
-[00:00:10.987] Server  WARN    prisma:client clientVersion "5.22.0" "\u001b[31m+1ms\u001b[39m"
-[00:00:10.989] Server  WARN    prisma:client:libraryEngine internalSetup "\u001b[34m+2ms\u001b[39m"
-[00:00:10.994] Server  WARN    prisma:client:engines:resolveEnginePath enginePath "C:\\Users\\Carlos\\SOTOdelPRIOR\\App cocina SOTOdelPRIOR\\node_modules\\.prisma\\client\\query_engine-windows.dll.node" "\u001b[31m+5ms\u001b[39m"
-[00:00:11.049] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+55ms\u001b[39m"
-[00:00:11.050] Server  WARN    prisma:client prisma.supplierProduct.findMany({
-  orderBy: {
-    name: "asc"
-  }
-}) "\u001b[31m+2ms\u001b[39m"
-[00:00:11.051] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
-[00:00:11.051] Server  WARN    prisma:client {
-  "modelName": "SupplierProduct",
-  "action": "findMany",
-  "query": {
-    "arguments": {
-      "orderBy": {
-        "name": "asc"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+1ms\u001b[39m"
-[00:00:11.052] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
-[00:00:11.054] Server  WARN    prisma:client:libraryEngine library starting "\u001b[34m+1ms\u001b[39m"
-[00:00:11.412] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+358ms\u001b[39m"
-[00:00:11.413] Server  WARN    prisma:client prisma.appConfig.findUnique({
-  where: {
-    id: "default"
-  }
-}) "\u001b[31m+1ms\u001b[39m"
-[00:00:11.413] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
-[00:00:11.414] Server  WARN    prisma:client {
-  "modelName": "AppConfig",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "default"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+0ms\u001b[39m"
-[00:00:11.415] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
-[00:00:11.416] Server  WARN    prisma:client:libraryEngine library already starting, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
-[00:00:15.129] Server  WARN    prisma:client:request_handler {
-  "name": "PrismaClientInitializationError",
-  "clientVersion": "5.22.0",
-  "errorCode": "P1001"
-} "\u001b[36m+3713ms\u001b[39m"
-[00:00:15.134] Server  LOG     prisma:error "\nInvalid `prisma.supplierProduct.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
-[00:00:15.135] Server  WARN    prisma:client:request_handler {
-  "name": "PrismaClientInitializationError",
-  "clientVersion": "5.22.0",
-  "errorCode": "P1001"
-} "\u001b[36m+6ms\u001b[39m"
-[00:00:15.136] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
-[00:00:15.159] Server  ERROR   ⨯ PrismaClientInitializationError: 
-Invalid `prisma.supplierProduct.findMany()` invocation:
+[00:00:01.974] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.146] Server  LOG     ✓ Ready in 1660ms
+[00:04:37.100] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.103] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.104] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.126] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.134] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.135] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.136] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.137] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:04:37.171] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
 
 
 Can't reach database server at `localhost:5432`
 
 Please make sure your database server is running at `localhost:5432`.
-[00:00:15.162] Server  ERROR   ⨯ PrismaClientInitializationError: 
+[00:04:37.173] Server  ERROR   ⨯ PrismaClientInitializationError: 
 Invalid `prisma.appConfig.findUnique()` invocation:
 
 
 Can't reach database server at `localhost:5432`
 
 Please make sure your database server is running at `localhost:5432`.
-[00:00:16.205] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:16.205] Browser ERROR   uncaughtError: PrismaClientInitializationError: 
+[00:04:37.181] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:04:37.188] Server  ERROR   ⨯ PrismaClientInitializationError: 
 Invalid `prisma.appConfig.findUnique()` invocation:
 
 
 Can't reach database server at `localhost:5432`
 
 Please make sure your database server is running at `localhost:5432`.
-[00:03:42.398] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+207261ms\u001b[39m"
-[00:03:42.398] Server  WARN    prisma:client prisma.supplierProduct.findMany({
-  orderBy: {
-    name: "asc"
-  }
-}) "\u001b[31m+3ms\u001b[39m"
-[00:03:42.399] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
-[00:03:42.399] Server  WARN    prisma:client {
-  "modelName": "SupplierProduct",
-  "action": "findMany",
-  "query": {
-    "arguments": {
-      "orderBy": {
-        "name": "asc"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+0ms\u001b[39m"
-[00:03:42.400] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: false "\u001b[34m+1ms\u001b[39m"
-[00:03:42.401] Server  WARN    prisma:client:libraryEngine library starting "\u001b[34m+1ms\u001b[39m"
-[00:03:42.493] Server  WARN    prisma:client:libraryEngine library started "\u001b[34m+92ms\u001b[39m"
-[00:03:42.502] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+8ms\u001b[39m"
-[00:03:42.504] Server  WARN    prisma:client prisma.appConfig.findUnique({
-  where: {
-    id: "default"
-  }
-}) "\u001b[31m+2ms\u001b[39m"
-[00:03:42.504] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
-[00:03:42.504] Server  WARN    prisma:client {
-  "modelName": "AppConfig",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "default"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+1ms\u001b[39m"
-[00:03:42.505] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
-[00:03:42.569] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:03:42.583] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE 1=1 ORDER BY \"public\".\"SupplierProduct\".\"name\" ASC OFFSET $1"
-[00:03:43.949] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:03:49.668] Server  LOG     ○ Compiling /dashboard/products/[id]/edit ...
-[00:03:51.812] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+9306ms\u001b[39m"
-[00:03:51.813] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
-  where: {
-    id: "cmkyiukoc0002uu5dxx1mo4bn"
-  }
-}) "\u001b[31m+1ms\u001b[39m"
-[00:03:51.813] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
-[00:03:51.814] Server  WARN    prisma:client {
-  "modelName": "SupplierProduct",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "cmkyiukoc0002uu5dxx1mo4bn"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+1ms\u001b[39m"
-[00:03:51.916] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+102ms\u001b[39m"
-[00:03:51.923] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:03:51.997] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+81ms\u001b[39m"
-[00:03:51.997] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
-  where: {
-    id: "cmkyiukoc0002uu5dxx1mo4bn"
-  }
-}) "\u001b[31m+0ms\u001b[39m"
-[00:03:51.997] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
-[00:03:51.997] Server  WARN    prisma:client {
-  "modelName": "SupplierProduct",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "cmkyiukoc0002uu5dxx1mo4bn"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+1ms\u001b[39m"
-[00:03:52.005] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+7ms\u001b[39m"
-[00:03:52.016] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:03:52.039] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+35ms\u001b[39m"
-[00:03:52.040] Server  WARN    prisma:client prisma.appConfig.findUnique({
-  where: {
-    id: "default"
-  }
-}) "\u001b[31m+0ms\u001b[39m"
-[00:03:52.040] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
-[00:03:52.041] Server  WARN    prisma:client {
-  "modelName": "AppConfig",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "default"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+0ms\u001b[39m"
-[00:03:52.041] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
-[00:03:52.047] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:03:52.070] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+28ms\u001b[39m"
-[00:03:52.070] Server  WARN    prisma:client prisma.supplierProduct.findUnique({
-  where: {
-    id: "cmkyiukoc0002uu5dxx1mo4bn"
-  }
-}) "\u001b[31m+0ms\u001b[39m"
-[00:03:52.070] Server  WARN    prisma:client Generated request: "\u001b[31m+1ms\u001b[39m"
-[00:03:52.071] Server  WARN    prisma:client {
-  "modelName": "SupplierProduct",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "cmkyiukoc0002uu5dxx1mo4bn"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+0ms\u001b[39m"
-[00:03:52.078] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+7ms\u001b[39m"
-[00:03:52.081] Server  LOG     prisma:query "SELECT \"public\".\"SupplierProduct\".\"id\", \"public\".\"SupplierProduct\".\"name\", \"public\".\"SupplierProduct\".\"supplier\", \"public\".\"SupplierProduct\".\"supplierId\", \"public\".\"SupplierProduct\".\"masterProductId\", \"public\".\"SupplierProduct\".\"price\", \"public\".\"SupplierProduct\".\"unit\", \"public\".\"SupplierProduct\".\"quantityPerUnit\", \"public\".\"SupplierProduct\".\"sapiensWorld\", \"public\".\"SupplierProduct\".\"storageLocationId\", \"public\".\"SupplierProduct\".\"createdAt\", \"public\".\"SupplierProduct\".\"updatedAt\" FROM \"public\".\"SupplierProduct\" WHERE (\"public\".\"SupplierProduct\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:03:52.092] Server  WARN    prisma:client Prisma Client call: "\u001b[31m+15ms\u001b[39m"
-[00:03:52.093] Server  WARN    prisma:client prisma.appConfig.findUnique({
-  where: {
-    id: "default"
-  }
-}) "\u001b[31m+0ms\u001b[39m"
-[00:03:52.093] Server  WARN    prisma:client Generated request: "\u001b[31m+0ms\u001b[39m"
-[00:03:52.094] Server  WARN    prisma:client {
-  "modelName": "AppConfig",
-  "action": "findUnique",
-  "query": {
-    "arguments": {
-      "where": {
-        "id": "default"
-      }
-    },
-    "selection": {
-      "$composites": true,
-      "$scalars": true
-    }
-  }
-}
- "\u001b[31m+1ms\u001b[39m"
-[00:03:52.095] Server  WARN    prisma:client:libraryEngine sending request, this.libraryStarted: true "\u001b[34m+1ms\u001b[39m"
-[00:03:52.098] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:04:38.473] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:38.473] Browser ERROR   uncaughtError: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:12:43.183] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:12:47.893] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:12:47.896] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:12:47.898] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:12:47.905] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:12:47.923] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:12:47.939] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:12:50.347] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:50.874] Browser ERROR   uncaughtError: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:12:58.565] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:13:02.886] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:02.894] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:02.902] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:02.911] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:02.942] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:02.953] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:03.591] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:07.044] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:07.051] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:18.368] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:18.372] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:18.375] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:18.376] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:18.382] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:18.385] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:13:22.474] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:13:22.480] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:10.304] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:10.305] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:10.307] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:10.308] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:10.312] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:10.317] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:11.671] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:14.391] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.392] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.393] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.394] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.396] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.397] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.400] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.401] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.402] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:14.411] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:14.414] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:14.417] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:14.421] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:14.424] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:15.011] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:18.494] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:18.528] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:18.542] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:18.548] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:23.105] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.107] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.109] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.112] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.118] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.121] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:23.127] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:23.133] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:27.215] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:27.220] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:27.245] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:27.263] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:32.631] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.637] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.644] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.647] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.648] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.649] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.650] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.661] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.676] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:32.693] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:32.702] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:32.715] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:36.788] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:36.791] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:36.793] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:14:36.796] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:36.798] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:14:36.801] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:15:51.903] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:15:51.904] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:15:51.905] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:15:51.906] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:15:51.912] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:15:51.960] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:15:56.045] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:15:56.057] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:02.366] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.372] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.380] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.388] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.408] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.422] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.433] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.436] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:02.440] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:02.443] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:02.445] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:02.447] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:06.516] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:06.516] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:16:06.518] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:16:06.521] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:01.606] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.609] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.611] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.614] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.618] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.623] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.629] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.635] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.642] Server  LOG     prisma:error "\nInvalid `prisma.user.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:01.672] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:01.688] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:01.698] Server  ERROR   Database connection failed in counts: PrismaClientInitializationError: 
+Invalid `prisma.user.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:05.746] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:05.756] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:05.767] Server  LOG     prisma:error "\nInvalid `prisma.user.findMany()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:17:05.790] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:05.818] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:17:05.833] Server  ERROR   Database connection failed in table: PrismaClientInitializationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.

@@ -1,0 +1,12 @@
+{
+    "name": "app-cocina-root",
+    "private": true,
+    "workspaces": [
+        "apps/*"
+    ],
+    "scripts": {
+        "dev": "npm run dev --workspace=app-cocina",
+        "build": "npm run build --workspace=app-cocina",
+        "start": "npm run start --workspace=app-cocina"
+    }
+}

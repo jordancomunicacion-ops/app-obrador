@@ -165,7 +165,9 @@ export const UserSchema = z.object({
     name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
     email: z.string().email({ message: 'Email inválido.' }),
     password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres.' }).optional(),
-    role: z.enum(['ADMIN', 'CHEF', 'EMPLOYEE']),
+    role: z.enum(['ADMIN', 'CHEF', 'EMPLOYEE', 'USER']),
+    approved: z.boolean().default(false),
+    permissions: z.array(z.string()).default([]),
     // Extended Profile
     firstName: z.string().optional(),
     lastName: z.string().optional(),
@@ -175,7 +177,7 @@ export const UserSchema = z.object({
     dob: z.string().optional(), // Receive as string from form date input
 });
 
-export const CreateUserSchema = UserSchema.omit({ id: true }).extend({
+export const CreateUserSchema = UserSchema.omit({ id: true, approved: true }).extend({
     password: z.string().min(6, { message: 'La contraseña es obligatoria.' }),
 });
 export const UpdateUserSchema = UserSchema;
@@ -192,6 +194,7 @@ export type UserFormState = {
         phone?: string[];
         jobTitle?: string[];
         dob?: string[];
+        permissions?: string[];
     };
     message?: string | null;
 };

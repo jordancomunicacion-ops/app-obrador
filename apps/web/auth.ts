@@ -22,20 +22,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         if (!user) return null;
 
                         const passwordsMatch = await bcrypt.compare(password, user.password);
-                        if (passwordsMatch) {
-                            return {
-                                id: user.id,
-                                name: user.name,
-                                email: user.email,
-                                role: user.role,
-                            } as any;
+                        if (!passwordsMatch) return null;
+
+                        // Strict Approval Check
+                        // Exception for Master Admin
+                        if (email !== 'gerencia@sotodelprior.com' && !user.approved) {
+                            throw new Error('AccessDenied');
                         }
-                        throw new CredentialsSignin();
+
+                        return {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            role: user.role,
+                            approved: user.approved,
+                        };
                     } catch (error) {
-                        throw error;
+                        return null;
                     }
                 }
-                throw new CredentialsSignin();
+                return null;
             },
         }),
     ],
