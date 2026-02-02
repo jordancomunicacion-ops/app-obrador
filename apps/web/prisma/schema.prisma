@@ -29,6 +29,12 @@ model User {
   dob       DateTime?
   image     String? // URL to profile image
 
+  // Worker/Admin Relationship
+  // If this user is a WORKER, who is their ADMIN?
+  adminId   String?
+  admin     User?   @relation("AdminWorkers", fields: [adminId], references: [id])
+  workers   User[]  @relation("AdminWorkers") // If this user is ADMIN, these are their workers
+
   tasks     Task[]     @relation("AssignedTasks")
   auditLogs AuditLog[]
 

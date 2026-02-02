@@ -27,13 +27,44 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
     const pathname = usePathname();
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-    // Filter groups and items based on role
+    // Map Link Names/Hrefs to Permission IDs (from create-form)
+    // Permission IDs: 'dashboard', 'events', 'tasks', 'menu-planning', 'products', 'recipes', 'purchasing', 'storage', 'mise-en-place', 'employees', 'settings'
+    const getPermissionId = (name: string, href: string): string => {
+        if (href.includes('/dashboard/events')) return 'events';
+        if (href.includes('/dashboard/tasks')) return 'tasks';
+        if (href.includes('/dashboard/menu-planning')) return 'menu-planning';
+        if (href.includes('/dashboard/products')) return 'products';
+        if (href.includes('/dashboard/recipes')) return 'recipes';
+        if (href.includes('/dashboard/purchasing')) return 'purchasing';
+        if (href.includes('/dashboard/storage')) return 'storage';
+        if (href.includes('/dashboard/mise-en-place')) return 'mise-en-place';
+        if (href.includes('/dashboard/employees')) return 'employees';
+        if (href.includes('/dashboard/settings')) return 'settings';
+        if (name === 'Dashboard' || href === '/dashboard') return 'dashboard';
+        return '';
+    };
+
+    // Filter groups and items based on role AND permissions
     const filteredGroups = groups.map(group => ({
         ...group,
         items: group.items.filter(item => {
+            // 1. Role Check
             if (item.name === 'Gestión de Usuarios') {
                 return user?.role === 'ADMIN';
             }
+
+            // 2. Permission Check (If not Admin)
+            if (user?.role !== 'ADMIN') {
+                const requiredPermission = getPermissionId(item.name, item.href);
+                // If it maps to a permission, check if user has it.
+                // If user.permissions is undefined/empty, block everything except maybe basics?
+                // Assuming empty permissions = no access.
+                const userPermissions = (user as any)?.permissions || [];
+                if (requiredPermission && !userPermissions.includes(requiredPermission)) {
+                    return false;
+                }
+            }
+
             return true;
         })
     })).filter(group => group.items.length > 0);

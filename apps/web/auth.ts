@@ -36,6 +36,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             email: user.email,
                             role: user.role,
                             approved: user.approved,
+                            permissions: user.permissions,
                         };
                     } catch (error) {
                         return null;

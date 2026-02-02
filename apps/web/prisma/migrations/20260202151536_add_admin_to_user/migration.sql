@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "adminId" TEXT,
+ADD COLUMN     "approved" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "permissions" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "role" SET DEFAULT 'USER';
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

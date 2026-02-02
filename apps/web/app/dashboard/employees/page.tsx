@@ -7,6 +7,8 @@ import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import clsx from 'clsx';
 
+import EmployeesList from '@/app/ui/employees/list';
+
 export default async function Page({
     searchParams,
 }: {
@@ -63,6 +65,7 @@ export default async function Page({
                                 tab === 'team'
                                     ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
                                     : "text-gray-500 hover:text-gray-700"
+                                , "whitespace-nowrap"
                             )}
                         >
                             Equipo ({teamCount})
@@ -74,6 +77,7 @@ export default async function Page({
                                 tab === 'requests'
                                     ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
                                     : "text-gray-500 hover:text-gray-700"
+                                , "whitespace-nowrap"
                             )}
                         >
                             Solicitudes / Clientes ({requestsCount})
@@ -95,7 +99,11 @@ export default async function Page({
 
             {/* List Section */}
             <Suspense key={tab + query} fallback={<div className="flex py-20 justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>}>
-                <EmployeesTable query={query} currentPage={currentPage} tab={tab} />
+                {tab === 'team' ? (
+                    <EmployeesList query={query} />
+                ) : (
+                    <EmployeesTable query={query} currentPage={currentPage} tab={tab} />
+                )}
             </Suspense>
         </div>
     );

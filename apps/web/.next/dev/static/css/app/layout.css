@@ -1879,12 +1879,6 @@
       --tw-shadow-color: color-mix(in oklab, var(--color-blue-100) var(--tw-shadow-alpha), transparent);
     }
   }
-  .shadow-green-100 {
-    --tw-shadow-color: oklch(96.2% 0.044 156.743);
-    @supports (color: color-mix(in lab, red, red)) {
-      --tw-shadow-color: color-mix(in oklab, var(--color-green-100) var(--tw-shadow-alpha), transparent);
-    }
-  }
   .shadow-orange-100 {
     --tw-shadow-color: oklch(95.4% 0.038 75.164);
     @supports (color: color-mix(in lab, red, red)) {
@@ -1929,9 +1923,6 @@
     @supports (color: color-mix(in lab, red, red)) {
       --tw-ring-color: color-mix(in oklab, var(--color-gray-900) 5%, transparent);
     }
-  }
-  .ring-green-100 {
-    --tw-ring-color: var(--color-green-100);
   }
   .ring-green-500 {
     --tw-ring-color: var(--color-green-500);

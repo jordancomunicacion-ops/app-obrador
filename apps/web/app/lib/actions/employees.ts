@@ -6,8 +6,17 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateUserSchema, UpdateUserSchema, UserFormState } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
+import { auth } from '@/auth';
 
 export async function createUser(prevState: UserFormState, formData: FormData) {
+    const session = await auth();
+    // Only admins or authorized users should create employees
+    if (!session?.user?.id) {
+        return {
+            message: 'No autorizado: Debes iniciar sesión.',
+        };
+    }
+
     const validatedFields = CreateUserSchema.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
@@ -32,6 +41,11 @@ export async function createUser(prevState: UserFormState, formData: FormData) {
     const { name, email, password, role, firstName, lastName, dni, phone, jobTitle, dob, permissions } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Determine adminId. If I am Admin, I am the admin.
+    // If I am a Worker (with permission?), my admin is my admin.
+    // For now, assume creator is Admin.
+    const adminId = session.user.role === 'ADMIN' ? session.user.id : (session.user as any).adminId;
+
     try {
         await prisma.user.create({
             data: {
@@ -46,6 +60,8 @@ export async function createUser(prevState: UserFormState, formData: FormData) {
                 jobTitle,
                 dob: dob ? new Date(dob) : undefined,
                 permissions,
+                adminId: adminId, // Link to Admin
+                approved: true, // Workers created by admin are auto-approved
             },
         });
     } catch (error) {
