@@ -89,7 +89,6 @@ export default function Form() {
                             >
                                 <option value="EMPLOYEE">Empleado</option>
                                 <option value="CHEF">Jefe de Cocina</option>
-                                <option value="ADMIN">Administrador</option>
                             </select>
                         </div>
                     </div>

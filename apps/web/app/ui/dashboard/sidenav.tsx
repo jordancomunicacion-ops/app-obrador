@@ -69,17 +69,6 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
         })
     })).filter(group => group.items.length > 0);
 
-    if (user?.email === 'gerencia@sotodelprior.com') {
-        filteredGroups.push({
-            name: 'System Admin',
-            items: [{
-                name: 'All Users',
-                href: '/dashboard/system/users',
-                icon: UserIcon
-            }]
-        });
-    }
-
     // Initialize/Auto-expand section containing the active link
     useEffect(() => {
         const newOpenSections: Record<string, boolean> = { ...openSections };

@@ -1,55 +1,46 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 
-const MASTER_EMAIL = 'gerencia@sotodelprior.com';
-
-async function checkAuth() {
-    const session = await auth();
-    if (session?.user?.email !== MASTER_EMAIL) {
-        throw new Error('Unauthorized');
+export async function toggleApproval(userId: string, currentStatus: boolean) {
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { approved: !currentStatus },
+        });
+        revalidatePath('/dashboard/system/users');
+    } catch (error) {
+        console.error('Failed to toggle approval:', error);
+        throw new Error('Failed to toggle approval.');
     }
 }
 
-export async function toggleApproval(userId: string, currentStatus: boolean) {
-    await checkAuth();
-    await prisma.user.update({
-        where: { id: userId },
-        data: { approved: !currentStatus }
-    });
-    revalidatePath('/dashboard/system/users');
-}
-
 export async function resetPassword(userId: string) {
-    await checkAuth();
-    const hashedPassword = await bcrypt.hash('password123', 10);
-    await prisma.user.update({
-        where: { id: userId },
-        data: { password: hashedPassword }
-    });
-    revalidatePath('/dashboard/system/users');
+    try {
+        // Default temporary password
+        const hashedPassword = await bcrypt.hash('SotoTemporal2024!', 10);
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        });
+        revalidatePath('/dashboard/system/users');
+    } catch (error) {
+        console.error('Failed to reset password:', error);
+        throw new Error('Failed to reset password.');
+    }
 }
 
 export async function makeAdmin(userId: string) {
-    await checkAuth();
-
-    // Default permissions for a new Tenant (Everything)
-    const defaultPermissions = [
-        'dashboard', 'events', 'tasks', 'menu-planning',
-        'products', 'recipes', 'purchasing', 'storage',
-        'mise-en-place', 'employees', 'settings'
-    ];
-
-    await prisma.user.update({
-        where: { id: userId },
-        data: {
-            role: 'ADMIN',
-            adminId: null, // Detach from any other admin
-            permissions: defaultPermissions
-        }
-    });
-    revalidatePath('/dashboard/system/users');
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { role: 'ADMIN' },
+        });
+        revalidatePath('/dashboard/system/users');
+    } catch (error) {
+        console.error('Failed to promote to admin:', error);
+        throw new Error('Failed to promote to admin.');
+    }
 }

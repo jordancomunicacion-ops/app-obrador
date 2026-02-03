@@ -11,6 +11,8 @@ import {
     CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
+import { auth } from '@/auth';
+
 export default async function EmployeesTable({
     query,
     currentPage,
@@ -20,15 +22,23 @@ export default async function EmployeesTable({
     currentPage: number;
     tab?: string;
 }) {
+    const session = await auth();
+    const isMasterAdmin = session?.user?.email?.toLowerCase() === 'gerencia@sotodelprior.com';
+    const userId = session?.user?.id;
+
     let whereClause: any = {};
 
     if (tab === 'requests') {
-        // Clients / Tenants
+        // Clients / Tenants: All Admins except myself
         whereClause = {
             role: 'ADMIN',
-            adminId: null,
-            // Exclude Master Admin from list if desired, though usually filtered by query
+            // adminId: null, // Removed constraint: Show ALL Admins (created by me or independent)
         };
+
+        // Safety check: Exclude current user
+        if (userId) {
+            whereClause.id = { not: userId };
+        }
     } else {
         // Fallback or explicit team view if used here (though List handles team usually)
         // If we reuse this table for team:

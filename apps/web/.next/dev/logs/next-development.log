@@ -1,106 +1,90 @@
-[00:00:02.156] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:02.432] Server  LOG     ✓ Ready in 2.1s
-[00:09:57.446] Server  LOG     ○ Compiling /login ...
-[00:10:00.531] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:10:00.552] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:10:18.383] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"email\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:10:21.540] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Event\".\"id\" FROM \"public\".\"Event\" WHERE \"public\".\"Event\".\"date\" >= $1 OFFSET $2) AS \"sub\""
-[00:10:21.617] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Task\".\"id\" FROM \"public\".\"Task\" WHERE \"public\".\"Task\".\"status\" <> $1 OFFSET $2) AS \"sub\""
-[00:10:22.075] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"date\", \"public\".\"Event\".\"pax\", \"public\".\"Event\".\"safetyMargin\", \"public\".\"Event\".\"status\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\", COALESCE(\"aggr_selection_0_EventMenuItem\".\"_aggr_count_menuItems\", 0) AS \"_aggr_count_menuItems\" FROM \"public\".\"Event\" LEFT JOIN (SELECT \"public\".\"EventMenuItem\".\"eventId\", COUNT(*) AS \"_aggr_count_menuItems\" FROM \"public\".\"EventMenuItem\" WHERE 1=1 GROUP BY \"public\".\"EventMenuItem\".\"eventId\") AS \"aggr_selection_0_EventMenuItem\" ON (\"public\".\"Event\".\"id\" = \"aggr_selection_0_EventMenuItem\".\"eventId\") WHERE (\"public\".\"Event\".\"date\" >= $1 AND \"public\".\"Event\".\"date\" <= $2) ORDER BY \"public\".\"Event\".\"date\" ASC OFFSET $3"
-[00:10:22.212] Server  LOG     prisma:query "SELECT \"public\".\"Transformation\".\"id\", \"public\".\"Transformation\".\"name\", \"public\".\"Transformation\".\"sourceProductId\", \"public\".\"Transformation\".\"testQuantity\", \"public\".\"Transformation\".\"testUnit\", \"public\".\"Transformation\".\"createdAt\", \"public\".\"Transformation\".\"updatedAt\" FROM \"public\".\"Transformation\" WHERE \"public\".\"Transformation\".\"createdAt\" < $1 ORDER BY \"public\".\"Transformation\".\"createdAt\" ASC LIMIT $2 OFFSET $3"
-[00:10:22.531] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:10:31.542] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:10:31.560] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:10:31.562] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:10:31.585] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:10:35.606] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:10:35.606] Server  LOG     prisma:query "SELECT 1"
-[00:10:35.607] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:10:35.609] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:10:35.623] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" = $1 AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:10:36.732] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:10:36.733] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:10:36.733] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:10:36.744] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:17:27.619] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:17:27.619] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:17:27.620] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:17:27.634] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:17:27.648] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:17:52.353] Server  LOG     prisma:query "SELECT 1"
-[00:17:52.353] Server  LOG     prisma:query "SELECT 1"
-[00:17:52.353] Server  LOG     prisma:query "SELECT 1"
-[00:17:52.359] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:17:52.359] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:17:52.360] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:17:52.369] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:17:52.374] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:16.258] Server  LOG     prisma:query "SELECT 1"
-[00:18:16.258] Server  LOG     prisma:query "SELECT 1"
-[00:18:16.258] Server  LOG     prisma:query "SELECT 1"
-[00:18:16.258] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:18:16.259] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:18:16.259] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:18:16.273] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:18:16.285] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:16.903] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:18:16.903] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:18:16.903] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:18:16.915] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:18:16.931] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:42.934] Server  LOG     prisma:query "SELECT 1"
-[00:18:42.941] Server  LOG     prisma:query "UPDATE \"public\".\"User\" SET \"approved\" = $1, \"updatedAt\" = $2 WHERE (\"public\".\"User\".\"id\" = $3 AND 1=1) RETURNING \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\""
-[00:18:43.004] Server  LOG     prisma:query "SELECT 1"
-[00:18:43.005] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:18:43.006] Server  LOG     prisma:query "SELECT 1"
-[00:18:43.007] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:18:43.012] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:18:43.048] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:18:43.087] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:51.024] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:53.220] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:53.257] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:18:57.918] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:18:57.918] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:18:57.919] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:18:57.931] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:19:08.888] Server  LOG     prisma:query "SELECT 1"
-[00:19:08.892] Server  LOG     prisma:query "UPDATE \"public\".\"User\" SET \"approved\" = $1, \"updatedAt\" = $2 WHERE (\"public\".\"User\".\"id\" = $3 AND 1=1) RETURNING \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\""
-[00:19:08.941] Server  LOG     prisma:query "SELECT 1"
-[00:19:08.942] Server  LOG     prisma:query "SELECT 1"
-[00:19:08.943] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:19:08.943] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:19:08.944] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:19:08.957] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:19:08.983] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:19:10.180] Server  LOG     prisma:query "UPDATE \"public\".\"User\" SET \"approved\" = $1, \"updatedAt\" = $2 WHERE (\"public\".\"User\".\"id\" = $3 AND 1=1) RETURNING \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\""
-[00:19:10.388] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:19:10.394] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:19:10.396] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:19:10.424] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:19:10.451] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:19:59.917] Server  LOG     prisma:query "SELECT 1"
-[00:19:59.917] Server  LOG     prisma:query "SELECT 1"
-[00:19:59.917] Server  LOG     prisma:query "SELECT 1"
-[00:19:59.918] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:19:59.918] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:19:59.918] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:19:59.933] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:19:59.955] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:23:30.772] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:23:30.772] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:23:30.776] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:23:30.789] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" = $1 AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:23:32.186] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" NOT IN ($1) OFFSET $2) AS \"sub\""
-[00:23:32.187] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE \"public\".\"User\".\"role\" = $1 OFFSET $2) AS \"sub\""
-[00:23:32.193] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"User\".\"id\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"approved\" = $1 AND \"public\".\"User\".\"role\" = $2) OFFSET $3) AS \"sub\""
-[00:23:32.205] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"role\" NOT IN ($1) AND (\"public\".\"User\".\"name\" ILIKE $2 OR \"public\".\"User\".\"email\" ILIKE $3)) ORDER BY \"public\".\"User\".\"name\" ASC OFFSET $4"
-[00:23:36.417] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:04.342] Server  LOG     prisma:query "SELECT 1"
-[00:25:04.343] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:04.363] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:05.879] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:05.894] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:20.710] Server  LOG     prisma:query "SELECT 1"
-[00:25:20.713] Server  LOG     prisma:query "SELECT \"public\".\"User\".\"id\", \"public\".\"User\".\"name\", \"public\".\"User\".\"email\", \"public\".\"User\".\"password\", \"public\".\"User\".\"role\", \"public\".\"User\".\"approved\", \"public\".\"User\".\"permissions\", \"public\".\"User\".\"firstName\", \"public\".\"User\".\"lastName\", \"public\".\"User\".\"dni\", \"public\".\"User\".\"phone\", \"public\".\"User\".\"jobTitle\", \"public\".\"User\".\"dob\", \"public\".\"User\".\"image\", \"public\".\"User\".\"createdAt\", \"public\".\"User\".\"updatedAt\" FROM \"public\".\"User\" WHERE (\"public\".\"User\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
-[00:25:20.728] Server  LOG     prisma:query "SELECT \"public\".\"AppConfig\".\"id\", \"public\".\"AppConfig\".\"logoUrl\", \"public\".\"AppConfig\".\"updatedAt\" FROM \"public\".\"AppConfig\" WHERE (\"public\".\"AppConfig\".\"id\" = $1 AND 1=1) LIMIT $2 OFFSET $3"
+[00:00:02.265] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.487] Server  LOG     ✓ Ready in 2s
+[00:02:49.374] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:02:49.376] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:02:49.405] Server  ERROR   Failed to fetch fresh permissions in session PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:02:49.410] Server  ERROR   Failed to fetch fresh permissions in session PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:02:53.490] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:02:53.502] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:02:53.506] Server  ERROR   Error getting Org ID PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:02:53.509] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:02:57.579] Server  LOG     prisma:error "\nInvalid `prisma.event.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:02:57.641] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.event.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:01.956] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:01.958] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:01.978] Server  ERROR   Failed to fetch fresh permissions in session PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:01.998] Server  ERROR   Failed to fetch fresh permissions in session PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:06.095] Server  LOG     prisma:error "\nInvalid `prisma.appConfig.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:06.100] Server  LOG     prisma:error "\nInvalid `prisma.user.findUnique()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:06.122] Server  ERROR   Database connection failed in layout: PrismaClientInitializationError: 
+Invalid `prisma.appConfig.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:06.144] Server  ERROR   Error getting Org ID PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:10.232] Server  LOG     prisma:error "\nInvalid `prisma.event.count()` invocation:\n\n\nCan't reach database server at `localhost:5432`\n\nPlease make sure your database server is running at `localhost:5432`."
+[00:03:10.299] Server  ERROR   ⨯ PrismaClientInitializationError: 
+Invalid `prisma.event.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+[00:03:11.005] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:11.136] Browser ERROR   uncaughtError: PrismaClientInitializationError: 
+Invalid `prisma.event.count()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.

@@ -73,3 +73,28 @@ export function ToggleApproval({ id, approved, theme = 'blue' }: { id: string; a
         </form>
     );
 }
+
+
+import { demoteUser } from '@/app/lib/actions/employees';
+import { ArrowDownCircleIcon } from '@heroicons/react/24/outline';
+
+export function DemoteAdmin({ id }: { id: string }) {
+    const handleAction = async () => {
+        if (confirm('¿Degradar este usuario a Jefe de Cocina?')) {
+            await demoteUser(id);
+        }
+    };
+
+    return (
+        <form action={handleAction}>
+            <button
+                type="submit"
+                className="flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 transition-colors bg-orange-50 px-2 py-1 rounded-lg border border-orange-100"
+                title="Degradar a Jefe de Cocina"
+            >
+                <ArrowDownCircleIcon className="w-4 stroke-[2px]" />
+                <span>Degradar Rol</span>
+            </button>
+        </form>
+    );
+}

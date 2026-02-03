@@ -34,8 +34,6 @@ export default async function Page({
 
     try {
         if (userId) {
-            // Team: My workers (Users where I am the admin).
-            // Exclude self to match the list view.
             teamCount = await prisma.user.count({
                 where: {
                     adminId: userId
@@ -44,12 +42,10 @@ export default async function Page({
         }
 
         if (isMasterAdmin) {
-            // Requests: New Tenants (ADMIN role, no adminId, approved=false)
             requestsCount = await prisma.user.count({
                 where: {
                     role: 'ADMIN',
                     adminId: null,
-                    // email: { not: 'gerencia@sotodelprior.com' } 
                 }
             });
             pendingCount = await prisma.user.count({
@@ -79,7 +75,6 @@ export default async function Page({
                 </div>
 
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-end">
-                    {/* Real Tab Switcher */}
                     <div className="flex rounded-xl bg-gray-100/80 p-1 ring-1 ring-gray-200">
                         <Link
                             href="?tab=team"
@@ -130,6 +125,7 @@ export default async function Page({
                     <EmployeesTable query={query} currentPage={currentPage} tab={tab} />
                 )}
             </Suspense>
+
         </div>
     );
 }

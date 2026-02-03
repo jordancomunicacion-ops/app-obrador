@@ -149,3 +149,41 @@ export async function deleteUser(id: string) {
         return { message: 'Error de base de datos: No se pudo eliminar el usuario.' };
     }
 }
+
+export async function demoteUser(id: string) {
+    try {
+        await prisma.user.update({
+            where: { id },
+            data: { role: 'CHEF' },
+        });
+        revalidatePath('/dashboard/employees');
+        return { message: 'Degraded to Chef' };
+    } catch (error) {
+        return { message: 'Database Error: Failed to Demote User.' };
+    }
+}
+
+export async function recoverOrphanUsers() {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) return { message: 'Unauthorized' };
+
+    try {
+        const result = await prisma.user.updateMany({
+            where: {
+                role: 'ADMIN',
+                adminId: null,
+                id: { not: userId }
+            },
+            data: {
+                adminId: userId,
+                role: 'CHEF'
+            }
+        });
+
+        revalidatePath('/dashboard/employees');
+        return { message: `Recuperados ${result.count} usuarios. Ahora aparecen en tu Equipo.` };
+    } catch (error) {
+        return { message: 'Database Error: Failed to Recover Users.' };
+    }
+}

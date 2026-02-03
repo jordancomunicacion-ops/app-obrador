@@ -1,4 +1,4 @@
-import { UpdateEmployee, DeleteEmployee, ToggleApproval } from '@/app/ui/employees/buttons';
+import { UpdateEmployee, DeleteEmployee, ToggleApproval, DemoteAdmin } from '@/app/ui/employees/buttons';
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
 import {
@@ -30,7 +30,7 @@ export default async function EmployeesList({
         employees = await prisma.user.findMany({
             where: {
                 AND: [
-                    { adminId: userId }, // Strictly my workers
+                    { adminId: userId },
                     {
                         OR: [
                             { name: { contains: query, mode: 'insensitive' } },
@@ -93,8 +93,15 @@ export default async function EmployeesList({
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3">
                                             <span className={clsx("inline-flex items-center rounded-full px-2 py-1 text-xs font-medium", roleBadgeColor)}>
-                                                {role === 'ADMIN' ? 'Administrador' : (role === 'CHEF' ? 'Cocinero' : 'Trabajador')}
+                                                {role === 'ADMIN' ? 'Administrador' : (role === 'CHEF' ? 'Jefe de Cocina' : 'Trabajador')}
                                             </span>
+                                            {role === 'ADMIN' && employee.adminId === userId && (
+                                                <div className="mt-1">
+                                                    <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-1 rounded">
+                                                        ⚠ ROL INCORRECTO
+                                                    </span>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-3">
                                             {employee.approved ? (
