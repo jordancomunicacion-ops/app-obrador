@@ -38,6 +38,7 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
         if (href.includes('/dashboard/purchasing')) return 'purchasing';
         if (href.includes('/dashboard/storage')) return 'storage';
         if (href.includes('/dashboard/mise-en-place')) return 'mise-en-place';
+        if (href.includes('/dashboard/obrador')) return 'obrador';
         if (href.includes('/dashboard/employees')) return 'employees';
         if (href.includes('/dashboard/settings')) return 'settings';
         if (name === 'Dashboard' || href === '/dashboard') return 'dashboard';

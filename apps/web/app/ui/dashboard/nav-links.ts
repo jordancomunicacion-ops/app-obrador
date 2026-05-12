@@ -7,7 +7,8 @@ import {
     ArchiveBoxIcon,
     Cog6ToothIcon,
     ShoppingCartIcon,
-    TableCellsIcon
+    TableCellsIcon,
+    BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -33,6 +34,7 @@ export const groups = [
             { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon },
             { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
             { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
+            { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon },
         ]
     },
     {

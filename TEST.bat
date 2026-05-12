@@ -31,7 +31,7 @@ echo [INFO] Deteniendo contenedores previos...
 docker compose down
 
 echo [INFO] Levantando entorno (construyendo si es necesario)...
-docker compose up --build -d
+docker compose -f docker-compose.yml up --build -d
 
 if errorlevel 1 (
     echo [ERROR] Hubo un problema al levantar los contenedores.

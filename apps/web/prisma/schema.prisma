@@ -51,6 +51,16 @@ model User {
   ownedAppConfigs    AppConfig[]       @relation("AppConfigOwner")
   ownedStorage       StorageLocation[] @relation("StorageOwner")
   ownedMiseEnPlace   MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
+  
+  // Obrador Relations
+  ownedObradorConfigs    ObradorConfig[]           @relation("ObradorConfigOwner")
+  ownedObradorProducts   ObradorProduct[]          @relation("ObradorProductOwner")
+  ownedObradorBatches    ObradorProductionBatch[]  @relation("ObradorBatchOwner")
+  ownedObradorIntake     ObradorRawMaterialEntry[] @relation("ObradorIntakeOwner")
+  ownedObradorCustomers  ObradorCustomer[]         @relation("ObradorCustomerOwner")
+  ownedObradorDocs       ObradorSanitaryDocument[] @relation("ObradorDocOwner")
+  ownedObradorTemps      ObradorTemperatureLog[]   @relation("ObradorTempOwner")
+  ownedObradorIncidents  ObradorIncident[]         @relation("ObradorIncidentOwner")
 }
 
 // 7. App Configuration
@@ -148,10 +158,18 @@ model MasterProduct {
 model Supplier {
   id          String   @id @default(cuid())
   name        String   @unique
+  nif         String?
+  address     String?
+  phone       String?
   contactInfo String?
   email       String?
+  contactPerson String?
+  productType   String?
+  healthRegistry String?
+  isActive      Boolean  @default(true)
 
   products SupplierProduct[]
+  obradorIntakes ObradorRawMaterialEntry[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -639,4 +657,276 @@ model SalesRecord {
   source String // e.g., "REVO"
 
   createdAt DateTime @default(now())
+}
+
+// 12. OBRADOR MODULE
+
+model ObradorConfig {
+  id                String   @id @default("default")
+  businessName      String?  // Nombre comercial
+  companyName       String?  // Razón social
+  nif               String?
+  address           String?
+  phone             String?
+  email             String?
+  activity          String?  // restaurante, obrador, elaboración propia, etc.
+  registryType      String?  // Registro autonómico, RGSEAA, etc.
+  registryNumber    String?
+  requestDate       DateTime?
+  resolutionDate    DateTime?
+  status            String   @default("no_iniciado") // no_iniciado, solicitado, aprobado, etc.
+  region            String?  // Comunidad autónoma
+  
+  ownerId           String?
+  owner             User?    @relation("ObradorConfigOwner", fields: [ownerId], references: [id])
+  
+  updatedAt         DateTime @updatedAt
+}
+
+model ObradorProduct {
+  id                  String   @id @default(cuid())
+  name                String
+  category            String   // embutido, carne fresca, carne picada, pan, hamburguesa, otro
+  legalDenomination   String?
+  commercialDescription String?
+  conservationType    String?  // refrigerado, congelado, ambiente
+  recommendedTemp     String?
+  shelfLifeDays       Int?
+  requiresCooking     Boolean  @default(true)
+  usageInstructions   String?
+  saleFormat          String?  // unidad, peso, bandeja, etc.
+  defaultWeight       Float?
+  isActive            Boolean  @default(true)
+  imageUrl            String?
+  labelTemplate       String   @default("100x70")
+
+  // Nutritional Info
+  energyKj            Float?
+  energyKcal          Float?
+  fat                 Float?
+  saturatedFat        Float?
+  carbs               Float?
+  sugars              Float?
+  protein             Float?
+  salt                Float?
+  nutritionalStatus   String   @default("pendiente") // pendiente, verificado
+
+  recipe              ObradorRecipe?
+  productionBatches   ObradorProductionBatch[]
+
+  ownerId             String?
+  owner               User?    @relation("ObradorProductOwner", fields: [ownerId], references: [id])
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ObradorRecipe {
+  id            String   @id @default(cuid())
+  productId     String   @unique
+  product       ObradorProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  ingredients   ObradorRecipeIngredient[]
+  
+  totalCost     Float?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ObradorRecipeIngredient {
+  id            String   @id @default(cuid())
+  recipeId      String
+  recipe        ObradorRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  name          String
+  percentage    Float?
+  quantity      Float?
+  unit          String?
+  allergens     String? // Comma separated list of 14 main allergens
+  isAdditive    Boolean  @default(false)
+  
+  supplierId    String?
+  
+  cost          Float?
+
+  createdAt     DateTime @default(now())
+}
+
+model ObradorRawMaterialEntry {
+  id                String   @id @default(cuid())
+  
+  supplierId        String?
+  supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  supplierName      String // Fallback or manually entered
+  
+  productName       String
+  supplierBatch     String?
+  receptionDate     DateTime @default(now())
+  expiryDate        DateTime?
+  quantityReceived  Float
+  unit              String
+  receptionTemp     Float?
+  visualStatus      String?  // Correcto, Incorrecto
+  documentUrl       String?  // Factura/Albarán
+  isApto            Boolean  @default(true)
+  observations      String?
+
+  batchIngredients  ObradorBatchIngredient[]
+
+  ownerId           String?
+  owner             User?    @relation("ObradorIntakeOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorProductionBatch {
+  id                String   @id @default(cuid())
+  batchCode         String   @unique // L-YYYYMMDD-PROD-NNN
+  
+  productId         String
+  product           ObradorProduct @relation(fields: [productId], references: [id])
+  
+  productionDate    DateTime @default(now())
+  expiryDate        DateTime
+  quantityProduced  Float
+  unit              String
+  
+  operatorId        String?
+  operatorName      String? // Fallback if user is deleted
+  
+  wasteQuantity     Float?
+  observations      String?
+  status            String   @default("abierto") // abierto, cerrado, bloqueado, retirado
+
+  usedMaterials     ObradorBatchIngredient[]
+  sales             ObradorSale[]
+
+  ownerId           String?
+  owner             User?    @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ObradorBatchIngredient {
+  id                String   @id @default(cuid())
+  
+  productionBatchId String
+  productionBatch   ObradorProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
+  
+  rawMaterialEntryId String
+  rawMaterialEntry   ObradorRawMaterialEntry @relation(fields: [rawMaterialEntryId], references: [id])
+  
+  quantityUsed      Float?
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorCustomer {
+  id                String   @id @default(cuid())
+  name              String
+  nif               String?
+  address           String?
+  phone             String?
+  email             String?
+  customerType      String?  // Consumidor final, Minorista, Online, Profesional
+  
+  sales             ObradorSale[]
+
+  ownerId           String?
+  owner             User?    @relation("ObradorCustomerOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ObradorSale {
+  id                String   @id @default(cuid())
+  
+  customerId        String
+  customer          ObradorCustomer @relation(fields: [customerId], references: [id])
+  
+  batchId           String
+  batch             ObradorProductionBatch @relation(fields: [batchId], references: [id])
+  
+  quantitySold      Float
+  saleDate          DateTime @default(now())
+  documentUrl       String?
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorTemperatureLog {
+  id                String   @id @default(cuid())
+  equipmentName     String   // Cámara 1, Obrador, etc.
+  temperature       Float
+  logDate           DateTime @default(now())
+  operatorName      String
+  hasIncidence      Boolean  @default(false)
+  correctiveAction  String?
+
+  ownerId           String?
+  owner             User?    @relation("ObradorTempOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorCleaningTask {
+  id                String   @id @default(cuid())
+  area              String
+  task              String
+  frequency         String   // Diaria, Semanal, Mensual
+  
+  logs              ObradorCleaningLog[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ObradorCleaningLog {
+  id                String   @id @default(cuid())
+  
+  taskId            String
+  task              ObradorCleaningTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  logDate           DateTime @default(now())
+  operatorName      String
+  status            String   // Realizado, No realizado
+  observations      String?
+  signatureUrl      String?
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorIncident {
+  id                String   @id @default(cuid())
+  type              String
+  description       String
+  affectedBatchId   String?
+  incidentDate      DateTime @default(now())
+  correctiveAction  String?
+  operatorName      String
+  status            String   @default("abierto") // abierto, cerrado
+  documentUrl       String?
+
+  ownerId           String?
+  owner             User?    @relation("ObradorIncidentOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+}
+
+model ObradorSanitaryDocument {
+  id                String   @id @default(cuid())
+  title             String
+  category          String   // Registro, APPCC, Limpieza, Plagas, Formación, Fichas, Albaranes, Facturas, Certificados, Incidencias, Retiradas, Inspecciones
+  fileUrl           String
+  expiryDate        DateTime?
+  associatedId      String?  // Optional link to product, supplier or batch
+  
+  ownerId           String?
+  owner             User?    @relation("ObradorDocOwner", fields: [ownerId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

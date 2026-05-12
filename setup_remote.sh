@@ -4,8 +4,8 @@ set -e
 echo "=== ACTUALIZANDO APP COCINA (AUTONOMA) ==="
 
 echo "-> DETENIENDO CONTENEDORES ANTIGUOS..."
-docker stop cocina-web cocina-api cocina-engine cocina-db || true
-docker rm cocina-web cocina-api cocina-engine cocina-db || true
+docker stop sotococina-web sotococina-db || true
+docker rm sotococina-web sotococina-db || true
 
 echo "-> Limpiando absolutamente todo lo anterior para liberar espacio..."
 docker rmi cocina-web:latest || true
@@ -21,9 +21,9 @@ docker compose -f docker-compose.yml up -d --build --remove-orphans
 
 echo "-> ASEGURANDO ESTADO LLAVE DE MIGRACIONES..."
 # Marcar la migración inicial como aplicada si la base de datos ya existe (Baselining)
-docker compose -f docker-compose.yml exec -T cocina-web npx prisma@5.22.0 migrate resolve --applied 20260127225950_init || true
+docker compose -f docker-compose.yml exec -T sotococina-web npx prisma@5.22.0 migrate resolve --applied 20260127225950_init || true
 
 echo "-> FORZANDO SINCRONIZACION DE ESQUEMA (DB PUSH)..."
-docker compose -f docker-compose.yml exec -T cocina-web npx prisma@5.22.0 db push --accept-data-loss --skip-generate
+docker compose -f docker-compose.yml exec -T sotococina-web npx prisma@5.22.0 db push --accept-data-loss --skip-generate
 
 echo "=== COCINA ACTUALIZADA ==="

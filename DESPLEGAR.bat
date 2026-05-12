@@ -17,7 +17,7 @@ scp deploy.tar.gz root@164.92.167.42:/root/deploy_cocina.tar.gz
 echo.
 echo [3/3] Limpiando despliegue anterior e instalando...
 :: Borramos archivos antiguos (excepto db_data para preservar la base de datos), luego descomprimimos
-ssh root@164.92.167.42 "mkdir -p SOTOdelPRIOR/apps/cocina && cd SOTOdelPRIOR/apps/cocina && find . -mindepth 1 -maxdepth 1 ! -name 'db_data' ! -name 'cocina_db_data' -exec rm -rf {} + && tar -xzvf /root/deploy_cocina.tar.gz > /dev/null && mv .env.production .env && sed -i 's/\r$//' setup_remote.sh && bash setup_remote.sh"
+ssh root@164.92.167.42 "mkdir -p SOTOdelPRIOR/apps/cocina && cd SOTOdelPRIOR/apps/cocina && find . -mindepth 1 -maxdepth 1 ! -name 'db_data' ! -name 'cocina_db_data' -exec rm -rf {} + && tar -xzvf /root/deploy_cocina.tar.gz > /dev/null && (mv .env.production .env 2>/dev/null || true) && sed -i 's/\r$//' setup_remote.sh && bash setup_remote.sh"
 
 echo.
 echo Limpiando...

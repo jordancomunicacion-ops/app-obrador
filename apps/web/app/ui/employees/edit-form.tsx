@@ -174,6 +174,7 @@ export default function EditForm({ user }: { user: any }) {
                                 { id: 'purchasing', label: 'Compras' },
                                 { id: 'storage', label: 'Almacén' },
                                 { id: 'mise-en-place', label: 'Mise en place' },
+                                { id: 'obrador', label: 'Obrador' },
                                 { id: 'employees', label: 'Empleados' },
                                 { id: 'settings', label: 'Configuración' }
                             ].map(section => (

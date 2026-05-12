@@ -1,3 +1,5 @@
+name: "sotococina"
+
 networks:
   proxy-net:
     external: true
@@ -10,9 +12,9 @@ volumes:
     name: cocina_cocina_db_data
 
 services:
-  cocina-db:
+  sotococina-db:
     image: postgres:15-alpine
-    container_name: cocina-db
+    container_name: sotococina-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-cocina}
@@ -20,53 +22,53 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS:-cocina_pass}
     volumes:
       - cocina_db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
       - cocina-internal-net
+    ports:
+      - "5440:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-cocina_user} -d ${DB_NAME:-cocina}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  cocina-web:
+  sotococina-web:
     image: cocina-web:latest
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-    container_name: cocina-web
+    container_name: sotococina-web
     restart: unless-stopped
     environment:
       AUTH_TRUST_HOST: "true"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      AUTH_URL: "${AUTH_URL:-https://cocina.sotodelprior.com}"
-      DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@cocina-db:5432/${DB_NAME:-cocina}
-      AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}" # Mandatory for NextAuth v5
+      AUTH_URL: "${AUTH_URL:-http://cocina.sotodelprior.com}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://cocina.sotodelprior.com}"
+      DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@sotococina-db:5432/${DB_NAME:-cocina}
+      AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}"
+      NEXTAUTH_SKIP_ENV_VALIDATION: "true"
+      NEXTAUTH_URL_INTERNAL: "http://localhost:3000"
+      NEXTAUTH_TRUST_HOST: "true"
+      NODE_ENV: "development"
     networks:
       - proxy-net
       - cocina-internal-net
     depends_on:
-      cocina-db:
+      sotococina-db:
         condition: service_healthy
-    ports:
-      - "3002:3000"
     expose:
       - "3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cocina-web.rule=Host(`cocina.sotodelprior.com`)"
-      - "traefik.http.routers.cocina-web.entrypoints=websecure"
-      - "traefik.http.routers.cocina-web.tls=true"
-      - "traefik.http.routers.cocina-web.tls.certresolver=le"
-      - "traefik.http.services.cocina-web-svc.loadbalancer.server.port=3000"
-
-      # Redirect HTTP -> HTTPS
-      - "traefik.http.routers.cocina-web-http.rule=Host(`cocina.sotodelprior.com`)"
-      - "traefik.http.routers.cocina-web-http.entrypoints=web"
-      - "traefik.http.routers.cocina-web-http.middlewares=cocina-https-redirect"
-      - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.cocina-https-redirect.redirectscheme.permanent=true"
+      - "traefik.http.routers.sotococina-web.rule=Host(`cocina.sotodelprior.com`)"
+      - "traefik.http.routers.sotococina-web.entrypoints=websecure"
+      - "traefik.http.routers.sotococina-web.tls=true"
+      - "traefik.http.routers.sotococina-web.tls.certresolver=le"
+      - "traefik.http.routers.sotococina-web.middlewares=sotococina-web-headers"
+      - "traefik.http.middlewares.sotococina-web-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.sotococina-web-headers.headers.customrequestheaders.X-Forwarded-Scheme=https"
+      - "traefik.docker.network=proxy-net"
+      - "traefik.http.services.sotococina-web.loadbalancer.server.port=3000"
 
     extra_hosts:
       - "cocina.sotodelprior.com:host-gateway"
