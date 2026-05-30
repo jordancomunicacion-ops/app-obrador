@@ -39,6 +39,7 @@ export const groups = [
         name: 'Operaciones',
         items: [
             { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon },
+            { name: 'Pedidos a proveedores', href: '/dashboard/purchasing/orders', icon: ShoppingCartIcon },
             { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
             { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
             { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon },

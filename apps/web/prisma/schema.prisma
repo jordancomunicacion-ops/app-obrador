@@ -91,6 +91,11 @@ model User {
   // Turnos
   ownedShifts  Shift[] @relation("ShiftOwner")
   workerShifts Shift[] @relation("ShiftWorker")
+
+  // Pedidos y albaranes
+  ownedPurchaseOrders   PurchaseOrder[] @relation("PurchaseOrderOwner")
+  createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreator")
+  receivedDeliveryNotes DeliveryNote[]  @relation("DeliveryNoteReceiver")
 }
 
 // 7. App Configuration
@@ -200,6 +205,7 @@ model Supplier {
 
   products SupplierProduct[]
   obradorIntakes ObradorRawMaterialEntry[]
+  purchaseOrders PurchaseOrder[] @relation("PurchaseOrderSupplier")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -238,6 +244,8 @@ model SupplierProduct {
   // Storage Location
   storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
   storageLocationId String?
+
+  purchaseOrderLines PurchaseOrderLine[] @relation("PurchaseOrderLineProduct")
 
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
@@ -1318,4 +1326,87 @@ model Shift {
 
   @@index([ownerId, date])
   @@index([ownerId, workerId, date])
+}
+
+// ============================================================================
+// 15. PEDIDOS A PROVEEDORES + ALBARANES (yurest order + delivery-note)
+// ============================================================================
+
+enum PurchaseOrderStatus {
+  DRAFT       // borrador editable
+  SENT        // enviado al proveedor
+  RECEIVED    // mercancía recibida (parcial o total)
+  CLOSED      // cerrado, no se aceptan cambios
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id String @id @default(cuid())
+
+  ownerId String
+  owner   User   @relation("PurchaseOrderOwner", fields: [ownerId], references: [id])
+
+  createdByUserId String?
+  createdBy       User?   @relation("PurchaseOrderCreator", fields: [createdByUserId], references: [id])
+
+  supplierId String
+  supplier   Supplier @relation("PurchaseOrderSupplier", fields: [supplierId], references: [id])
+
+  status PurchaseOrderStatus @default(DRAFT)
+
+  reference     String?  // número/referencia del pedido
+  expectedDate  DateTime?
+  sentAt        DateTime?
+  closedAt      DateTime?
+  notes         String?
+
+  lines         PurchaseOrderLine[]
+  deliveryNotes DeliveryNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, status])
+  @@index([ownerId, supplierId, createdAt])
+}
+
+model PurchaseOrderLine {
+  id String @id @default(cuid())
+
+  orderId String
+  order   PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Producto puede ser de catálogo (SupplierProduct) o ad-hoc por texto
+  supplierProductId String?
+  supplierProduct   SupplierProduct? @relation("PurchaseOrderLineProduct", fields: [supplierProductId], references: [id])
+
+  productName String  // siempre rellenado para no perder histórico
+  unit        String  // KG, UD, L, BOX...
+  quantity    Float
+  unitPrice   Float?  // opcional
+
+  // Lo que finalmente se recibió (puede ser distinto)
+  receivedQuantity Float?  @default(0)
+}
+
+model DeliveryNote {
+  id String @id @default(cuid())
+
+  orderId String
+  order   PurchaseOrder @relation(fields: [orderId], references: [id])
+
+  receivedByUserId String?
+  receivedBy       User?   @relation("DeliveryNoteReceiver", fields: [receivedByUserId], references: [id])
+
+  receivedAt DateTime @default(now())
+
+  photoUrls    String[]  @default([])   // fotos del albarán/mercancía
+  signatureSvg String?                  // firma del receptor
+  note         String?
+
+  // Opcionalmente las líneas concretas recibidas (si parcial)
+  receivedLines Json?  // [{orderLineId, qty}]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

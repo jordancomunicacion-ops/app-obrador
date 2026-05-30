@@ -106,7 +106,12 @@ export default async function TodayPage() {
     orderBy: { date: "asc" },
   });
 
-  // 5. Solicitudes propias pendientes / resueltas recientemente
+  // 5. Pedidos por recibir
+  const pendingDeliveries = await prisma.purchaseOrder.count({
+    where: { ownerId: orgId, status: "SENT" },
+  });
+
+  // 6. Solicitudes propias pendientes / resueltas recientemente
   const myRequestsPending = await prisma.employeeRequest.count({
     where: {
       ownerId: orgId,
@@ -200,6 +205,19 @@ export default async function TodayPage() {
               </span>
             </div>
             <span className="text-xs text-amber-700">→</span>
+          </Link>
+        )}
+        {pendingDeliveries > 0 && (
+          <Link
+            href="/dashboard/today/deliveries"
+            className="flex items-center justify-between bg-violet-50 border-2 border-violet-200 rounded-xl p-3 hover:bg-violet-100 transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-medium text-violet-800 truncate">
+                📦 {pendingDeliveries} pedido{pendingDeliveries === 1 ? "" : "s"} por recibir
+              </span>
+            </div>
+            <span className="text-xs text-violet-700">→</span>
           </Link>
         )}
         <Link
