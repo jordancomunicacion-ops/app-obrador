@@ -95,7 +95,16 @@ export default async function TodayPage() {
   // 4. Fichaje actual (si está abierto)
   const currentClockIn = await getCurrentClockIn();
 
-  // 5. Comunicaciones abiertas asignadas a mí (averías, avisos…)
+  // 5. Solicitudes propias pendientes / resueltas recientemente
+  const myRequestsPending = await prisma.employeeRequest.count({
+    where: {
+      ownerId: orgId,
+      workerId: userId,
+      status: "PENDING",
+    },
+  });
+
+  // 6. Comunicaciones abiertas asignadas a mí (averías, avisos…)
   const openCommunications = await prisma.communication.count({
     where: {
       ownerId: orgId,
@@ -138,21 +147,39 @@ export default async function TodayPage() {
         }
       />
 
-      {openCommunications > 0 && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+        {openCommunications > 0 && (
+          <Link
+            href="/dashboard/communications"
+            className="flex items-center justify-between bg-amber-50 border-2 border-amber-200 rounded-xl p-3 hover:bg-amber-100 transition-colors"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <ChatBubbleLeftRightIcon className="w-5 h-5 text-amber-700 flex-none" />
+              <span className="text-sm font-medium text-amber-800 truncate">
+                {openCommunications}{" "}
+                {openCommunications === 1 ? "comunicación" : "comunicaciones"} para ti
+              </span>
+            </div>
+            <span className="text-xs text-amber-700">→</span>
+          </Link>
+        )}
         <Link
-          href="/dashboard/communications"
-          className="flex items-center justify-between bg-amber-50 border-2 border-amber-200 rounded-xl p-3 mb-4 hover:bg-amber-100 transition-colors"
+          href="/dashboard/today/requests"
+          className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
         >
-          <div className="flex items-center gap-3">
-            <ChatBubbleLeftRightIcon className="w-5 h-5 text-amber-700" />
-            <span className="text-sm font-medium text-amber-800">
-              {openCommunications}{" "}
-              {openCommunications === 1 ? "comunicación" : "comunicaciones"} para ti
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-medium text-gray-700 truncate">
+              Mis solicitudes
+              {myRequestsPending > 0 && (
+                <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+                  {myRequestsPending} pend.
+                </span>
+              )}
             </span>
           </div>
-          <span className="text-xs text-amber-700">Abrir →</span>
+          <span className="text-xs text-gray-500">→</span>
         </Link>
-      )}
+      </div>
 
       {productionTasks.length === 0 && checklistInstances.length === 0 ? (
         <div className="text-center p-12 border-2 border-dashed border-gray-200 rounded-lg">

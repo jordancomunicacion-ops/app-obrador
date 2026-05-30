@@ -82,6 +82,11 @@ model User {
   // Fichaje
   ownedClockIns   ClockIn[] @relation("ClockInOwner")
   workerClockIns  ClockIn[] @relation("ClockInWorker")
+
+  // Solicitudes (vacaciones, ausencias, cambios de turno)
+  ownedRequests    EmployeeRequest[] @relation("EmployeeRequestOwner")
+  workerRequests   EmployeeRequest[] @relation("EmployeeRequestWorker")
+  resolvedRequests EmployeeRequest[] @relation("EmployeeRequestResolver")
 }
 
 // 7. App Configuration
@@ -1231,4 +1236,52 @@ model ClockIn {
 
   @@index([ownerId, workerId, startAt])
   @@index([ownerId, locationId, startAt])
+}
+
+// ============================================================================
+// 13. SOLICITUDES (vacaciones, ausencias, cambios de turno) — patrón yurest
+// ============================================================================
+
+enum EmployeeRequestType {
+  HOLIDAY      // vacaciones
+  SICK_LEAVE   // baja médica
+  PERSONAL     // asuntos propios
+  SHIFT_SWAP   // cambio de turno
+  OTHER
+}
+
+enum EmployeeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model EmployeeRequest {
+  id String @id @default(cuid())
+
+  ownerId String
+  owner   User   @relation("EmployeeRequestOwner", fields: [ownerId], references: [id])
+
+  workerId String
+  worker   User   @relation("EmployeeRequestWorker", fields: [workerId], references: [id])
+
+  type   EmployeeRequestType
+  status EmployeeRequestStatus @default(PENDING)
+
+  startDate DateTime  // fecha inicio (para vacaciones y bajas; para SHIFT_SWAP solo la fecha del cambio)
+  endDate   DateTime? // null si es un solo día
+
+  reason   String?
+  decision String? // motivo aceptado/rechazado por el admin
+
+  resolverUserId String?
+  resolver       User?   @relation("EmployeeRequestResolver", fields: [resolverUserId], references: [id])
+  resolvedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, status, startDate])
+  @@index([ownerId, workerId, startDate])
 }
