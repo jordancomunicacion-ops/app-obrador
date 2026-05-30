@@ -7,6 +7,7 @@ import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { auth } from '@/auth';
+import { isPlatformOwner } from '@/lib/auth/platform';
 import EmployeesList from '@/app/ui/employees/list';
 
 export default async function Page({
@@ -19,8 +20,7 @@ export default async function Page({
     }>;
 }) {
     const session = await auth();
-    const userEmail = session?.user?.email;
-    const isMasterAdmin = userEmail?.toLowerCase() === 'gerencia@sotodelprior.com';
+    const isMasterAdmin = isPlatformOwner(session);
     const userId = session?.user?.id;
 
     const params = await searchParams;

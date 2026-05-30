@@ -16,7 +16,7 @@ model User {
   name     String
   email    String @unique
   password String
-  role     String @default("USER") // ADMIN, USER, VET
+  role     String @default("USER") // SUPERADMIN (propietario de plataforma, cross-tenant), ADMIN (cliente/tenant), USER (empleado), VET
   approved Boolean @default(false)
   permissions String[] @default([])
 
