@@ -62,6 +62,9 @@ model User {
   ownedObradorTemps      ObradorTemperatureLog[]   @relation("ObradorTempOwner")
   ownedObradorIncidents  ObradorIncident[]         @relation("ObradorIncidentOwner")
 
+  // Empresas (empleador legal: razón social + NIF) bajo una misma cuenta de cliente
+  ownedEmpresas          Empresa[]                 @relation("EmpresaOwner")
+
   // Locales (multi-location bajo un mismo admin)
   ownedLocations         Location[]                @relation("LocationOwner")
   locationId             String?
@@ -987,6 +990,35 @@ model ObradorSanitaryDocument {
 // ============================================================================
 // 9. LOCATIONS (multi-local bajo un mismo admin/cliente)
 // ============================================================================
+// Empresa = empleador legal (razón social + NIF). Nivel intermedio entre la
+// cuenta de cliente (tenant/owner) y el local. Una cuenta puede agrupar varias
+// empresas; cada empresa, varios locales. El empleo se vinculará a la empresa
+// (no al local) para reflejar la relación contractual y evitar representar
+// cesión ilegal de trabajadores. En el caso simple (cliente = empresa) habrá
+// una sola empresa por cuenta y la UI colapsa el nivel.
+model Empresa {
+  id            String  @id @default(cuid())
+  razonSocial   String  // Nombre legal (razón social)
+  comercialName String? // Nombre comercial
+  nif           String? // CIF/NIF
+  address       String?
+  phone         String?
+  email         String?
+  isActive      Boolean @default(true)
+
+  // Cuenta de cliente (tenant) propietaria de la empresa.
+  ownerId String
+  owner   User   @relation("EmpresaOwner", fields: [ownerId], references: [id])
+
+  // Locales / centros de trabajo de esta empresa.
+  locations Location[] @relation("EmpresaLocations")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
 model Location {
   id        String   @id @default(cuid())
   name      String
@@ -996,6 +1028,11 @@ model Location {
 
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
+
+  // Empresa (empleador legal) a la que pertenece este local / centro de trabajo.
+  // Nullable durante la transición: los locales existentes se vincularán por backfill.
+  empresaId String?
+  empresa   Empresa? @relation("EmpresaLocations", fields: [empresaId], references: [id])
 
   members        User[]              @relation("LocationMembers")
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
