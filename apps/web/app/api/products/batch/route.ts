@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { scopedLocationId } from '@/lib/auth/scope';
 
 const prisma = new PrismaClient();
 
@@ -11,6 +12,9 @@ export async function POST(request: Request) {
         if (!Array.isArray(body)) {
             return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
         }
+
+        // Asigna el local activo a los ingredientes importados (aislamiento por local).
+        const locationId = await scopedLocationId();
 
         // Process each item to match schema
         // Note: We might want to use createMany if we don't have complex relations, 
@@ -25,6 +29,7 @@ export async function POST(request: Request) {
 
                 await tx.ingredient.create({
                     data: {
+                        locationId,
                         name: item.name,
                         category: item.category || 'Otros',
                         pricingUnit: item.pricingUnit || 'KG',

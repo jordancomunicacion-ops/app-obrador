@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import clsx from "clsx";
 import { prisma } from "@/lib/prisma";
 import { currentOrgId } from "@/auth";
+import { locationScope } from "@/lib/auth/scope";
 import {
   ArrowLeftIcon,
   PaperAirplaneIcon,
@@ -47,7 +48,7 @@ export default async function OrderDetailPage({
   if (!order) notFound();
 
   const catalog = await prisma.supplierProduct.findMany({
-    where: { supplierId: order.supplierId },
+    where: { ...(await locationScope()), supplierId: order.supplierId },
     select: { id: true, name: true, unit: true, price: true },
     orderBy: { name: "asc" },
   });

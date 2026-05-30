@@ -9,8 +9,8 @@ export default async function Page({ params }: { params: { id: string, transform
     const scope = await locationScope();
 
     const [product, transformation, ingredients] = await Promise.all([
-        prisma.masterProduct.findUnique({
-            where: { id },
+        prisma.masterProduct.findFirst({
+            where: { ...scope, id },
             include: { supplierProducts: true }
         }),
         prisma.transformation.findUnique({

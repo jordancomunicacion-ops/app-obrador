@@ -44,6 +44,7 @@ export default async function Page() {
         }),
         prisma.supplierProduct.findMany({
             where: {
+                ...recipeScope,
                 transformations: { some: {} }
             },
             select: { ingredientId: true }

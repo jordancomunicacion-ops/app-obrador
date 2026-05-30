@@ -59,6 +59,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         }),
         prisma.supplierProduct.findMany({
             where: {
+                ...recipeScope,
                 transformations: { some: {} }
             },
             select: { ingredientId: true }

@@ -8,8 +8,8 @@ export default async function Page({ params }: { params: { id: string } }) {
     const scope = await locationScope();
 
     const [product, ingredients] = await Promise.all([
-        prisma.masterProduct.findUnique({
-            where: { id },
+        prisma.masterProduct.findFirst({
+            where: { ...scope, id },
             include: { supplierProducts: true }
         }),
         prisma.ingredient.findMany({

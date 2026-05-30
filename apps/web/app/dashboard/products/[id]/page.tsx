@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DeleteTransformationButton } from '@/app/ui/products/delete-transformation-button';
 import { PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
 
-    const product = await prisma.masterProduct.findUnique({
-        where: { id },
+    const product = await prisma.masterProduct.findFirst({
+        where: { ...(await locationScope()), id },
         include: {
             supplierProducts: {
                 include: {
