@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
+import { locationScope } from "@/lib/auth/scope";
 
 async function assertOwner(id: string) {
   const orgId = await currentOrgId();
@@ -27,7 +28,7 @@ export async function createOrder(data: {
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
 
   const supplier = await prisma.supplier.findFirst({
-    where: { id: data.supplierId, OR: [{ ownerId: orgId }, { ownerId: null }] },
+    where: { ...(await locationScope()), id: data.supplierId },
   });
   if (!supplier) throw new Error("Supplier not found");
 

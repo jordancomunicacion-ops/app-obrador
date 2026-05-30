@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { currentOrgId } from "@/auth";
+import { locationScope } from "@/lib/auth/scope";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createOrder } from "@/app/lib/actions/purchase-orders";
 
@@ -9,7 +10,7 @@ export default async function NewOrderPage() {
   if (!orgId) return null;
 
   const suppliers = await prisma.supplier.findMany({
-    where: { OR: [{ ownerId: orgId }, { ownerId: null }], isActive: true },
+    where: { ...(await locationScope()), isActive: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });

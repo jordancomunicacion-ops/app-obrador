@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { scopedLocationId, locationScope } from '@/lib/auth/scope';
 
 const SupplierSchema = z.object({
     id: z.string(),
@@ -43,6 +44,7 @@ export async function createSupplier(prevState: SupplierFormState, formData: For
     try {
         await prisma.supplier.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 contactInfo,
                 email,
@@ -75,6 +77,14 @@ export async function updateSupplier(id: string, prevState: SupplierFormState, f
 
     const { name, contactInfo, email } = validatedFields.data;
 
+    const inScope = await prisma.supplier.findFirst({
+        where: { ...(await locationScope()), id },
+        select: { id: true },
+    });
+    if (!inScope) {
+        return { message: 'No autorizado: el proveedor no pertenece a tu local.' };
+    }
+
     try {
         await prisma.supplier.update({
             where: { id },
@@ -96,6 +106,13 @@ export async function updateSupplier(id: string, prevState: SupplierFormState, f
 
 export async function deleteSupplier(id: string) {
     try {
+        const scoped = await prisma.supplier.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: el proveedor no pertenece a tu local.' };
+        }
         await prisma.supplier.delete({
             where: { id },
         });
