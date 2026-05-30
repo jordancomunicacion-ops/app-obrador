@@ -191,6 +191,12 @@ model Ingredient {
 
   ownerId String?
   owner   User?   @relation("IngredientOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local (centro de trabajo). Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("IngredientLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // -----------------------------------------------------------------------------
@@ -1084,6 +1090,7 @@ model Location {
 
   members        User[]              @relation("LocationMembers")
   recipes        Recipe[]            @relation("RecipeLocation")
+  ingredients    Ingredient[]        @relation("IngredientLocation")
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")

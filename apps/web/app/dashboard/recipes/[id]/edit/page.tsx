@@ -22,6 +22,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             },
         }),
         prisma.ingredient.findMany({
+            where: { ...recipeScope },
             orderBy: { name: 'asc' },
             include: {
                 transformationOutputs: {

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateIngredientSchema, UpdateIngredientSchema } from '@/app/lib/definitions';
 import type { IngredientFormState } from '@/app/lib/definitions';
+import { scopedLocationId, locationScope } from '@/lib/auth/scope';
 
 // --- INGREDIENTS ---
 
@@ -31,6 +32,7 @@ export async function createIngredient(prevState: IngredientFormState, formData:
     try {
         await prisma.ingredient.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 category,
                 pricingUnit, // Schema validation ensures it matches expected string/enum
@@ -74,6 +76,15 @@ export async function updateIngredient(
 
     const { name, category, pricingUnit, pricePerUnit, yieldPercent, allergens } = validatedFields.data;
 
+    // Verifica que el ingrediente pertenece al local del usuario antes de editar.
+    const inScope = await prisma.ingredient.findFirst({
+        where: { ...(await locationScope()), id },
+        select: { id: true },
+    });
+    if (!inScope) {
+        return { message: 'No autorizado: el ingrediente no pertenece a tu local.' };
+    }
+
     try {
         await prisma.ingredient.update({
             where: { id },
@@ -99,6 +110,13 @@ export async function updateIngredient(
 
 export async function deleteIngredient(id: string) {
     try {
+        const scoped = await prisma.ingredient.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: el ingrediente no pertenece a tu local.' };
+        }
         await prisma.ingredient.delete({
             where: { id },
         });

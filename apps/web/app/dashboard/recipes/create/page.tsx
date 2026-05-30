@@ -8,6 +8,7 @@ export default async function Page() {
     const recipeScope = await locationScope();
     const [ingredientsRaw, categories, packaging, subRecipes, transformedProducts] = await Promise.all([
         prisma.ingredient.findMany({
+            where: { ...recipeScope },
             orderBy: { name: 'asc' },
             include: {
                 transformationOutputs: {

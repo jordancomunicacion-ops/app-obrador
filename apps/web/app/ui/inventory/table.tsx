@@ -1,5 +1,6 @@
 import { UpdateIngredient, DeleteIngredient } from '@/app/ui/inventory/buttons';
 import { prisma } from '@/lib/prisma';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function InventoryTable({
     query,
@@ -10,6 +11,7 @@ export default async function InventoryTable({
 }) {
     const ingredients = await prisma.ingredient.findMany({
         where: {
+            ...(await locationScope()),
             OR: [
                 { name: { contains: query } }, // Case insensitive in Postgres, sensitive in SQLite/some providers. 
                 // For SQLite "contains" maps to LIKE which is case insensitive for ASCII
