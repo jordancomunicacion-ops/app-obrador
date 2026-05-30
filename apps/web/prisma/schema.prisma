@@ -78,6 +78,10 @@ model User {
   authoredCommunications  Communication[]        @relation("CommunicationAuthor")
   authoredCommComments    CommunicationComment[] @relation("CommunicationCommentAuthor")
   ownedCommunications     Communication[]        @relation("CommunicationOwner")
+
+  // Fichaje
+  ownedClockIns   ClockIn[] @relation("ClockInOwner")
+  workerClockIns  ClockIn[] @relation("ClockInWorker")
 }
 
 // 7. App Configuration
@@ -965,6 +969,7 @@ model Location {
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")
+  clockIns       ClockIn[]           @relation("ClockInLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1191,4 +1196,39 @@ model ChecklistResponse {
   updatedAt DateTime @updatedAt
 
   @@unique([instanceId, fieldId])
+}
+
+// ============================================================================
+// 12. FICHAJE / CLOCK-IN (patrón yurest)
+// ============================================================================
+
+model ClockIn {
+  id String @id @default(cuid())
+
+  // Multi-tenancy
+  ownerId String
+  owner   User   @relation("ClockInOwner", fields: [ownerId], references: [id])
+
+  // Trabajador que ficha
+  workerId String
+  worker   User   @relation("ClockInWorker", fields: [workerId], references: [id])
+
+  // Local opcional donde se realiza la jornada
+  locationId String?
+  location   Location? @relation("ClockInLocation", fields: [locationId], references: [id])
+
+  // Entrada / salida
+  startAt        DateTime
+  endAt          DateTime?
+  startPhotoUrl  String?
+  endPhotoUrl    String?
+  startSignature String?    // base64 SVG/PNG opcional
+  endSignature   String?
+  note           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, workerId, startAt])
+  @@index([ownerId, locationId, startAt])
 }

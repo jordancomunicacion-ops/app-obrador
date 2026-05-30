@@ -10,7 +10,8 @@ import {
     TableCellsIcon,
     BuildingStorefrontIcon,
     SunIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    ClockIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -45,6 +46,7 @@ export const groups = [
         name: 'Administración',
         items: [
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
+            { name: 'Fichajes', href: '/dashboard/clock-in', icon: ClockIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]

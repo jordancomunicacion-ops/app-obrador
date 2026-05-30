@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/lib/auth/location";
 import { generateInstancesForDate } from "@/app/lib/actions/checklist-instances";
+import { getCurrentClockIn } from "@/app/lib/actions/clock-in";
+import ClockInCard from "@/app/ui/today/clock-in-card";
 import {
   ClockIcon,
   CameraIcon,
@@ -90,7 +92,10 @@ export default async function TodayPage() {
     orderBy: [{ schedule: { pinned: "desc" } }, { schedule: { executionStartTime: "asc" } }],
   });
 
-  // 4. Comunicaciones abiertas asignadas a mí (averías, avisos…)
+  // 4. Fichaje actual (si está abierto)
+  const currentClockIn = await getCurrentClockIn();
+
+  // 5. Comunicaciones abiertas asignadas a mí (averías, avisos…)
   const openCommunications = await prisma.communication.count({
     where: {
       ownerId: orgId,
@@ -120,6 +125,18 @@ export default async function TodayPage() {
           year: "numeric",
         })}
       </p>
+
+      <ClockInCard
+        initial={
+          currentClockIn
+            ? {
+                id: currentClockIn.id,
+                startAt: currentClockIn.startAt.toISOString(),
+                locationName: currentClockIn.location?.name ?? null,
+              }
+            : null
+        }
+      />
 
       {openCommunications > 0 && (
         <Link
