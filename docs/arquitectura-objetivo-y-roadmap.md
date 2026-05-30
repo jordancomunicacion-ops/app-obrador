@@ -76,7 +76,7 @@ La app debe converger en un sistema donde **una capa de taxonomía Sapiens (elBu
 | Catálogo difuso (productos/inventario/almacén) | **Taxonomía Sapiens** como clasificación única y transversal |
 | Doble compra/costeo | Escandallo único + test carnicero (`Transformation`) como fuente de mermas/coste |
 | Doble etiquetado | Generador único alimentado por catálogo + lotes de obrador |
-| Scoping `ownerId` vs `locationId` | Estrategia única de aislamiento (Fase 1) |
+| Scoping `ownerId` vs `locationId` | Jerarquía única **Tenant → Empresa → Local** (Fase 1, §8) |
 
 ---
 
@@ -90,8 +90,8 @@ La app debe converger en un sistema donde **una capa de taxonomía Sapiens (elBu
 **Fase 0 — Limpieza sin riesgo**
 Borrar scripts ad-hoc duplicados, sacar `dev.db`/`schema.prisma.backup` de git, unificar carpetas `lib`, limpiar deuda visible del esquema. Cero cambio funcional.
 
-**Fase 1 — Scoping multi-tenant**
-Auditar `ownerId` vs `locationId`, definir estrategia única y helper central de aislamiento. (Seguridad.)
+**Fase 1 — Jerarquía Tenant → Empresa → Local (aislamiento completo)** *(ver §8 para el detalle)*
+Introducir el nivel **Empresa** (empleador legal), colgar `Location` de la empresa, extender el eje **Local** a TODAS las operaciones (recetario, catálogo, proveedores, obrador, eventos, tareas…), y modelar el **empleo como contrato por empresa**. Helper central de aislamiento. (Seguridad + cumplimiento legal.)
 
 **Fase 2 — Consolidar duplicidades de código**
 Fusionar `shopping-list`/`smart-shopping`, compartir componentes `today/*` ↔ admin, simplificar navegación redundante.
@@ -131,3 +131,47 @@ A partir de los libros del usuario: perfil molecular/compuestos por producto; mo
 ## 7. Próximo paso sugerido
 
 Empezar por la **Fase 0** (limpieza segura y reversible) en un PR independiente, y a partir de ahí avanzar por el Bloque A. La taxonomía y la química quedan reservadas para el final, como pediste.
+
+---
+
+## 8. Modelo de aislamiento: Tenant → Empresa → Local *(detalle de la Fase 1)*
+
+### 8.1 Estado actual (diagnóstico)
+- **Eje cliente/Org** (funciona): `currentOrgId()` en `auth.ts` resuelve el tenant — un `ADMIN` *es* el cliente; un `USER` hereda el cliente vía `adminId`. La mayoría del catálogo se filtra por `ownerId == org`.
+- **Eje local** (incompleto): solo **9 modelos** tienen `locationId` (checklists, comunicaciones, fichajes, turnos, etiquetas, cierres de caja, finanzas). Selector de local activo por cookie (`currentLocationId()` en `lib/auth/location.ts`).
+- **Consecuencia**: recetario, catálogo, proveedores, eventos, tareas, obrador y los **empleados** NO se acotan por local; los empleados se cuelgan del cliente vía `adminId`.
+
+### 8.2 Jerarquía objetivo
+```
+Cuenta de cliente (tenant)        — quien contrata la app (hoy: ADMIN)
+   └── Empresa                    — empleador legal (razón social + NIF)
+          └── Local / centro de trabajo
+                 └── operaciones  — recetario, catálogo, proveedores, obrador, caja...
+```
+Un cliente puede agrupar **varias empresas**; cada empresa, **varios locales**.
+
+### 8.3 Reglas de aislamiento (decisiones confirmadas)
+
+| Entidad | Ámbito |
+|---|---|
+| Recetario / catálogo (recetas, ingredientes, productos) | **Por local** |
+| Proveedores | **Por local** |
+| Obrador (producción, lotes, sanitario, venta) | **Por local** |
+| Eventos, tareas, pedidos | **Por local** |
+| Checklists, comunicaciones, etiquetas | **Por local** (ya lo son) |
+| Fichajes, turnos, caja, finanzas | **Por local** (ya lo son) |
+| Empleados (personas) | **Por empresa** vía contrato (ver §8.4) |
+
+### 8.4 Empleo y cumplimiento legal *(clave)*
+- El empleo se modela como **relación contrato empleado ↔ empresa**, no como una propiedad simple del `User`.
+- Un empleado puede asignarse a **varios locales de SU empresa** (misma razón social → legal).
+- Para trabajar en locales de **otra empresa**, necesita un **contrato adicional** con esa empresa (segundo registro de empleo). La asignación cruzada sin contrato es **imposible por diseño**, evitando representar una cesión ilegal de trabajadores (Art. 43 ET).
+- **Cambio de modelo**: sustituir `User.adminId` / `User.locationId` planos por una entidad de **empleo/contrato** (`empleado`, `empresa`, fechas, tipo) + asignación empleado↔local dentro del marco de esa empresa.
+
+### 8.5 Implicaciones técnicas (Fase 1)
+1. Nuevo modelo **`Empresa`** (razón social, NIF, domicilio…). Semilla aprovechable: `ObradorConfig.companyName`/`nif`.
+2. `Location.empresaId` → cada local pertenece a una empresa (la empresa pertenece al tenant).
+3. Entidad de **empleo/contrato** que reemplace el `adminId`/`locationId` plano; soporte de multi-contrato por persona.
+4. Añadir `locationId` (o derivado vía empleo) a las entidades que hoy solo tienen `ownerId`: recetas, ingredientes, productos, proveedores, eventos, tareas, obrador.
+5. **Helper central de aislamiento** que toda query use para filtrar por tenant → empresa → local, evitando olvidos.
+6. Migración idempotente del modelo actual (`ownerId`-only) al nuevo, con período de convivencia.
