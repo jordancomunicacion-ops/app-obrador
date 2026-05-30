@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { auth, currentOrgId } from "@/auth";
+import { auth } from "@/auth";
 import { isPlatformOwner } from "@/lib/auth/platform";
 
 export const LOCATION_COOKIE = "active_location_id";
@@ -12,23 +12,58 @@ export type ActiveLocation = {
 };
 
 /**
- * Construye el filtro Prisma de locales visibles para el usuario actual.
+ * Construye el filtro Prisma de locales visibles para el usuario actual,
+ * según la jerarquía Plataforma → Cliente → Empresa → Local:
  *
  * - Propietario de plataforma (SUPERADMIN): ve TODOS los locales (cross-tenant).
- * - Resto: solo los locales de su cuenta de cliente (ownerId == org).
+ * - Cliente/tenant (ADMIN): ve todos los locales de su cuenta (ownerId == su id).
+ * - Empleado (USER): ve SOLO los locales a los que su contrato (Employment) le
+ *   asigna. Sin contrato/asignación → ningún local (fail-closed). Se incluye la
+ *   pertenencia directa legada (`User.locationId`) como respaldo.
  *
- * Devuelve `null` si el usuario no tiene ámbito (sin sesión / sin org), lo que
- * los llamadores interpretan como "ningún local".
+ * Devuelve `null` si no hay sesión, lo que los llamadores interpretan como
+ * "ningún local".
  */
-async function locationScopeWhere(): Promise<{ ownerId?: string; isActive: boolean } | null> {
+async function locationScopeWhere(): Promise<Record<string, unknown> | null> {
   const session = await auth();
+  if (!session?.user?.id) return null;
   if (isPlatformOwner(session)) {
     // Sin filtro por owner: todos los locales activos de todas las cuentas.
     return { isActive: true };
   }
-  const orgId = await currentOrgId();
-  if (!orgId) return null;
-  return { ownerId: orgId, isActive: true };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      role: true,
+      adminId: true,
+      locationId: true,
+      employments: {
+        where: { isActive: true },
+        select: { assignedLocations: { select: { id: true } } },
+      },
+    },
+  });
+  if (!user) return null;
+
+  // Cliente/tenant: todos los locales de su cuenta.
+  if (user.role === "ADMIN") {
+    return { ownerId: user.id, isActive: true };
+  }
+
+  // Empleado: solo los locales asignados por su(s) contrato(s), + pertenencia legada.
+  const assigned = new Set<string>();
+  for (const emp of user.employments) {
+    for (const loc of emp.assignedLocations) assigned.add(loc.id);
+  }
+  if (user.locationId) assigned.add(user.locationId);
+
+  if (assigned.size === 0) {
+    // Sin asignación → fail-closed: ningún local.
+    return { id: "__no_assigned_location__" };
+  }
+  return { id: { in: Array.from(assigned) }, isActive: true };
 }
 
 /**
