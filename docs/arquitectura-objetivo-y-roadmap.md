@@ -150,6 +150,8 @@ Cuenta de cliente (tenant)        — quien contrata la app (hoy: ADMIN)
 ```
 Un cliente puede agrupar **varias empresas**; cada empresa, **varios locales**.
 
+**Caso simple (cliente = empresa).** La `Empresa` **siempre existe** como entidad (es el empleador legal con NIF), pero cuando el cliente tiene una sola empresa, la UI **colapsa** el nivel: el alta crea automáticamente cuenta + 1 empresa + local(es) y el usuario nunca ve el nivel "empresa" explícito. Solo cuando hay **más de una empresa** (varios NIF bajo la misma cuenta) aparece el selector de empresa. Ventaja: un único modelo de datos sirve para ambos escenarios; la diferencia es solo de presentación.
+
 ### 8.3 Reglas de aislamiento (decisiones confirmadas)
 
 | Entidad | Ámbito |
