@@ -4,6 +4,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { authConfig } from './auth.config';
+import { isPlatformOwnerEmail, PLATFORM_ROLE } from '@/lib/auth/platform';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
@@ -65,8 +66,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         if (!passwordsMatch) return null;
 
                         // Strict Approval Check
-                        // Exception for Master Admin
-                        if (email !== 'gerencia@sotodelprior.com' && !user.approved) {
+                        // Exception for the platform owner (legacy email or SUPERADMIN role)
+                        if (!isPlatformOwnerEmail(email) && user.role !== PLATFORM_ROLE && !user.approved) {
                             throw new Error('AccessDenied');
                         }
 

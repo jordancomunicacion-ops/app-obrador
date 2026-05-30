@@ -42,6 +42,7 @@ export async function signOutAction() {
 import { CreateUserSchema, UserFormState } from './definitions';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
+import { isPlatformOwnerEmail } from '@/lib/auth/platform';
 
 export async function registerUser(prevState: UserFormState | undefined, formData: FormData): Promise<UserFormState> {
     const validatedFields = CreateUserSchema.safeParse({
@@ -61,7 +62,7 @@ export async function registerUser(prevState: UserFormState | undefined, formDat
     const { name, email, password } = validatedFields.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const isMasterAdmin = email === 'gerencia@sotodelprior.com';
+    const isMasterAdmin = isPlatformOwnerEmail(email);
 
     // Default permissions for a new Tenant (Everything)
     const defaultPermissions = [
