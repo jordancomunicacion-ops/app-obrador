@@ -143,10 +143,11 @@ Empezar por la **Fase 0** (limpieza segura y reversible) en un PR independiente,
 
 ### 8.2 Jerarquía objetivo
 ```
-Cuenta de cliente (tenant)        — quien contrata la app (hoy: ADMIN)
-   └── Empresa                    — empleador legal (razón social + NIF)
-          └── Local / centro de trabajo
-                 └── operaciones  — recetario, catálogo, proveedores, obrador, caja...
+Plataforma (propietario)          — VE TODO: cross-tenant (mismo patrón que CRM/reservas/ganadería)
+   └── Cuenta de cliente (tenant) — quien contrata la app (hoy: ADMIN)
+          └── Empresa             — empleador legal (razón social + NIF)
+                 └── Local / centro de trabajo
+                        └── operaciones — recetario, catálogo, proveedores, obrador, caja...
 ```
 Un cliente puede agrupar **varias empresas**; cada empresa, **varios locales**.
 
@@ -170,10 +171,16 @@ Un cliente puede agrupar **varias empresas**; cada empresa, **varios locales**.
 - Para trabajar en locales de **otra empresa**, necesita un **contrato adicional** con esa empresa (segundo registro de empleo). La asignación cruzada sin contrato es **imposible por diseño**, evitando representar una cesión ilegal de trabajadores (Art. 43 ET).
 - **Cambio de modelo**: sustituir `User.adminId` / `User.locationId` planos por una entidad de **empleo/contrato** (`empleado`, `empresa`, fechas, tipo) + asignación empleado↔local dentro del marco de esa empresa.
 
+### 8.4-bis Rol de plataforma (propietario) — acceso global
+- Mismo patrón multi-tenant que CRM / reservas / ganadería: por encima del tenant hay un **propietario de plataforma** que ve **todos** los clientes, empresas, locales y datos.
+- **Estado actual**: existe a medias como email hardcodeado `gerencia@sotodelprior.com`, comprobado de forma dispersa en `app/lib/actions.ts`, `app/ui/employees/table.tsx`, `app/dashboard/employees/page.tsx`, `app/dashboard/system/users/page.tsx` y `auth.ts`. **No tiene vista real cross-tenant**: `currentOrgId()` lo acota a su propia org; el acceso global está parcheado caso a caso.
+- **Objetivo**: rol de primera clase (`SUPERADMIN`/`PLATFORM`) en vez de email hardcodeado; el helper de aislamiento le concede lectura **cross-tenant** (salta el filtro por org); consolidar todos los checks de `gerencia@…` en un único punto.
+
 ### 8.5 Implicaciones técnicas (Fase 1)
 1. Nuevo modelo **`Empresa`** (razón social, NIF, domicilio…). Semilla aprovechable: `ObradorConfig.companyName`/`nif`.
 2. `Location.empresaId` → cada local pertenece a una empresa (la empresa pertenece al tenant).
 3. Entidad de **empleo/contrato** que reemplace el `adminId`/`locationId` plano; soporte de multi-contrato por persona.
 4. Añadir `locationId` (o derivado vía empleo) a las entidades que hoy solo tienen `ownerId`: recetas, ingredientes, productos, proveedores, eventos, tareas, obrador.
-5. **Helper central de aislamiento** que toda query use para filtrar por tenant → empresa → local, evitando olvidos.
-6. Migración idempotente del modelo actual (`ownerId`-only) al nuevo, con período de convivencia.
+5. **Helper central de aislamiento** que toda query use para filtrar por tenant → empresa → local, evitando olvidos; con bypass cross-tenant para el rol de plataforma.
+6. **Rol `SUPERADMIN`/`PLATFORM`** que reemplace el email hardcodeado `gerencia@sotodelprior.com` (ver §8.4-bis).
+7. Migración idempotente del modelo actual (`ownerId`-only) al nuevo, con período de convivencia.
