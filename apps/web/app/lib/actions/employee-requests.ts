@@ -4,7 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
+import { sendPushToUser } from "@/lib/push/send";
 import type { EmployeeRequestType } from "@prisma/client";
+
+const REQ_TYPE_LABEL: Record<EmployeeRequestType, string> = {
+  HOLIDAY: "Vacaciones",
+  SICK_LEAVE: "Baja médica",
+  PERSONAL: "Asuntos propios",
+  SHIFT_SWAP: "Cambio de turno",
+  OTHER: "Solicitud",
+};
 
 export async function createRequest(data: {
   type: EmployeeRequestType;
@@ -22,7 +31,7 @@ export async function createRequest(data: {
   const end = data.endDate ? new Date(`${data.endDate}T00:00:00.000Z`) : null;
   if (end && end < start) throw new Error("End date before start date");
 
-  await prisma.employeeRequest.create({
+  const created = await prisma.employeeRequest.create({
     data: {
       ownerId: orgId,
       workerId: session.user.id,
@@ -31,7 +40,20 @@ export async function createRequest(data: {
       endDate: end,
       reason: data.reason?.trim() || null,
     },
+    include: { worker: { select: { name: true } } },
   });
+
+  // Avisar al admin del cliente
+  await sendPushToUser(orgId, {
+    title: `${REQ_TYPE_LABEL[data.type]}: ${created.worker.name}`,
+    body:
+      `${start.toLocaleDateString("es-ES")}` +
+      (end ? ` → ${end.toLocaleDateString("es-ES")}` : "") +
+      (data.reason ? ` · ${data.reason.slice(0, 60)}` : ""),
+    url: "/dashboard/requests",
+    tag: `request-${created.id}`,
+  });
+
   revalidatePath("/dashboard/today/requests");
   revalidatePath("/dashboard/requests");
 }
@@ -64,7 +86,7 @@ async function assertOwnerAdmin() {
   return { adminId: session.user.id, orgId };
 }
 
-export async function approveRequest(id: string, decision?: string) {
+async function resolveRequest(id: string, kind: "APPROVED" | "REJECTED", decision?: string) {
   const { adminId, orgId } = await assertOwnerAdmin();
   const req = await prisma.employeeRequest.findFirst({
     where: { id, ownerId: orgId, status: "PENDING" },
@@ -73,29 +95,31 @@ export async function approveRequest(id: string, decision?: string) {
   await prisma.employeeRequest.update({
     where: { id },
     data: {
-      status: "APPROVED",
+      status: kind,
       resolverUserId: adminId,
       resolvedAt: new Date(),
       decision: decision?.trim() || null,
     },
+  });
+  // Push al trabajador
+  await sendPushToUser(req.workerId, {
+    title: `Tu ${REQ_TYPE_LABEL[req.type].toLowerCase()} ha sido ${
+      kind === "APPROVED" ? "aprobada ✅" : "rechazada ❌"
+    }`,
+    body:
+      `${req.startDate.toLocaleDateString("es-ES")}` +
+      (req.endDate ? ` → ${req.endDate.toLocaleDateString("es-ES")}` : "") +
+      (decision ? ` · ${decision.slice(0, 80)}` : ""),
+    url: "/dashboard/today/requests",
+    tag: `request-${id}`,
   });
   revalidatePath("/dashboard/requests");
 }
 
+export async function approveRequest(id: string, decision?: string) {
+  return resolveRequest(id, "APPROVED", decision);
+}
+
 export async function rejectRequest(id: string, decision?: string) {
-  const { adminId, orgId } = await assertOwnerAdmin();
-  const req = await prisma.employeeRequest.findFirst({
-    where: { id, ownerId: orgId, status: "PENDING" },
-  });
-  if (!req) throw new Error("Not found or not pending");
-  await prisma.employeeRequest.update({
-    where: { id },
-    data: {
-      status: "REJECTED",
-      resolverUserId: adminId,
-      resolvedAt: new Date(),
-      decision: decision?.trim() || null,
-    },
-  });
-  revalidatePath("/dashboard/requests");
+  return resolveRequest(id, "REJECTED", decision);
 }

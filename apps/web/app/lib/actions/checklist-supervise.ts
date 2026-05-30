@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
+import { sendPushToUsers } from "@/lib/push/send";
 
 async function assertCanSupervise(responseId: string) {
   const session = await auth();
@@ -80,6 +81,31 @@ export async function markInstanceSupervised(instanceId: string) {
         }),
       ),
   );
+
+  // Avisar a quien cerró/contestó la instancia que ya está supervisada
+  const responderIds = await prisma.checklistResponse.findMany({
+    where: { instanceId, answeredByUserId: { not: null } },
+    select: { answeredByUserId: true },
+    distinct: ["answeredByUserId"],
+  });
+  const ids = responderIds
+    .map((r) => r.answeredByUserId)
+    .filter((id): id is string => !!id && id !== session.user!.id);
+  if (ids.length > 0) {
+    const meta = await prisma.checklistInstance.findUnique({
+      where: { id: instanceId },
+      select: {
+        schedule: { select: { template: { select: { name: true } } } },
+      },
+    });
+    await sendPushToUsers(ids, {
+      title: `✅ Checklist supervisado: ${meta?.schedule.template.name ?? ""}`,
+      body: "El responsable ha revisado tus respuestas",
+      url: `/dashboard/today`,
+      tag: `instance-${instanceId}`,
+    });
+  }
+
   revalidatePath(`/dashboard/tasks/supervise/${instanceId}`);
   revalidatePath("/dashboard/tasks/supervise");
 }

@@ -108,6 +108,9 @@ model User {
   // Finanzas (ingresos y gastos)
   ownedFinancialEntries   FinancialEntry[] @relation("FinancialEntryOwner")
   createdFinancialEntries FinancialEntry[] @relation("FinancialEntryCreator")
+
+  // Push notifications
+  pushSubscriptions PushSubscription[]
 }
 
 // 7. App Configuration
@@ -1553,4 +1556,25 @@ model FinancialEntry {
 
   @@index([ownerId, type, date])
   @@index([ownerId, locationId, date])
+}
+
+// ============================================================================
+// 19. PUSH NOTIFICATIONS (Web Push API + VAPID)
+// ============================================================================
+
+model PushSubscription {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint  String  @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

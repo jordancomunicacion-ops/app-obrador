@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
+import { sendPushToUsers } from "@/lib/push/send";
 import type { Frequency } from "@prisma/client";
 
 // ============================================================================
@@ -248,6 +249,36 @@ export async function closeInstance(instanceId: string) {
       scoreAvg,
     },
   });
+
+  // Push a supervisores
+  const full = await prisma.checklistInstance.findUnique({
+    where: { id: instance.id },
+    include: {
+      schedule: {
+        select: {
+          supervisorUserIds: true,
+          template: { select: { name: true } },
+          location: { select: { name: true } },
+        },
+      },
+    },
+  });
+  if (full?.schedule.supervisorUserIds.length) {
+    await sendPushToUsers(
+      full.schedule.supervisorUserIds.filter((id) => id !== userId),
+      {
+        title:
+          (incidents > 0 ? "⚠️ Con incidencias: " : "✅ Completado: ") +
+          full.schedule.template.name,
+        body:
+          full.schedule.location.name +
+          (incidents > 0 ? ` · ${incidents} ${incidents === 1 ? "incidencia" : "incidencias"}` : ""),
+        url: `/dashboard/tasks/supervise/${instance.id}`,
+        tag: `instance-${instance.id}`,
+      },
+    );
+  }
+
   revalidatePath(`/dashboard/today/checklist/${instance.id}`);
   revalidatePath("/dashboard/today");
 }

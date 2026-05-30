@@ -4,7 +4,17 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
+import { sendPushToUsers } from "@/lib/push/send";
 import type { CommunicationType, CommunicationStatus } from "@prisma/client";
+
+const TYPE_LABEL: Record<CommunicationType, string> = {
+  BREAKDOWN: "Avería",
+  NOTICE: "Aviso",
+  EVENT: "Evento",
+  MEETING: "Reunión",
+  TASK: "Programada",
+  LIST: "Lista",
+};
 
 async function assertOwnership(id: string) {
   const orgId = await currentOrgId();
@@ -54,6 +64,20 @@ export async function createCommunication(data: {
       photoUrls: data.photoUrls ?? [],
     },
   });
+
+  // Push asignados + seguidores (excluyendo al autor)
+  const notifyIds = [...(data.assigneeIds ?? []), ...(data.followerIds ?? [])].filter(
+    (id) => id !== session.user!.id,
+  );
+  if (notifyIds.length > 0) {
+    await sendPushToUsers(notifyIds, {
+      title: `${TYPE_LABEL[data.type]}: ${created.title}`,
+      body: data.description?.slice(0, 120) || "Tienes una comunicación nueva",
+      url: `/dashboard/communications/${created.id}`,
+      tag: `communication-${created.id}`,
+    });
+  }
+
   revalidatePath("/dashboard/communications");
   return created;
 }
@@ -135,6 +159,28 @@ export async function addComment(communicationId: string, body: string, photos: 
       photos,
     },
   });
+
+  // Push: avisamos al autor original + asignados + seguidores (sin el comentador)
+  const parent = await prisma.communication.findUnique({
+    where: { id: communicationId },
+    select: { title: true, authorId: true, assigneeIds: true, followerIds: true },
+  });
+  if (parent) {
+    const notifyIds = [
+      parent.authorId,
+      ...parent.assigneeIds,
+      ...parent.followerIds,
+    ].filter((id) => id !== session.user!.id);
+    if (notifyIds.length > 0) {
+      await sendPushToUsers(notifyIds, {
+        title: `Nuevo comentario: ${parent.title}`,
+        body: body.trim().slice(0, 120) || "Foto adjunta",
+        url: `/dashboard/communications/${communicationId}`,
+        tag: `communication-${communicationId}`,
+      });
+    }
+  }
+
   revalidatePath(`/dashboard/communications/${communicationId}`);
   return created;
 }
