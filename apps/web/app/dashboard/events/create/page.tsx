@@ -2,10 +2,11 @@ import Form from '@/app/ui/events/create-form';
 import { prisma } from '@/lib/prisma';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page() {
     const recipes = await prisma.recipe.findMany({
-        where: { category: 'ELABORACION_FINAL' },
+        where: { ...(await locationScope()), category: 'ELABORACION_FINAL' },
         orderBy: { name: 'asc' },
     });
 

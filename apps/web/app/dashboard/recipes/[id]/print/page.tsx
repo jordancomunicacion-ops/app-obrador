@@ -1,12 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Ingredient, RecipeItem, RecipeStep } from '@prisma/client';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const recipe = await prisma.recipe.findUnique({
-        where: { id },
+    const recipe = await prisma.recipe.findFirst({
+        where: { ...(await locationScope()), id },
         include: {
             items: {
                 include: { ingredient: true, subRecipe: true }

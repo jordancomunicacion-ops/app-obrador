@@ -2,11 +2,13 @@ import Form from '@/app/ui/tasks/create-form';
 import { prisma } from '@/lib/prisma';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page() {
+    const scope = await locationScope();
     const [users, recipes] = await Promise.all([
         prisma.user.findMany({ orderBy: { name: 'asc' } }),
-        prisma.recipe.findMany({ orderBy: { name: 'asc' } })
+        prisma.recipe.findMany({ where: { ...scope }, orderBy: { name: 'asc' } })
     ]);
 
     return (

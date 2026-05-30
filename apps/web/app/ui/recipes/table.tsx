@@ -2,6 +2,7 @@ import { UpdateRecipe, DeleteRecipe } from '@/app/ui/recipes/buttons';
 import { prisma } from '@/lib/prisma';
 import { formatUnit } from '@/app/lib/units';
 import { calculateRecipeCost, formatCurrency } from '@/app/lib/costing';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function RecipesTable({
     query,
@@ -14,6 +15,7 @@ export default async function RecipesTable({
 }) {
     const recipes = await prisma.recipe.findMany({
         where: {
+            ...(await locationScope()),
             AND: [
                 { name: { contains: query } },
                 categoryFilter && categoryFilter !== 'ALL'

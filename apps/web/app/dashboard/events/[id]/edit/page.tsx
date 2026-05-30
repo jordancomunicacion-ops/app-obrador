@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const scope = await locationScope();
 
     const [event, recipes] = await Promise.all([
         prisma.event.findUnique({
@@ -13,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             include: { menuItems: true },
         }),
         prisma.recipe.findMany({
-            where: { category: 'ELABORACION_FINAL' },
+            where: { ...scope, category: 'ELABORACION_FINAL' },
             orderBy: { name: 'asc' },
         }),
     ]);

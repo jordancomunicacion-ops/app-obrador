@@ -3,13 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const recipeScope = await locationScope();
 
     const [recipe, ingredientsRaw, categories, packaging, subRecipes, transformedProducts] = await Promise.all([
-        prisma.recipe.findUnique({
-            where: { id },
+        prisma.recipe.findFirst({
+            where: { ...recipeScope, id },
             include: {
                 items: true,
                 steps: {
@@ -46,6 +48,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         prisma.recipePackaging.findMany({ orderBy: { name: 'asc' } }),
         prisma.recipe.findMany({
             where: {
+                ...recipeScope,
                 category: {
                     in: ['ELABORACION_INTERMEDIA', 'PRODUCTO_NO_ELABORADO']
                 },
