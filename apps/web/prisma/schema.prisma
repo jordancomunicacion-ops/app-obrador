@@ -214,6 +214,12 @@ model MasterProduct {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("MasterProductLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // Vendor/Provider (e.g. "Makro", "Frutería Pepe")
@@ -239,6 +245,12 @@ model Supplier {
 
   ownerId String?
   owner   User?   @relation("SupplierOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("SupplierLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // Lo que compras (SupplierProduct) - Specific variant from a supplier
@@ -277,6 +289,12 @@ model SupplierProduct {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   RecipeItem RecipeItem[]
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("SupplierProductLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // La regla de conversión (Transformation/Despiece)
@@ -480,6 +498,12 @@ model Event {
 
   ownerId String?
   owner   User?   @relation("EventOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("EventLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model EventMenuItem {
@@ -528,6 +552,12 @@ model Task {
 
   ownerId String?
   owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("TaskLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // 6. Audit & Logs
@@ -690,6 +720,12 @@ model MenuService {
 
   ownerId String?
   owner   User?   @relation("MenuServiceOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("MenuServiceLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model MenuServiceItem {
@@ -1091,6 +1127,12 @@ model Location {
   members        User[]              @relation("LocationMembers")
   recipes        Recipe[]            @relation("RecipeLocation")
   ingredients    Ingredient[]        @relation("IngredientLocation")
+  masterProducts MasterProduct[]     @relation("MasterProductLocation")
+  supplierProducts2 SupplierProduct[] @relation("SupplierProductLocation")
+  suppliers      Supplier[]          @relation("SupplierLocation")
+  events         Event[]             @relation("EventLocation")
+  tasks          Task[]              @relation("TaskLocation")
+  menuServices   MenuService[]       @relation("MenuServiceLocation")
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")
