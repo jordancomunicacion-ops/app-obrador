@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { PlusIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 import { currentOrgId } from '@/auth';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page() {
     const orgId = await currentOrgId();
     const services = await prisma.menuService.findMany({
-        where: { ownerId: orgId },
+        where: { ...(await locationScope()) },
         orderBy: { startDate: 'desc' },
         include: {
             _count: { select: { items: true } }
