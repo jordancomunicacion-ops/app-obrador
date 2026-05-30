@@ -230,6 +230,15 @@ export default async function TodayPage() {
           <span className="text-xs text-gray-500">→</span>
         </Link>
         <Link
+          href="/dashboard/today/cash"
+          className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-sm font-medium text-gray-700">💶 Cierre de caja</span>
+          </div>
+          <span className="text-xs text-gray-500">→</span>
+        </Link>
+        <Link
           href="/dashboard/today/requests"
           className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
         >

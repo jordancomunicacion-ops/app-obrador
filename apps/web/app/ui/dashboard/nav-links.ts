@@ -14,7 +14,8 @@ import {
     ClockIcon,
     EnvelopeIcon,
     CalendarDaysIcon,
-    TagIcon
+    TagIcon,
+    BanknotesIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -54,6 +55,7 @@ export const groups = [
             { name: 'Fichajes', href: '/dashboard/clock-in', icon: ClockIcon },
             { name: 'Turnos', href: '/dashboard/shifts', icon: CalendarDaysIcon },
             { name: 'Solicitudes', href: '/dashboard/requests', icon: EnvelopeIcon },
+            { name: 'Cierres de caja', href: '/dashboard/cash', icon: BanknotesIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]

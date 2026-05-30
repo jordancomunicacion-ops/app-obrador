@@ -100,6 +100,10 @@ model User {
   // Etiquetas
   ownedProductLabels   ProductLabel[] @relation("ProductLabelOwner")
   createdProductLabels ProductLabel[] @relation("ProductLabelCreator")
+
+  // Cierres de caja
+  ownedCashClosings  CashClosing[] @relation("CashClosingOwner")
+  closedCashClosings CashClosing[] @relation("CashClosingCloser")
 }
 
 // 7. App Configuration
@@ -993,6 +997,7 @@ model Location {
   clockIns       ClockIn[]           @relation("ClockInLocation")
   shifts         Shift[]             @relation("ShiftLocation")
   productLabels  ProductLabel[]      @relation("ProductLabelLocation")
+  cashClosings   CashClosing[]       @relation("CashClosingLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1454,4 +1459,51 @@ model ProductLabel {
 
   @@index([ownerId, productionDate])
   @@index([ownerId, locationId, productionDate])
+}
+
+// ============================================================================
+// 17. CIERRES DE CAJA (yurest cash-closing)
+// ============================================================================
+
+enum CashClosingShift {
+  MORNING   // turno comida
+  EVENING   // turno cena
+  FULL_DAY  // único cierre del día
+}
+
+model CashClosing {
+  id String @id @default(cuid())
+
+  ownerId String
+  owner   User   @relation("CashClosingOwner", fields: [ownerId], references: [id])
+
+  locationId String?
+  location   Location? @relation("CashClosingLocation", fields: [locationId], references: [id])
+
+  closedByUserId String?
+  closedBy       User?   @relation("CashClosingCloser", fields: [closedByUserId], references: [id])
+
+  date  DateTime          // día del cierre (UTC 00:00)
+  shift CashClosingShift  @default(FULL_DAY)
+
+  // Importes en EUR (Float; ya hay convención en el schema actual)
+  cashAmount         Float    @default(0)  // efectivo declarado
+  expectedCashAmount Float    @default(0)  // efectivo esperado (TPV o ventas brutas)
+  cardAmount         Float    @default(0)
+  otherAmount        Float    @default(0)  // bizum, transferencia, etc.
+  tips               Float    @default(0)
+
+  // diferencia se deriva (cash - expectedCash) pero también persistimos por simplicidad
+  diff Float @default(0)
+
+  notes    String?
+  photoUrl String?
+
+  isLocked Boolean  @default(false)  // una vez bloqueado no se edita
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ownerId, locationId, date, shift])
+  @@index([ownerId, date])
 }
