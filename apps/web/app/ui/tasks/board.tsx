@@ -3,6 +3,7 @@ import TimeInfo from './time-info';
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
+import { locationScope } from '@/lib/auth/scope';
 
 type TaskWithRelations = {
     id: string;
@@ -17,6 +18,7 @@ type TaskWithRelations = {
 
 export default async function TaskBoard() {
     const tasks = await prisma.task.findMany({
+        where: { ...(await locationScope()) },
         include: {
             assignedTo: true,
             recipe: true
