@@ -5,10 +5,11 @@ import { formatCurrency } from '@/app/lib/costing';
 import Link from 'next/link';
 import { HomeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { notFound } from 'next/navigation';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const event = await prisma.event.findUnique({ where: { id } });
+    const event = await prisma.event.findFirst({ where: { ...(await locationScope()), id } });
 
     if (!event) notFound();
 

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateEventSchema, UpdateEventSchema, type EventFormState } from '@/app/lib/definitions';
 import { syncAggregatedTasks } from '@/app/lib/production';
+import { scopedLocationId, locationScope } from '@/lib/auth/scope';
 export type { EventFormState };
 
 // --- EVENTS ---
@@ -38,6 +39,7 @@ export async function createEvent(prevState: EventFormState, formData: FormData)
     try {
         const event = await prisma.event.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 date,
                 pax: Math.ceil(pax),
@@ -91,6 +93,14 @@ export async function updateEvent(
 
     const { name, date, pax, safetyMargin, status, menuItems } = validatedFields.data;
 
+    const inScope = await prisma.event.findFirst({
+        where: { ...(await locationScope()), id },
+        select: { id: true },
+    });
+    if (!inScope) {
+        return { message: 'No autorizado: el evento no pertenece a tu local.' };
+    }
+
     try {
         const event = await prisma.event.update({
             where: { id },
@@ -125,6 +135,13 @@ export async function updateEvent(
 
 export async function deleteEvent(id: string) {
     try {
+        const scoped = await prisma.event.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: el evento no pertenece a tu local.' };
+        }
         await prisma.event.delete({
             where: { id },
         });

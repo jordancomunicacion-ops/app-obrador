@@ -2,6 +2,7 @@ import { UpdateEvent, DeleteEvent, ViewShoppingList, ConfirmEvent } from '@/app/
 import { prisma } from '@/lib/prisma';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function EventsTable({
     query,
@@ -12,6 +13,7 @@ export default async function EventsTable({
 }) {
     const events = await prisma.event.findMany({
         where: {
+            ...(await locationScope()),
             name: { contains: query },
         },
         orderBy: { date: 'asc' },
