@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Ingredient, Transformation, TransformationOutput, SupplierProduct } from '@prisma/client';
+import { locationScope } from '@/lib/auth/scope';
 
 interface IngredientDemand {
     ingredientId: string;
@@ -24,6 +25,7 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
     // 1. Fetch Events & Aggregate Demand
     const events = await prisma.event.findMany({
         where: {
+            ...(await locationScope()),
             date: {
                 gte: startDate,
                 lte: endDate

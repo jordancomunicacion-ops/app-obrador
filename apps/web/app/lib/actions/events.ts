@@ -194,9 +194,12 @@ export async function generateAllProductionTasks() {
         const nextWeek = new Date(today);
         nextWeek.setDate(today.getDate() + 7);
 
+        const scope = await locationScope();
+
         // Fetch Confirmed Events for next 7 days
         const events = await prisma.event.findMany({
             where: {
+                ...scope,
                 status: 'CONFIRMED',
                 date: { gte: today, lte: nextWeek }
             },
@@ -207,6 +210,7 @@ export async function generateAllProductionTasks() {
         // Fetch Menu Services for next 7 days
         const menuServices = await prisma.menuService.findMany({
             where: {
+                ...scope,
                 startDate: { gte: today, lte: nextWeek }
                 // Assuming we want all planned services. Or filter by status 'PLANNED'/'ACTIVE'?
                 // For production, PLANNED is good.

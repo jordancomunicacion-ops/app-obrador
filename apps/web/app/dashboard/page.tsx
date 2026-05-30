@@ -4,10 +4,10 @@ import { startOfDay, endOfDay, addDays, format } from 'date-fns';
 import Link from 'next/link';
 import { CalendarIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 
-import { currentOrgId } from '@/auth';
+import { locationScope } from '@/lib/auth/scope';
 
 export default async function Page() {
-    const orgId = await currentOrgId();
+    const scope = await locationScope();
     const today = new Date();
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
@@ -16,7 +16,7 @@ export default async function Page() {
     // Fetch Upcomming Events Count
     const upcomingEventsCount = await prisma.event.count({
         where: {
-            ownerId: orgId,
+            ...scope,
             date: {
                 gte: todayStart
             }
@@ -26,7 +26,7 @@ export default async function Page() {
     // Fetch Tasks (Pending, In Progress or Issue) - Show all backlog
     const tasksTodayCount = await prisma.task.count({
         where: {
-            ownerId: orgId,
+            ...scope,
             status: {
                 not: 'DONE'
             }
@@ -36,7 +36,7 @@ export default async function Page() {
     // Fetch Weekly Summary Events with Progress
     const weeklyEvents = await prisma.event.findMany({
         where: {
-            ownerId: orgId,
+            ...scope,
             date: {
                 gte: todayStart,
                 lte: sevenDaysLater
@@ -53,8 +53,8 @@ export default async function Page() {
     });
 
     const eventsWithProgress = await Promise.all(weeklyEvents.map(async (event) => {
-        const totalTasks = await prisma.task.count({ where: { ownerId: orgId, events: { some: { id: event.id } } } });
-        const doneTasks = await prisma.task.count({ where: { ownerId: orgId, events: { some: { id: event.id } }, status: 'DONE' } });
+        const totalTasks = await prisma.task.count({ where: { ...scope, events: { some: { id: event.id } } } });
+        const doneTasks = await prisma.task.count({ where: { ...scope, events: { some: { id: event.id } }, status: 'DONE' } });
         return {
             ...event,
             progress: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0
