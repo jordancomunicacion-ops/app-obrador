@@ -96,6 +96,10 @@ model User {
   ownedPurchaseOrders   PurchaseOrder[] @relation("PurchaseOrderOwner")
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreator")
   receivedDeliveryNotes DeliveryNote[]  @relation("DeliveryNoteReceiver")
+
+  // Etiquetas
+  ownedProductLabels   ProductLabel[] @relation("ProductLabelOwner")
+  createdProductLabels ProductLabel[] @relation("ProductLabelCreator")
 }
 
 // 7. App Configuration
@@ -988,6 +992,7 @@ model Location {
   communications Communication[]     @relation("CommunicationLocation")
   clockIns       ClockIn[]           @relation("ClockInLocation")
   shifts         Shift[]             @relation("ShiftLocation")
+  productLabels  ProductLabel[]      @relation("ProductLabelLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1409,4 +1414,44 @@ model DeliveryNote {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// 16. ETIQUETAS DE PRODUCTOS (yurest labeled-store) — trazabilidad alimentaria
+// ============================================================================
+
+enum LabelStorageMode {
+  AMBIENT
+  REFRIGERATED
+  FROZEN
+}
+
+model ProductLabel {
+  id String @id @default(cuid())
+
+  ownerId String
+  owner   User   @relation("ProductLabelOwner", fields: [ownerId], references: [id])
+
+  createdByUserId String?
+  createdBy       User?   @relation("ProductLabelCreator", fields: [createdByUserId], references: [id])
+
+  locationId String?
+  location   Location? @relation("ProductLabelLocation", fields: [locationId], references: [id])
+
+  productName    String
+  lotNumber      String?
+  productionDate DateTime
+  expiryDate     DateTime?
+  storageMode    LabelStorageMode @default(REFRIGERATED)
+  allergens      String[]  @default([])
+  ingredients    String?
+  weight         String?    // "500 g", "2 kg", etc.
+  note           String?
+  photoUrl       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, productionDate])
+  @@index([ownerId, locationId, productionDate])
 }

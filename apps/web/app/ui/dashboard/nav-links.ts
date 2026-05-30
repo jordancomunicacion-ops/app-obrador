@@ -13,7 +13,8 @@ import {
     ChatBubbleLeftRightIcon,
     ClockIcon,
     EnvelopeIcon,
-    CalendarDaysIcon
+    CalendarDaysIcon,
+    TagIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -42,6 +43,7 @@ export const groups = [
             { name: 'Pedidos a proveedores', href: '/dashboard/purchasing/orders', icon: ShoppingCartIcon },
             { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon },
             { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
+            { name: 'Etiquetas', href: '/dashboard/labels', icon: TagIcon },
             { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon },
         ]
     },
