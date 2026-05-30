@@ -19,7 +19,24 @@ export const metadata: Metadata = {
   description: "Sistema de gestión de cocina",
   icons: {
     icon: "/icon.png",
+    apple: "/logo-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Cocina",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover" as const,
 };
 
 export default function RootLayout({

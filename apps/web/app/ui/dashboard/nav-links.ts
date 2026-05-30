@@ -8,13 +8,15 @@ import {
     Cog6ToothIcon,
     ShoppingCartIcon,
     TableCellsIcon,
-    BuildingStorefrontIcon
+    BuildingStorefrontIcon,
+    SunIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
     {
         name: 'Principal',
         items: [
+            { name: 'Hoy', href: '/dashboard/today', icon: SunIcon },
             { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
             { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
             { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
@@ -41,6 +43,7 @@ export const groups = [
         name: 'Administración',
         items: [
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
+            { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
     }

@@ -42,14 +42,22 @@ services:
     environment:
       AUTH_TRUST_HOST: "true"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      AUTH_URL: "${AUTH_URL:-http://cocina.sotodelprior.com}"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://cocina.sotodelprior.com}"
+      AUTH_URL: "${AUTH_URL:-https://cocina.sotodelprior.com}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://cocina.sotodelprior.com}"
       DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@sotococina-db:5432/${DB_NAME:-cocina}
       AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}"
       NEXTAUTH_SKIP_ENV_VALIDATION: "true"
       NEXTAUTH_URL_INTERNAL: "http://localhost:3000"
       NEXTAUTH_TRUST_HOST: "true"
       NODE_ENV: "development"
+      # DigitalOcean Spaces (S3-compatible)
+      DO_SPACES_REGION: "${DO_SPACES_REGION:-fra1}"
+      DO_SPACES_ENDPOINT: "${DO_SPACES_ENDPOINT:-https://fra1.digitaloceanspaces.com}"
+      DO_SPACES_BUCKET: "${DO_SPACES_BUCKET:-media-sotodelprior}"
+      DO_SPACES_KEY: "${DO_SPACES_KEY:-}"
+      DO_SPACES_SECRET: "${DO_SPACES_SECRET:-}"
+      DO_SPACES_PUBLIC_URL: "${DO_SPACES_PUBLIC_URL:-https://media-sotodelprior.fra1.cdn.digitaloceanspaces.com}"
+      DO_SPACES_APP_PREFIX: "${DO_SPACES_APP_PREFIX:-cocina}"
     networks:
       - proxy-net
       - cocina-internal-net

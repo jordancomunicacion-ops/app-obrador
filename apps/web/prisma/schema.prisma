@@ -61,6 +61,18 @@ model User {
   ownedObradorDocs       ObradorSanitaryDocument[] @relation("ObradorDocOwner")
   ownedObradorTemps      ObradorTemperatureLog[]   @relation("ObradorTempOwner")
   ownedObradorIncidents  ObradorIncident[]         @relation("ObradorIncidentOwner")
+
+  // Locales (multi-location bajo un mismo admin)
+  ownedLocations         Location[]                @relation("LocationOwner")
+  locationId             String?
+  location               Location?                 @relation("LocationMembers", fields: [locationId], references: [id])
+
+  // Checklists (patrón yurest)
+  ownedChecklistTemplates  ChecklistTemplate[]   @relation("ChecklistTemplateOwner")
+  ownedChecklistSchedules  ChecklistSchedule[]   @relation("ChecklistScheduleOwner")
+  closedChecklistInstances ChecklistInstance[]   @relation("ChecklistInstanceClosedBy")
+  answeredChecklistResponses ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
+  supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 }
 
 // 7. App Configuration
@@ -929,4 +941,179 @@ model ObradorSanitaryDocument {
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// ============================================================================
+// 9. LOCATIONS (multi-local bajo un mismo admin/cliente)
+// ============================================================================
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  shortCode String?
+  address   String?
+  isActive  Boolean  @default(true)
+
+  ownerId String
+  owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
+
+  members   User[]              @relation("LocationMembers")
+  templates ChecklistTemplate[] @relation("ChecklistTemplateLocation")
+  schedules ChecklistSchedule[] @relation("ChecklistScheduleLocation")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// 10. CHECKLISTS (patrón yurest: Plantilla → Programación → Instancia → Respuesta)
+// ============================================================================
+
+enum ChecklistFieldType {
+  TITLE
+  CHECK
+  TEXT
+  YES_NO
+  RATING_1_10
+}
+
+enum PhotoRequirement {
+  NONE
+  OPTIONAL
+  REQUIRED
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+}
+
+enum InstanceStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  CLOSED_AUTO
+  INCIDENT
+}
+
+model ChecklistTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+
+  ownerId String
+  owner   User   @relation("ChecklistTemplateOwner", fields: [ownerId], references: [id])
+
+  // null = aplicable a todos los locales del owner
+  locationId String?
+  location   Location? @relation("ChecklistTemplateLocation", fields: [locationId], references: [id])
+
+  fields    ChecklistField[]
+  schedules ChecklistSchedule[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChecklistField {
+  id               String             @id @default(cuid())
+  templateId       String
+  template         ChecklistTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  order            Int
+  type             ChecklistFieldType
+  name             String
+  description      String?
+  exampleImageUrl  String?
+  photoRequirement PhotoRequirement   @default(NONE)
+
+  responses ChecklistResponse[]
+}
+
+model ChecklistSchedule {
+  id                 String    @id @default(cuid())
+  templateId         String
+  template           ChecklistTemplate @relation(fields: [templateId], references: [id])
+
+  locationId String
+  location   Location @relation("ChecklistScheduleLocation", fields: [locationId], references: [id])
+
+  frequency          Frequency
+  startDate          DateTime
+  endDate            DateTime?
+  executionStartTime String     // "HH:MM"
+  executionEndTime   String     // "HH:MM"
+  excludeWeekdays    Int[]      @default([])  // 0=domingo … 6=sábado
+  autoClose          Boolean    @default(false)
+  pinned             Boolean    @default(false)
+
+  // Asignación (string[] de User ids para flexibilidad inicial)
+  performerUserIds   String[]   @default([])
+  supervisorUserIds  String[]   @default([])
+  followerUserIds    String[]   @default([])
+  performerRoles     String[]   @default([])
+  supervisorRoles    String[]   @default([])
+  followerRoles      String[]   @default([])
+
+  ownerId String
+  owner   User   @relation("ChecklistScheduleOwner", fields: [ownerId], references: [id])
+
+  instances ChecklistInstance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChecklistInstance {
+  id         String   @id @default(cuid())
+  scheduleId String
+  schedule   ChecklistSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  dueDate    DateTime
+
+  status         InstanceStatus @default(PENDING)
+  openedAt       DateTime?
+  closedAt       DateTime?
+  closedByUserId String?
+  closedBy       User?    @relation("ChecklistInstanceClosedBy", fields: [closedByUserId], references: [id])
+  scoreAvg       Float?
+
+  responses ChecklistResponse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scheduleId, dueDate])
+}
+
+model ChecklistResponse {
+  id         String @id @default(cuid())
+  instanceId String
+  instance   ChecklistInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  fieldId    String
+  field      ChecklistField    @relation(fields: [fieldId], references: [id])
+
+  valueText    String?
+  valueBool    Boolean?
+  valueRating  Int?
+  photoUrl     String?
+  photoKey     String?
+  isIncident   Boolean  @default(false)
+  incidentNote String?
+
+  answeredByUserId String?
+  answeredBy       User?   @relation("ChecklistResponseAnsweredBy", fields: [answeredByUserId], references: [id])
+  answeredAt       DateTime?
+
+  supervisedByUserId String?
+  supervisedBy       User?    @relation("ChecklistResponseSupervisedBy", fields: [supervisedByUserId], references: [id])
+  supervisedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([instanceId, fieldId])
 }
