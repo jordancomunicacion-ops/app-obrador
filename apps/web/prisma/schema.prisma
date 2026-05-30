@@ -87,6 +87,10 @@ model User {
   ownedRequests    EmployeeRequest[] @relation("EmployeeRequestOwner")
   workerRequests   EmployeeRequest[] @relation("EmployeeRequestWorker")
   resolvedRequests EmployeeRequest[] @relation("EmployeeRequestResolver")
+
+  // Turnos
+  ownedShifts  Shift[] @relation("ShiftOwner")
+  workerShifts Shift[] @relation("ShiftWorker")
 }
 
 // 7. App Configuration
@@ -975,6 +979,7 @@ model Location {
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")
   clockIns       ClockIn[]           @relation("ClockInLocation")
+  shifts         Shift[]             @relation("ShiftLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1284,4 +1289,33 @@ model EmployeeRequest {
 
   @@index([ownerId, status, startDate])
   @@index([ownerId, workerId, startDate])
+}
+
+// ============================================================================
+// 14. TURNOS / HORARIOS (yurest schedule)
+// ============================================================================
+
+model Shift {
+  id String @id @default(cuid())
+
+  ownerId String
+  owner   User   @relation("ShiftOwner", fields: [ownerId], references: [id])
+
+  workerId String
+  worker   User   @relation("ShiftWorker", fields: [workerId], references: [id])
+
+  locationId String?
+  location   Location? @relation("ShiftLocation", fields: [locationId], references: [id])
+
+  date          DateTime  // día del turno (UTC, hora 00:00)
+  startTime     String    // "08:00"
+  endTime       String    // "16:00"
+  breakMinutes  Int       @default(0)
+  note          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, date])
+  @@index([ownerId, workerId, date])
 }

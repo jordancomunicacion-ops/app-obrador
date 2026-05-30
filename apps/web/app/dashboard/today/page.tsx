@@ -95,6 +95,17 @@ export default async function TodayPage() {
   // 4. Fichaje actual (si está abierto)
   const currentClockIn = await getCurrentClockIn();
 
+  // 4b. Próximo turno (hoy o futuro)
+  const nextShift = await prisma.shift.findFirst({
+    where: {
+      ownerId: orgId,
+      workerId: userId,
+      date: { gte: todayStart },
+    },
+    include: { location: { select: { name: true } } },
+    orderBy: { date: "asc" },
+  });
+
   // 5. Solicitudes propias pendientes / resueltas recientemente
   const myRequestsPending = await prisma.employeeRequest.count({
     where: {
@@ -146,6 +157,34 @@ export default async function TodayPage() {
             : null
         }
       />
+
+      {nextShift && (
+        <Link
+          href="/dashboard/today/schedule"
+          className="flex items-center justify-between bg-sky-50 border-2 border-sky-200 rounded-xl p-3 mb-4 hover:bg-sky-100 transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <ClockIcon className="w-5 h-5 text-sky-700 flex-none" />
+            <div className="min-w-0">
+              <p className="text-xs text-sky-600 uppercase tracking-wider">
+                {new Date(nextShift.date).toDateString() === new Date().toDateString()
+                  ? "Tu turno hoy"
+                  : "Próximo turno"}
+              </p>
+              <p className="text-sm font-semibold text-sky-900 truncate">
+                {new Date(nextShift.date).toLocaleDateString("es-ES", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                })}{" "}
+                · {nextShift.startTime}–{nextShift.endTime}
+                {nextShift.location && ` · ${nextShift.location.name}`}
+              </p>
+            </div>
+          </div>
+          <span className="text-xs text-sky-700">Ver semana →</span>
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {openCommunications > 0 && (
