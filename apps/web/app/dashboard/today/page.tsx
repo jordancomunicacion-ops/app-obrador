@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   PlayCircleIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 
 function startOfDayUTC(date = new Date()) {
@@ -89,7 +90,21 @@ export default async function TodayPage() {
     orderBy: [{ schedule: { pinned: "desc" } }, { schedule: { executionStartTime: "asc" } }],
   });
 
-  // 4. Contar campos de cada plantilla para mostrar progreso
+  // 4. Comunicaciones abiertas asignadas a mí (averías, avisos…)
+  const openCommunications = await prisma.communication.count({
+    where: {
+      ownerId: orgId,
+      status: { in: ["OPEN", "IN_PROGRESS"] },
+      OR: [
+        { assigneeIds: { has: userId } },
+        { followerIds: { has: userId } },
+        { authorId: userId },
+      ],
+      ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
+    },
+  });
+
+  // 5. Contar campos de cada plantilla para mostrar progreso
   const templateIds = Array.from(
     new Set(checklistInstances.map((i) => i.schedule.template.name)),
   );
@@ -105,6 +120,22 @@ export default async function TodayPage() {
           year: "numeric",
         })}
       </p>
+
+      {openCommunications > 0 && (
+        <Link
+          href="/dashboard/communications"
+          className="flex items-center justify-between bg-amber-50 border-2 border-amber-200 rounded-xl p-3 mb-4 hover:bg-amber-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <ChatBubbleLeftRightIcon className="w-5 h-5 text-amber-700" />
+            <span className="text-sm font-medium text-amber-800">
+              {openCommunications}{" "}
+              {openCommunications === 1 ? "comunicación" : "comunicaciones"} para ti
+            </span>
+          </div>
+          <span className="text-xs text-amber-700">Abrir →</span>
+        </Link>
+      )}
 
       {productionTasks.length === 0 && checklistInstances.length === 0 ? (
         <div className="text-center p-12 border-2 border-dashed border-gray-200 rounded-lg">

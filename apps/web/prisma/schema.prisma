@@ -73,6 +73,11 @@ model User {
   closedChecklistInstances ChecklistInstance[]   @relation("ChecklistInstanceClosedBy")
   answeredChecklistResponses ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
+
+  // Comunicaciones (averías, avisos, eventos, reuniones)
+  authoredCommunications  Communication[]        @relation("CommunicationAuthor")
+  authoredCommComments    CommunicationComment[] @relation("CommunicationCommentAuthor")
+  ownedCommunications     Communication[]        @relation("CommunicationOwner")
 }
 
 // 7. App Configuration
@@ -956,9 +961,10 @@ model Location {
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
 
-  members   User[]              @relation("LocationMembers")
-  templates ChecklistTemplate[] @relation("ChecklistTemplateLocation")
-  schedules ChecklistSchedule[] @relation("ChecklistScheduleLocation")
+  members        User[]              @relation("LocationMembers")
+  templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
+  schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
+  communications Communication[]     @relation("CommunicationLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1087,6 +1093,75 @@ model ChecklistInstance {
   updatedAt DateTime @updatedAt
 
   @@unique([scheduleId, dueDate])
+}
+
+// ============================================================================
+// 11. COMUNICACIONES (averías, avisos, eventos, reuniones — patrón yurest)
+// ============================================================================
+
+enum CommunicationType {
+  BREAKDOWN  // Avería
+  NOTICE     // Aviso
+  EVENT      // Evento
+  MEETING    // Reunión
+  TASK       // Tarea programada (Comunicación > Programadas)
+  LIST       // Listas
+}
+
+enum CommunicationStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model Communication {
+  id          String              @id @default(cuid())
+  type        CommunicationType
+  title       String
+  description String?
+  status      CommunicationStatus @default(OPEN)
+
+  // Multi-tenancy
+  ownerId String
+  owner   User   @relation("CommunicationOwner", fields: [ownerId], references: [id])
+
+  // Local opcional
+  locationId String?
+  location   Location? @relation("CommunicationLocation", fields: [locationId], references: [id])
+
+  // Autor
+  authorId String
+  author   User   @relation("CommunicationAuthor", fields: [authorId], references: [id])
+
+  // Asignados / seguidores (arrays simples como en Schedule)
+  assigneeIds String[] @default([])
+  followerIds String[] @default([])
+
+  // Programación opcional (para type=TASK)
+  scheduledAt DateTime?
+  closedAt    DateTime?
+
+  // Fotos / adjuntos (URLs CDN)
+  photoUrls String[] @default([])
+
+  comments CommunicationComment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunicationComment {
+  id              String        @id @default(cuid())
+  communicationId String
+  communication   Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("CommunicationCommentAuthor", fields: [authorId], references: [id])
+
+  body   String
+  photos String[] @default([])
+
+  createdAt DateTime @default(now())
 }
 
 model ChecklistResponse {

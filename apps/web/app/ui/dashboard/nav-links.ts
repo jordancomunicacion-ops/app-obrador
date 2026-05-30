@@ -9,7 +9,8 @@ import {
     ShoppingCartIcon,
     TableCellsIcon,
     BuildingStorefrontIcon,
-    SunIcon
+    SunIcon,
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -20,6 +21,7 @@ export const groups = [
             { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
             { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
             { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
+            { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon },
             { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon },
         ]
     },
