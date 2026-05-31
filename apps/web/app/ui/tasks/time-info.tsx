@@ -7,9 +7,11 @@ interface TimeInfoProps {
     realStart: Date | null;
     realEnd: Date | null;
     status: string;
+    /** recipe.category — para resaltar puntualidad en finales y duración en intermedias */
+    category?: string | null;
 }
 
-export default function TimeInfo({ plannedStart, plannedEnd, realStart, realEnd, status }: TimeInfoProps) {
+export default function TimeInfo({ plannedStart, plannedEnd, realStart, realEnd, status, category }: TimeInfoProps) {
     if (!plannedStart && !realStart) return null;
 
     const formatDate = (date: Date) => {
@@ -48,8 +50,37 @@ export default function TimeInfo({ plannedStart, plannedEnd, realStart, realEnd,
     // Only show real stats if the task has started
     const hasStarted = !!realStart;
 
+    const isFinal = category === 'ELABORACION_FINAL';
+
+    // Puntualidad (solo elaboraciones FINALES): ¿se termina dentro del plazo (plannedEnd)?
+    // Lo que le interesa al admin de un plato final es que esté hecho a la hora prevista,
+    // independientemente de cuánto se tarde en hacerlo.
+    let punctuality: { label: string; late: boolean } | null = null;
+    if (isFinal && plannedEnd) {
+        if (realEnd) {
+            const lateMin = getDurationInMinutes(plannedEnd, realEnd); // >0 => tarde
+            punctuality = lateMin > 0
+                ? { label: `Tarde +${formatDuration(lateMin)}`, late: true }
+                : { label: 'A tiempo', late: false };
+        } else if (status !== 'DONE' && now.getTime() > plannedEnd.getTime()) {
+            punctuality = { label: `Fuera de plazo +${formatDuration(getDurationInMinutes(plannedEnd, now))}`, late: true };
+        }
+    }
+
     return (
         <div className="mt-2 space-y-1 text-xs border-t border-gray-50 pt-2">
+            {/* Puntualidad (solo elaboraciones finales) */}
+            {punctuality && (
+                <div className="flex justify-end">
+                    <span className={clsx("text-[10px] font-semibold px-1.5 py-0.5 rounded", {
+                        "bg-red-100 text-red-700": punctuality.late,
+                        "bg-green-100 text-green-700": !punctuality.late
+                    })}>
+                        {punctuality.late ? '⏰ ' : '✓ '}{punctuality.label}
+                    </span>
+                </div>
+            )}
+
             {/* Planned */}
             <div className="flex justify-between text-gray-500">
                 <span className="flex items-center gap-1">

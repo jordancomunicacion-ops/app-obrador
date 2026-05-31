@@ -57,7 +57,7 @@ export default async function TodayPage() {
       plannedStart: true,
       targetQuantity: true,
       unit: true,
-      recipe: { select: { name: true } },
+      recipe: { select: { name: true, category: true } },
     },
     orderBy: { plannedStart: "asc" },
   });
@@ -292,10 +292,16 @@ type ProdTask = {
   plannedStart: Date | null;
   targetQuantity: number | null;
   unit: string | null;
-  recipe: { name: string } | null;
+  recipe: { name: string; category: string } | null;
 };
 
 function ProductionTaskCard({ task }: { task: ProdTask }) {
+  const categoryBadge =
+    task.recipe?.category === "ELABORACION_FINAL"
+      ? { label: "Final", cls: "bg-indigo-100 text-indigo-700" }
+      : task.recipe?.category === "ELABORACION_INTERMEDIA"
+        ? { label: "Intermedia", cls: "bg-teal-100 text-teal-700" }
+        : null;
   const statusCls: Record<string, string> = {
     PENDING: "text-gray-600 bg-gray-100",
     IN_PROGRESS: "text-amber-700 bg-amber-100",
@@ -309,7 +315,19 @@ function ProductionTaskCard({ task }: { task: ProdTask }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-800 truncate">{task.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-800 truncate">{task.title}</h3>
+            {categoryBadge && (
+              <span
+                className={clsx(
+                  "text-[10px] font-medium px-1.5 py-0.5 rounded flex-none",
+                  categoryBadge.cls,
+                )}
+              >
+                {categoryBadge.label}
+              </span>
+            )}
+          </div>
           {task.recipe && (
             <p className="text-xs text-gray-500">Receta: {task.recipe.name}</p>
           )}
