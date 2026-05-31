@@ -17,6 +17,7 @@ export type PackagedProductInitial = {
   id: string;
   name: string;
   category: string | null;
+  sapiensWorld: string | null;
   sanitaryInfo: {
     legalDenomination: string | null;
     conservationType: string | null;
@@ -35,6 +36,8 @@ export type PackagedProductInitial = {
 
 const CATEGORIES = ['Carne fresca', 'Carne picada', 'Embutido', 'Panadería', 'Otro'];
 const CONSERVATION = ['Refrigerado (0-4ºC)', 'Congelado (-18ºC)', 'Ambiente (Fresco y seco)'];
+// Taxonomía Sapiens (Mundo/Reino), igual que en los productos comprados.
+const SAPIENS_WORLDS = ['Reino Animal', 'Reino Vegetal', 'Reino Fungi', 'Mundo Mineral', 'Agua', 'Elaborados / Mixto'];
 
 const NUTRIENTS: { name: string; label: string }[] = [
   { name: 'energyKcal', label: 'Valor Energético (kcal)' },
@@ -125,6 +128,19 @@ export default function PackagedProductForm({
               >
                 {CATEGORIES.map((c) => (
                   <option key={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Mundo (Sapiens)</label>
+              <select
+                name="sapiensWorld"
+                defaultValue={initial?.sapiensWorld ?? ''}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">-- Seleccionar Mundo --</option>
+                {SAPIENS_WORLDS.map((w) => (
+                  <option key={w} value={w}>{w}</option>
                 ))}
               </select>
             </div>

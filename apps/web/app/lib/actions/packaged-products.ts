@@ -11,6 +11,7 @@ const num = z.coerce.number().optional().nullable();
 const PackagedProductSchema = z.object({
   name: z.string().min(1, { message: 'El nombre comercial es obligatorio.' }),
   category: z.string().optional(),
+  sapiensWorld: z.string().optional(),
   legalDenomination: z.string().optional(),
   conservationType: z.string().optional(),
   shelfLifeDays: z.coerce.number().int().min(0).optional().nullable(),
@@ -38,6 +39,7 @@ function parseForm(formData: FormData) {
   return PackagedProductSchema.safeParse({
     name: formData.get('name'),
     category: formData.get('category'),
+    sapiensWorld: formData.get('sapiensWorld'),
     legalDenomination: formData.get('legalDenomination'),
     conservationType: formData.get('conservationType'),
     shelfLifeDays: formData.get('shelfLifeDays') || null,
@@ -88,6 +90,7 @@ export async function createPackagedProduct(
       data: {
         name: validated.data.name,
         category: validated.data.category || null,
+        sapiensWorld: validated.data.sapiensWorld || null,
         isObrador: true,
         locationId: await scopedLocationId(),
         sanitaryInfo: { create: sanitaryData(validated.data, allergens) },
@@ -128,6 +131,7 @@ export async function updatePackagedProduct(
       data: {
         name: validated.data.name,
         category: validated.data.category || null,
+        sapiensWorld: validated.data.sapiensWorld || null,
         sanitaryInfo: {
           upsert: {
             create: sanitaryData(validated.data, allergens),

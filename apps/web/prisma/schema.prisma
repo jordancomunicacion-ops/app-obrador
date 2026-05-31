@@ -202,6 +202,10 @@ model MasterProduct {
   category    String?
   description String?
 
+  // Mundo/Reino (taxonomía Sapiens): aplica a TODOS los productos, comprados y
+  // elaborados. En comprados se escribe también en cada SupplierProduct (legacy).
+  sapiensWorld String?
+
   // Ficha única: un producto puede ser de cocina y/o de obrador (Fase 3, Frente A).
   isObrador Boolean @default(false)
 
