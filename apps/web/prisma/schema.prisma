@@ -262,6 +262,7 @@ model Customer {
   address      String?
   phone        String?
   email        String?
+  contactPerson String? // persona de contacto
   customerType String? // Consumidor final, Minorista, Online, Profesional
 
   // Puente: clientes de obrador que se backfillean aquí.
