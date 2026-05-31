@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { Ingredient, Transformation, TransformationOutput, SupplierProduct } from '@prisma/client';
 import { locationScope } from '@/lib/auth/scope';
+import { getRequirementsForEvents } from './production';
 
 interface IngredientDemand {
     ingredientId: string;
@@ -32,65 +33,19 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
             },
             status: 'CONFIRMED'
         },
-        include: {
-            menuItems: {
-                include: {
-                    recipe: {
-                        include: {
-                            items: {
-                                include: {
-                                    ingredient: true,
-                                    subRecipe: {
-                                        include: {
-                                            items: {
-                                                include: { ingredient: true }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        select: { id: true }
     });
 
-    const demandMap = new Map<string, IngredientDemand>();
+    // Demanda agregada con el motor recursivo de producción (production.ts),
+    // evitando duplicar aquí la explosión de recetas/sub-recetas.
+    const requirements = await getRequirementsForEvents(events.map((e) => e.id));
 
-    // Helper to add demand
-    const addDemand = (ingId: string, name: string, qty: number, unit: string) => {
-        const current = demandMap.get(ingId) || { ingredientId: ingId, ingredientName: name, quantity: 0, unit };
-        current.quantity += qty;
-        demandMap.set(ingId, current);
-    };
-
-    // Calculate Raw Ingredient Needs (flattening sub-recipes one level deep for simplicity for now)
-    // TODO: Recursive flattening for deep sub-recipes
-    events.forEach(event => {
-        event.menuItems.forEach(menuItem => {
-            const pax = menuItem.servingsOverride || event.pax;
-            // Apply safety margin (e.g. 1.1)
-            const qtyMultiplier = (pax / menuItem.recipe.yieldQuantity) * event.safetyMargin;
-
-            menuItem.recipe.items.forEach(item => {
-                if (item.type === 'INGREDIENT' && item.ingredient) {
-                    addDemand(item.ingredient.id, item.ingredient.name, item.quantityGross * qtyMultiplier, item.unit);
-                } else if (item.type === 'SUB_RECIPE' && item.subRecipe) {
-                    // For now, assume sub-recipe items are what we need. 
-                    // ideally we recurse. Simplified:
-                    const subMultiplier = (item.quantityGross / item.subRecipe.yieldQuantity) * qtyMultiplier;
-                    item.subRecipe.items.forEach(subItem => {
-                        if (subItem.type === 'INGREDIENT' && subItem.ingredient) {
-                            addDemand(subItem.ingredient.id, subItem.ingredient.name, subItem.quantityGross * subMultiplier, subItem.unit);
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    const needs = Array.from(demandMap.values());
+    const needs: IngredientDemand[] = requirements.map((r) => ({
+        ingredientId: r.ingredientId,
+        ingredientName: r.ingredientName,
+        quantity: r.quantity,
+        unit: r.unit,
+    }));
     const recommendations: PurchaseRecommendation[] = [];
 
     // 2. Resolve Needs
