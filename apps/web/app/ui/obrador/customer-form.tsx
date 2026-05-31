@@ -3,10 +3,8 @@
 import { useActionState } from 'react';
 import Link from 'next/link';
 import { UserGroupIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import {
-  CUSTOMER_TYPES,
-  type ObradorCustomerFormState,
-} from '@/app/lib/actions/obrador-customers';
+import { type ObradorCustomerFormState } from '@/app/lib/actions/obrador-customers';
+import { CUSTOMER_TYPES } from '@/app/lib/obrador-constants';
 
 export type ObradorCustomerInitial = {
   id: string;

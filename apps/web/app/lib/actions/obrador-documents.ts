@@ -6,21 +6,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 
-export const DOCUMENT_CATEGORIES = [
-  'Registro',
-  'APPCC',
-  'Limpieza',
-  'Plagas',
-  'Formación',
-  'Fichas',
-  'Albaranes',
-  'Facturas',
-  'Certificados',
-  'Incidencias',
-  'Retiradas',
-  'Inspecciones',
-] as const;
-
 const DocSchema = z.object({
   title: z.string().min(1, { message: 'El título es obligatorio.' }),
   category: z.string().min(1, { message: 'La categoría es obligatoria.' }),
