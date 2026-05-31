@@ -49,13 +49,18 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
     const filteredGroups = groups.map(group => ({
         ...group,
         items: group.items.filter(item => {
+            // 0. Restricción por rol del item (p.ej. Hoy=empleado, Dashboard=admin)
+            if (item.roles && !item.roles.includes(user?.role)) {
+                return false;
+            }
+
             // 1. Role Check
             if (item.name === 'Gestión de Usuarios') {
-                return user?.role === 'ADMIN';
+                return user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
             }
 
             // 2. Permission Check (If not Admin)
-            if (user?.role !== 'ADMIN') {
+            if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
                 const requiredPermission = getPermissionId(item.name, item.href);
                 // If it maps to a permission, check if user has it.
                 // If user.permissions is undefined/empty, block everything except maybe basics?

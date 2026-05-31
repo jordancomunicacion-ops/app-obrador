@@ -7,35 +7,47 @@ import {
     ArchiveBoxIcon,
     Cog6ToothIcon,
     ShoppingCartIcon,
-    TableCellsIcon,
     BuildingStorefrontIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
-    ClockIcon,
-    EnvelopeIcon,
-    CalendarDaysIcon,
     TagIcon,
-    BanknotesIcon,
-    ChartBarIcon
+    TableCellsIcon
 } from '@heroicons/react/24/outline';
 
-export const groups = [
+export type NavItem = {
+    name: string;
+    href: string;
+    icon: any;
+    // Si se define, SOLO esos roles ven el item; si se omite, lo ven todos.
+    roles?: string[];
+};
+
+export type NavGroup = {
+    name: string;
+    items: NavItem[];
+};
+
+export const groups: NavGroup[] = [
     {
         name: 'Principal',
         items: [
-            { name: 'Hoy', href: '/dashboard/today', icon: SunIcon },
-            { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+            // "Hoy" es la vista operativa del empleado; "Dashboard" la del admin.
+            { name: 'Hoy', href: '/dashboard/today', icon: SunIcon, roles: ['USER'] },
+            { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['ADMIN', 'SUPERADMIN'] },
             { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon },
             { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon },
             { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon },
-            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon },
         ]
     },
     {
+        // Pipeline del catálogo: Productos (ficha: proveedores + test carnicero +
+        // perfiles aromáticos) → Recetas (combinan productos) → Planificación Menú
+        // (agrega las cantidades totales necesarias).
         name: 'Catálogo',
         items: [
             { name: 'Productos', href: '/dashboard/products', icon: ArchiveBoxIcon },
             { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon },
+            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon },
         ]
     },
     {
@@ -52,12 +64,9 @@ export const groups = [
     {
         name: 'Administración',
         items: [
+            // RRHH y contabilidad (fichajes, turnos, solicitudes, caja, EBITDA) viven en
+            // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
-            { name: 'Fichajes', href: '/dashboard/clock-in', icon: ClockIcon },
-            { name: 'Turnos', href: '/dashboard/shifts', icon: CalendarDaysIcon },
-            { name: 'Solicitudes', href: '/dashboard/requests', icon: EnvelopeIcon },
-            { name: 'Cierres de caja', href: '/dashboard/cash', icon: BanknotesIcon },
-            { name: 'Finanzas / EBITDA', href: '/dashboard/finance', icon: ChartBarIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
