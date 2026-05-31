@@ -27,17 +27,20 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
     const pathname = usePathname();
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-    // Map Link Names/Hrefs to Permission IDs (from create-form)
-    // Permission IDs: 'dashboard', 'events', 'tasks', 'menu-planning', 'products', 'recipes', 'purchasing', 'storage', 'mise-en-place', 'employees', 'settings'
+    // Map Link Names/Hrefs to Permission IDs (debe coincidir con PERMISSIONS de create/edit-form)
+    // Permission IDs: 'dashboard', 'events', 'tasks', 'communications', 'menu-planning', 'products',
+    // 'recipes', 'purchasing', 'storage', 'mise-en-place', 'labels', 'obrador', 'employees', 'settings'
     const getPermissionId = (name: string, href: string): string => {
         if (href.includes('/dashboard/events')) return 'events';
         if (href.includes('/dashboard/tasks')) return 'tasks';
+        if (href.includes('/dashboard/communications')) return 'communications';
         if (href.includes('/dashboard/menu-planning')) return 'menu-planning';
         if (href.includes('/dashboard/products')) return 'products';
         if (href.includes('/dashboard/recipes')) return 'recipes';
         if (href.includes('/dashboard/purchasing')) return 'purchasing';
         if (href.includes('/dashboard/storage')) return 'storage';
         if (href.includes('/dashboard/mise-en-place')) return 'mise-en-place';
+        if (href.includes('/dashboard/labels')) return 'labels';
         if (href.includes('/dashboard/obrador')) return 'obrador';
         if (href.includes('/dashboard/employees')) return 'employees';
         if (href.includes('/dashboard/settings')) return 'settings';
