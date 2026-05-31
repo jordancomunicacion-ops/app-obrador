@@ -1,0 +1,144 @@
+# Fase 3 — Plan detallado de reestructuración
+
+> Plan de la "reestructuración" (no implica cambios de código todavía).
+> Acompaña a `docs/arquitectura-objetivo-y-roadmap.md`.
+> Pre-requisito: aislamiento por local (Fases 0-2) ya en `main` y validado en runtime.
+
+La Fase 3 tiene **dos grandes frentes independientes** que pueden abordarse por separado:
+
+- **A. Convergencia Obrador → núcleo** (eliminar el "mundo paralelo").
+- **B. Motor de tareas único** (unificar `Task` + `Checklist*` + `MiseEnPlaceTask`).
+
+Principio rector para ambos: **migración aditiva y reversible** — primero se añade el puente, luego se backfillea, luego se conmuta la lectura, y solo al final se deprecan los modelos viejos. Nada se borra hasta que lo nuevo está validado.
+
+---
+
+## A. Convergencia Obrador → núcleo
+
+### A.1 Diagnóstico (estado en `main`)
+Obrador es hoy un vertical paralelo de 14 modelos:
+`ObradorConfig, ObradorProduct, ObradorRecipe, ObradorRecipeIngredient, ObradorRawMaterialEntry, ObradorProductionBatch, ObradorBatchIngredient, ObradorCustomer, ObradorSale, ObradorTemperatureLog, ObradorCleaningTask, ObradorCleaningLog, ObradorIncident, ObradorSanitaryDocument`.
+
+De ellos, unos **duplican** el núcleo y otros son **legítimamente propios** del obrador (cumplimiento sanitario/APPCC).
+
+### A.2 Mapa de convergencia
+
+| Obrador (duplica) | Núcleo destino | Acción |
+|---|---|---|
+| `ObradorProduct` | `MasterProduct` (+ `SupplierProduct`) | Migrar a producto del núcleo con `tipo=OBRADOR` o flag `esObrador` + campos sanitarios (denominación legal, conservación, nutricional) como extensión |
+| `ObradorRecipe` + `ObradorRecipeIngredient` | `Recipe` + `RecipeItem`/`RecipeStep` | Migrar a receta del núcleo; los % y aditivos pasan a `RecipeItem` (+ campo `esAditivo`) |
+| `ObradorSale` | `SalesRecord` (+ `MenuService`) | Migrar ventas a `SalesRecord` con referencia a lote |
+| `ObradorCustomer` | *(nuevo)* `Customer` del núcleo | Promover a un modelo `Customer` reutilizable (hoy solo existe en obrador) |
+| `ObradorRawMaterialEntry` | Recepción de `Supplier`/`SupplierProduct` (compras) | Unificar con el flujo de pedidos/albaranes (`PurchaseOrder`/`DeliveryNote`) |
+
+| Obrador (se CONSERVA — específico APPCC) | Motivo |
+|---|---|
+| `ObradorConfig` | Datos de registro sanitario del obrador (RGSEAA…) |
+| `ObradorProductionBatch` + `ObradorBatchIngredient` | **Lotes de producción** (trazabilidad) — núcleo del valor del obrador |
+| `ObradorTemperatureLog` | Registro de temperaturas (APPCC) |
+| `ObradorCleaningTask` + `ObradorCleaningLog` | Plan de limpieza (APPCC) → *candidato a fusionar con el motor de tareas, ver Frente B* |
+| `ObradorIncident` | Incidencias sanitarias |
+| `ObradorSanitaryDocument` | Documentación sanitaria |
+
+> Nota: el "obrador" pasa de ser un módulo aislado a ser **una vista/flujo sobre el núcleo** + una capa de trazabilidad sanitaria y lotes.
+
+### A.3 Estrategia de migración (4 sub-pasos)
+
+1. **Puente (aditivo).** Añadir FKs nullable de los modelos que se conservan hacia el núcleo:
+   - `ObradorProductionBatch.recipeId → Recipe`, `.masterProductId → MasterProduct`.
+   - `ObradorSale.salesRecordId → SalesRecord` (o migrar a `SalesRecord` con `batchId`).
+   - `ObradorBatchIngredient.ingredientId → Ingredient`.
+   Sin romper nada: los modelos viejos siguen funcionando.
+
+2. **Backfill (script idempotente).** Por cada `ObradorProduct`/`ObradorRecipe`/`ObradorSale`/`ObradorCustomer` crear su equivalente en el núcleo (con `locationId` correcto) y enlazar. Marcar los originales como `migrated`.
+
+3. **Cutover (lectura).** Las pantallas de obrador pasan a leer del núcleo (productos, recetas, ventas, clientes) y solo mantienen su UI propia para lotes/temperaturas/limpieza/incidencias/documentos.
+
+4. **Deprecación.** Tras validar, eliminar `ObradorProduct/ObradorRecipe/ObradorRecipeIngredient/ObradorSale/ObradorCustomer` y sus rutas. Conservar lo sanitario/lotes ya enlazado al núcleo.
+
+### A.4 Riesgos y mitigación
+- **Campos sanitarios sin hueco en el núcleo** (denominación legal, info nutricional, conservación): se añaden como columnas opcionales a `MasterProduct` o a una tabla de extensión `ProductSanitaryInfo`. Decisión en A.6.
+- **Pérdida de trazabilidad de lotes**: los lotes NUNCA se tocan; solo ganan FK al núcleo. Riesgo bajo.
+
+### A.5 Criterios de done (Frente A)
+- Productos/recetas/ventas/clientes del obrador viven en el núcleo, acotados por local.
+- Lotes, temperaturas, limpieza, incidencias y documentos siguen operativos, enlazados al núcleo.
+- Cero duplicación producto/receta/venta. Las pantallas de obrador consumen el núcleo.
+
+### A.6 Decisiones pendientes (Frente A)
+1. Info sanitaria/nutricional: ¿columnas en `MasterProduct` o tabla de extensión `ProductSanitaryInfo`?
+2. `ObradorRawMaterialEntry`: ¿se unifica con `DeliveryNote`/compras, o se conserva como recepción específica del obrador con FK a `Supplier`?
+3. ¿Un producto puede ser "de obrador" y "de cocina" a la vez (flag) o son catálogos disjuntos dentro del mismo modelo?
+
+---
+
+## B. Motor de tareas único
+
+### B.1 Diagnóstico (estado en `main`)
+Tres sistemas que resuelven "asignar trabajo y verificar cumplimiento":
+- **`Task`** — producción ligada a `Recipe`/`Event` (estado, fechas plan/real, asignado).
+- **`ChecklistTemplate` + `ChecklistField` + `ChecklistSchedule` + `ChecklistInstance` + `ChecklistResponse`** — checklists recurrentes con campos tipados, fotos, frecuencias, supervisión.
+- **`MiseEnPlaceTask`** — mise en place por estación, ligado a `Recipe`.
+- *(+ `ObradorCleaningTask`/`Log` del Frente A, que es otro "checklist" de limpieza.)*
+
+### B.2 Modelo unificado propuesto
+Un único par **definición → instancia**, con el `origen` como atributo (no como modelo aparte):
+
+```
+TaskDefinition            (qué hay que hacer — plantilla)
+  - origin: MANUAL | PRODUCTION | CHECKLIST | MISE_EN_PLACE | CLEANING
+  - title, description
+  - fields: TaskField[]   (tipados: texto, número, foto, check, temperatura…)  ← de ChecklistField
+  - schedule?: TaskSchedule (frecuencia/recurrencia)                            ← de ChecklistSchedule
+  - recipeId? / eventId? / stationId?  (vínculos opcionales según origen)
+
+TaskInstance              (una ocurrencia concreta a ejecutar)
+  - definitionId
+  - status: PENDING | IN_PROGRESS | DONE | ISSUE
+  - assignedToUserId, plannedStart/End, realStart/End
+  - locationId            (aislamiento por local — ya es la norma)
+  - responses: TaskResponse[]   ← de ChecklistResponse (valor por campo + foto + supervisión)
+```
+
+Cómo encaja cada sistema actual:
+- **Manual** → `TaskDefinition(origin=MANUAL)` sin schedule.
+- **Producción** (`Task` actual) → `origin=PRODUCTION`, con `recipeId`/`eventId`/`targetQuantity`.
+- **Checklist** → `origin=CHECKLIST`, con `fields` + `schedule` (genera `TaskInstance` por frecuencia).
+- **Mise en place** → `origin=MISE_EN_PLACE`, con `stationId`/`recipeId`.
+- **Limpieza obrador** → `origin=CLEANING` (absorbe `ObradorCleaningTask`).
+
+### B.3 Estrategia de migración (aditiva)
+1. Crear `TaskDefinition`/`TaskInstance`/`TaskField`/`TaskResponse`/`TaskSchedule` **junto a** los modelos actuales.
+2. Backfill: convertir `Task`, `Checklist*`, `MiseEnPlaceTask`, `ObradorCleaningTask` a la nueva estructura (script idempotente).
+3. Cutover de las UIs (`/tasks`, `/tasks/templates`, `/tasks/schedules`, `/mise-en-place`, `/today/checklist`, supervisión, reportes) al motor único.
+4. Deprecar los modelos antiguos.
+
+### B.4 Riesgos
+- **Mayor superficie** (toca tareas, checklists, mise, reportes, supervisión y la vista "hoy"). Es el cambio más amplio de toda la app → conviene hacerlo **después** del Frente A y con la base ya validada.
+- Los **reportes** de checklists (cumplimiento, incidencias, operaciones) deben re-mapearse al nuevo modelo sin perder histórico.
+
+### B.5 Criterios de done (Frente B)
+- Un solo modelo de tareas; el origen es un atributo.
+- Las 4-5 UIs actuales operan sobre el motor único.
+- Reportes y supervisión preservados. Aislamiento por local intacto.
+
+### B.6 Decisiones pendientes (Frente B)
+1. ¿Unificación total bajo un motor, o "base común + vistas especializadas" (mantener rutas/experiencias distintas pero un modelo de datos común)?
+2. ¿Migramos el histórico de `ChecklistResponse` o lo archivamos en frío?
+3. Limpieza del obrador: ¿entra en el motor de tareas (`origin=CLEANING`) o se queda en su módulo APPCC?
+
+---
+
+## C. Secuenciación recomendada
+
+1. **Validar Fases 0-2 en runtime** (en curso) — pre-requisito.
+2. **Frente A (Obrador → núcleo)** primero: menor superficie, alto valor (mata la peor duplicación), y deja el catálogo limpio para…
+3. **Frente B (motor de tareas único)**: el más amplio; mejor sobre una base ya convergida.
+4. **Bloque C — Taxonomías** (Sapiens + química molecular, de tus libros): se monta sobre el catálogo y recetario ya unificados.
+
+Cada frente, igual que la Fase 1: **commits/PRs pequeños** (puente → backfill → cutover → deprecación), validables por pasos.
+
+## D. Resumen de decisiones que necesito de ti
+- **A.6**: ubicación de la info sanitaria/nutricional; destino de `ObradorRawMaterialEntry`; ¿catálogo único con flag o disjunto?
+- **B.6**: ¿unificación total o base común + vistas?; histórico de checklists; limpieza obrador dentro/fuera del motor.
+- **Orden**: ¿empezamos por Obrador (recomendado) o por el motor de tareas?
