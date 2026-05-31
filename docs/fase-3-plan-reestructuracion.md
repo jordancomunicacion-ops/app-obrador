@@ -81,31 +81,51 @@ Tres sistemas que resuelven "asignar trabajo y verificar cumplimiento":
 - **`MiseEnPlaceTask`** — mise en place por estación, ligado a `Recipe`.
 - *(+ `ObradorCleaningTask`/`Log` del Frente A, que es otro "checklist" de limpieza.)*
 
-### B.2 Modelo unificado propuesto
-Un único par **definición → instancia**, con el `origen` como atributo (no como modelo aparte):
+### B.2 Dos familias sobre una base común *(refinado con feedback del usuario)*
+
+Las tareas **operativas** y las de **producción** son fundamentalmente distintas y no deben aplanarse en un único tipo. Por tanto: **una base común** + **dos familias especializadas** (decisión B.6.1 = base común + vistas, no unificación total).
+
+| | **Familia OPERATIVA** | **Familia PRODUCCIÓN** |
+|---|---|---|
+| Disparador | Rutina/recurrencia (turno, día) | Demanda (evento/menú/escandallo) |
+| Qué se verifica | Checklist de campos tipados + foto/firma | Cantidad producida de una receta |
+| Vínculo | Local / estación / turno | Receta + cantidad + transformaciones |
+| Hoy es | `Checklist*` + limpieza obrador | `Task` (producción) + `MiseEnPlace` |
+| Ejemplos | Abrir/cerrar local, limpieza, temperaturas, APPCC | Elaborar 8 kg de salsa, mise en place de un servicio |
+
+**Base común** (`TaskInstance`): asignación, estado, local, tiempos plan/real, evidencia/respuestas. Sobre ella, cada familia añade lo suyo:
 
 ```
-TaskDefinition            (qué hay que hacer — plantilla)
-  - origin: MANUAL | PRODUCTION | CHECKLIST | MISE_EN_PLACE | CLEANING
+TaskDefinition            (plantilla)
+  - family: OPERATIONAL | PRODUCTION        ← distinción primaria
+  - origin: MANUAL | CHECKLIST | CLEANING | PRODUCTION | MISE_EN_PLACE  ← subtipo
   - title, description
-  - fields: TaskField[]   (tipados: texto, número, foto, check, temperatura…)  ← de ChecklistField
-  - schedule?: TaskSchedule (frecuencia/recurrencia)                            ← de ChecklistSchedule
-  - recipeId? / eventId? / stationId?  (vínculos opcionales según origen)
+  // Operativa:
+  - fields?: TaskField[]      (tipados: texto, número, foto, check, temperatura…) ← ChecklistField
+  - schedule?: TaskSchedule   (frecuencia/recurrencia)                            ← ChecklistSchedule
+  - stationId? / shiftId?
+  // Producción:
+  - recipeId? / eventId? / menuServiceId? / targetQuantity? / unit?
 
-TaskInstance              (una ocurrencia concreta a ejecutar)
-  - definitionId
+TaskInstance              (una ocurrencia concreta — base común)
+  - definitionId, family
   - status: PENDING | IN_PROGRESS | DONE | ISSUE
   - assignedToUserId, plannedStart/End, realStart/End
   - locationId            (aislamiento por local — ya es la norma)
-  - responses: TaskResponse[]   ← de ChecklistResponse (valor por campo + foto + supervisión)
+  - responses?: TaskResponse[]   (operativa: valor por campo + foto + supervisión) ← ChecklistResponse
+  - producedQuantity?            (producción)
 ```
 
 Cómo encaja cada sistema actual:
-- **Manual** → `TaskDefinition(origin=MANUAL)` sin schedule.
-- **Producción** (`Task` actual) → `origin=PRODUCTION`, con `recipeId`/`eventId`/`targetQuantity`.
-- **Checklist** → `origin=CHECKLIST`, con `fields` + `schedule` (genera `TaskInstance` por frecuencia).
-- **Mise en place** → `origin=MISE_EN_PLACE`, con `stationId`/`recipeId`.
-- **Limpieza obrador** → `origin=CLEANING` (absorbe `ObradorCleaningTask`).
+- **Operativas** → `family=OPERATIONAL`:
+  - Checklist (`origin=CHECKLIST`) → `fields` + `schedule`.
+  - Limpieza obrador (`origin=CLEANING`) → checklist de limpieza (absorbe `ObradorCleaningTask`).
+  - Manual operativa (`origin=MANUAL`).
+- **Producción** → `family=PRODUCTION`:
+  - `Task` actual (`origin=PRODUCTION`) → `recipeId`/`eventId`/`targetQuantity`.
+  - Mise en place (`origin=MISE_EN_PLACE`) → `stationId`/`recipeId` (preparación para producción).
+
+> Las UIs se mantienen separadas (Tareas de producción ≠ Checklists operativos), pero comparten **un solo modelo de datos** debajo: misma asignación, mismo seguimiento, reporting unificado.
 
 ### B.3 Estrategia de migración (aditiva)
 1. Crear `TaskDefinition`/`TaskInstance`/`TaskField`/`TaskResponse`/`TaskSchedule` **junto a** los modelos actuales.
@@ -118,14 +138,14 @@ Cómo encaja cada sistema actual:
 - Los **reportes** de checklists (cumplimiento, incidencias, operaciones) deben re-mapearse al nuevo modelo sin perder histórico.
 
 ### B.5 Criterios de done (Frente B)
-- Un solo modelo de tareas; el origen es un atributo.
-- Las 4-5 UIs actuales operan sobre el motor único.
-- Reportes y supervisión preservados. Aislamiento por local intacto.
+- Un único modelo de datos base con dos familias (operativa/producción); origen como subtipo.
+- Las UIs de producción y de checklists operativos siguen separadas, pero sobre el mismo modelo.
+- Reportes y supervisión unificados y preservados. Aislamiento por local intacto.
 
 ### B.6 Decisiones pendientes (Frente B)
-1. ¿Unificación total bajo un motor, o "base común + vistas especializadas" (mantener rutas/experiencias distintas pero un modelo de datos común)?
+1. ✅ **Resuelto:** base común + dos familias especializadas (operativa vs producción), no unificación plana (ver B.2).
 2. ¿Migramos el histórico de `ChecklistResponse` o lo archivamos en frío?
-3. Limpieza del obrador: ¿entra en el motor de tareas (`origin=CLEANING`) o se queda en su módulo APPCC?
+3. Limpieza del obrador: ¿entra en el motor de tareas como `family=OPERATIONAL, origin=CLEANING` o se queda en su módulo APPCC?
 
 ---
 
