@@ -78,6 +78,15 @@ model User {
   answeredChecklistResponses   ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 
+  // Motor de tareas único (Fase 3, Frente B)
+  ownedTaskDefinitions    TaskDefinition[] @relation("TaskDefinitionOwner")
+  ownedTaskSchedules      TaskSchedule[]   @relation("TaskScheduleOwner")
+  ownedTaskInstances      TaskInstance[]   @relation("TaskInstanceOwner")
+  assignedTaskInstances   TaskInstance[]   @relation("TaskInstanceAssignee")
+  closedTaskInstances     TaskInstance[]   @relation("TaskInstanceClosedBy")
+  answeredTaskResponses   TaskResponse[]   @relation("TaskResponseAnsweredBy")
+  supervisedTaskResponses TaskResponse[]   @relation("TaskResponseSupervisedBy")
+
   // Comunicaciones (averías, avisos, eventos, reuniones)
   authoredCommunications Communication[]        @relation("CommunicationAuthor")
   authoredCommComments   CommunicationComment[] @relation("CommunicationCommentAuthor")
@@ -439,6 +448,10 @@ model Recipe {
   // For Tasks (Production tasks)
   tasks Task[]
 
+  // Motor de tareas único (Fase 3, Frente B)
+  taskDefinitions TaskDefinition[] @relation("TaskDefinitionRecipe")
+  taskInstances   TaskInstance[]   @relation("TaskInstanceRecipe")
+
   // For Mise En Place
   miseEnPlaceTasks MiseEnPlaceTask[]
 
@@ -548,6 +561,10 @@ model Event {
 
   menuItems EventMenuItem[]
   tasks     Task[]          @relation("EventTasks")
+
+  // Motor de tareas único (Fase 3, Frente B)
+  taskDefinitions TaskDefinition[] @relation("TaskDefinitionEvent")
+  taskInstances   TaskInstance[]   @relation("TaskInstanceEvent")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1098,6 +1115,9 @@ model Location {
   suppliers         Supplier[]          @relation("SupplierLocation")
   events            Event[]             @relation("EventLocation")
   tasks             Task[]              @relation("TaskLocation")
+  taskDefinitions   TaskDefinition[]    @relation("TaskDefinitionLocation")
+  taskSchedules     TaskSchedule[]      @relation("TaskScheduleLocation")
+  taskInstances     TaskInstance[]      @relation("TaskInstanceLocation")
   menuServices      MenuService[]       @relation("MenuServiceLocation")
   templates         ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules         ChecklistSchedule[] @relation("ChecklistScheduleLocation")
@@ -1324,6 +1344,227 @@ model ChecklistResponse {
 
   supervisedByUserId String?
   supervisedBy       User?     @relation("ChecklistResponseSupervisedBy", fields: [supervisedByUserId], references: [id])
+  supervisedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([instanceId, fieldId])
+}
+
+// ============================================================================
+// 14B. MOTOR DE TAREAS ÚNICO (Fase 3, Frente B) — PASO 1: schema aditivo.
+// Modelo unificado que convergerá Task + Checklist* + MiseEnPlaceTask + limpieza
+// del obrador bajo una base común. Convive con los modelos actuales hasta el
+// backfill y el cutover; de momento NADIE lo usa todavía.
+//   - TaskDefinition: plantilla (operativa: campos+frecuencia / producción: receta).
+//   - TaskField:      campos tipados de una definición operativa (= ChecklistField).
+//   - TaskSchedule:   recurrencia/asignación (= ChecklistSchedule).
+//   - TaskInstance:   ocurrencia concreta = base común (Task + ChecklistInstance).
+//   - TaskResponse:   respuesta por campo (= ChecklistResponse).
+// ============================================================================
+
+enum TaskFamily {
+  OPERATIONAL // checklists, limpieza, controles, manual operativa
+  PRODUCTION // elaboración de recetas, mise en place
+}
+
+enum TaskOrigin {
+  MANUAL
+  CHECKLIST
+  CLEANING
+  PRODUCTION
+  MISE_EN_PLACE
+}
+
+enum TaskFieldType {
+  TITLE
+  CHECK
+  TEXT
+  YES_NO
+  RATING_1_10
+}
+
+enum TaskInstanceStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  ISSUE
+  CLOSED_AUTO
+}
+
+model TaskDefinition {
+  id          String     @id @default(cuid())
+  family      TaskFamily
+  origin      TaskOrigin @default(MANUAL)
+  title       String
+  description String?
+  isActive    Boolean    @default(true)
+
+  // Operativa: campos tipados + recurrencia.
+  fields    TaskField[]
+  schedules TaskSchedule[]
+
+  // Producción: vínculo a receta / evento / cantidad objetivo.
+  recipeId       String?
+  recipe         Recipe? @relation("TaskDefinitionRecipe", fields: [recipeId], references: [id])
+  eventId        String?
+  event          Event?  @relation("TaskDefinitionEvent", fields: [eventId], references: [id])
+  targetQuantity Float?
+  unit           String?
+
+  // Estación / metadata de producción.
+  station   String?
+  action    String?
+  technique String?
+
+  instances TaskInstance[]
+
+  ownerId String?
+  owner   User?   @relation("TaskDefinitionOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("TaskDefinitionLocation", fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId])
+  @@index([family, origin])
+}
+
+model TaskField {
+  id               String           @id @default(cuid())
+  definitionId     String
+  definition       TaskDefinition   @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  order            Int
+  type             TaskFieldType
+  name             String
+  description      String?
+  exampleImageUrl  String?
+  photoRequirement PhotoRequirement @default(NONE)
+
+  responses TaskResponse[]
+}
+
+model TaskSchedule {
+  id           String         @id @default(cuid())
+  definitionId String
+  definition   TaskDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+
+  frequency          Frequency
+  startDate          DateTime
+  endDate            DateTime?
+  executionStartTime String // "HH:MM"
+  executionEndTime   String // "HH:MM"
+  excludeWeekdays    Int[]     @default([]) // 0=domingo … 6=sábado
+  autoClose          Boolean   @default(false)
+  pinned             Boolean   @default(false)
+
+  // Asignación (string[] de User ids/roles, como en ChecklistSchedule).
+  performerUserIds  String[] @default([])
+  supervisorUserIds String[] @default([])
+  followerUserIds   String[] @default([])
+  performerRoles    String[] @default([])
+  supervisorRoles   String[] @default([])
+  followerRoles     String[] @default([])
+
+  instances TaskInstance[]
+
+  ownerId String?
+  owner   User?   @relation("TaskScheduleOwner", fields: [ownerId], references: [id])
+
+  locationId String?
+  location   Location? @relation("TaskScheduleLocation", fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId])
+}
+
+model TaskInstance {
+  id     String     @id @default(cuid())
+  family TaskFamily
+  origin TaskOrigin @default(MANUAL)
+
+  // Plantilla / recurrencia de origen (null en tareas sueltas manuales/producción).
+  definitionId String?
+  definition   TaskDefinition? @relation(fields: [definitionId], references: [id])
+  scheduleId   String?
+  schedule     TaskSchedule?   @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  dueDate      DateTime?
+
+  // Datos propios (cuando no hay plantilla: tarea manual/producción).
+  title       String?
+  description String?
+
+  status      TaskInstanceStatus @default(PENDING)
+  issueReason String?
+
+  // Asignación y tiempos.
+  assignedToUserId String?
+  assignedTo       User?     @relation("TaskInstanceAssignee", fields: [assignedToUserId], references: [id])
+  plannedStart     DateTime?
+  plannedEnd       DateTime?
+  realStart        DateTime?
+  realEnd          DateTime?
+  openedAt         DateTime?
+  closedAt         DateTime?
+  closedByUserId   String?
+  closedBy         User?     @relation("TaskInstanceClosedBy", fields: [closedByUserId], references: [id])
+  scoreAvg         Float?
+
+  // Producción.
+  recipeId         String?
+  recipe           Recipe? @relation("TaskInstanceRecipe", fields: [recipeId], references: [id])
+  eventId          String?
+  event            Event?  @relation("TaskInstanceEvent", fields: [eventId], references: [id])
+  targetQuantity   Float?
+  unit             String?
+  producedQuantity Float?
+  action           String?
+  technique        String?
+
+  // Operativa: respuestas por campo.
+  responses TaskResponse[]
+
+  ownerId String?
+  owner   User?   @relation("TaskInstanceOwner", fields: [ownerId], references: [id])
+
+  locationId String?
+  location   Location? @relation("TaskInstanceLocation", fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId])
+  @@index([family, status])
+  @@index([scheduleId, dueDate])
+}
+
+model TaskResponse {
+  id         String       @id @default(cuid())
+  instanceId String
+  instance   TaskInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  fieldId    String
+  field      TaskField    @relation(fields: [fieldId], references: [id])
+
+  valueText    String?
+  valueBool    Boolean?
+  valueRating  Int?
+  photoUrl     String?
+  photoKey     String?
+  isIncident   Boolean  @default(false)
+  incidentNote String?
+
+  answeredByUserId String?
+  answeredBy       User?     @relation("TaskResponseAnsweredBy", fields: [answeredByUserId], references: [id])
+  answeredAt       DateTime?
+
+  supervisedByUserId String?
+  supervisedBy       User?     @relation("TaskResponseSupervisedBy", fields: [supervisedByUserId], references: [id])
   supervisedAt       DateTime?
 
   createdAt DateTime @default(now())
