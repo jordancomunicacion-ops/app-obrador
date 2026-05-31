@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-setlocal
+setlocal EnableDelayedExpansion
 title SOTOdelPRIOR - Despliegue App Cocina
 cd /d "%~dp0"
 
@@ -8,63 +8,161 @@ set APP_NAME=App Cocina
 set REMOTE_USER=root
 set REMOTE_HOST=164.92.167.42
 set REMOTE_PATH=/root/SOTOdelPRIOR/apps/cocina
-set ARCHIVE=deploy.tar.gz
+set COMPOSE=docker compose -f docker-compose.yml
+set DBNAME=cocina
+set DBUSER=cocina_user
+set WEB=sotococina-web
+set DB=sotococina-db
 
+:menu
+cls
 echo ============================================================
 echo   DESPLIEGUE %APP_NAME% (SOTO DEL PRIOR)
 echo   Servidor: %REMOTE_USER%@%REMOTE_HOST%
-echo   Ruta:     %REMOTE_PATH%
+echo   Web:      https://cocina.sotodelprior.com
 echo ============================================================
 echo.
+echo   1.  Deploy completo (git pull + rebuild + logs)
+echo   2.  Update rapido (sin rebuild, solo pull + restart)
+echo   3.  Ver logs en vivo
+echo   4.  Reiniciar contenedor
+echo   5.  Sincronizar schema BD (prisma db push) [PELIGROSO]
+echo   6.  Re-sembrar datos (prisma seed) [PELIGROSO]
+echo   7.  Estado de contenedores
+echo   8.  Health check
+echo   9.  Backup BD ahora
+echo  10.  Abrir sesion SSH al VPS
+echo.
+echo   0.  Salir
+echo.
+set /p OPT="   Opcion: "
 
-echo [1/5] Sincronizando codigo con GitHub (main)...
-git checkout main
-if errorlevel 1 goto :error
-git pull origin main
-if errorlevel 1 goto :error
+if "%OPT%"=="1"  goto deploy
+if "%OPT%"=="2"  goto update
+if "%OPT%"=="3"  goto logs
+if "%OPT%"=="4"  goto restart
+if "%OPT%"=="5"  goto dbpush
+if "%OPT%"=="6"  goto seed
+if "%OPT%"=="7"  goto status
+if "%OPT%"=="8"  goto health
+if "%OPT%"=="9"  goto backup
+if "%OPT%"=="10" goto sshvps
+if "%OPT%"=="0"  exit /b 0
+goto menu
+
+:deploy
+echo.
+echo [1/3] git pull origin main...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && git pull origin main"
+if errorlevel 1 goto error
 echo.
 echo    Ultimo commit desplegado:
-git log --oneline -1
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && git log --oneline -1"
 echo.
-
-echo [2/5] Empaquetando %APP_NAME%...
-tar --exclude="node_modules" --exclude=".next" --exclude=".git" --exclude=".idea" --exclude=".vscode" --exclude=".claude" --exclude="dist" --exclude="build" --exclude="db_data" --exclude="cocina_db_data" --exclude="*.log" --exclude="docker-compose.override.yml" --exclude="%ARCHIVE%" -czf %ARCHIVE% .
-if errorlevel 1 goto :error
-
+echo [2/3] docker compose up -d --build...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && export AUTH_URL=https://cocina.sotodelprior.com && %COMPOSE% up -d --build --remove-orphans"
+if errorlevel 1 goto error
 echo.
-echo [3/5] Subiendo paquete al servidor...
-scp %ARCHIVE% %REMOTE_USER%@%REMOTE_HOST%:/root/deploy_cocina.tar.gz
-if errorlevel 1 goto :error
-
-echo.
-echo [4/5] Limpiando despliegue anterior e instalando...
-ssh %REMOTE_USER%@%REMOTE_HOST% "mkdir -p %REMOTE_PATH% && cd %REMOTE_PATH% && find . -mindepth 1 -maxdepth 1 ! -name 'db_data' ! -name 'cocina_db_data' -exec rm -rf {} + && tar -xzf /root/deploy_cocina.tar.gz > /dev/null && (mv .env.production .env 2>/dev/null || true) && sed -i 's/\r$//' setup_remote.sh && bash setup_remote.sh"
-if errorlevel 1 goto :error
-
-echo.
-echo [5/5] Limpiando local...
-del %ARCHIVE%
-
+echo [3/3] Sincronizando schema (prisma db push)...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% exec -T %WEB% npx prisma@5.22.0 db push --accept-data-loss --skip-generate"
+if errorlevel 1 goto error
 echo.
 echo ============================================================
-echo   [OK] DESPLIEGUE %APP_NAME% COMPLETADO
+echo   [OK] Deploy %APP_NAME% completado. Mostrando logs...
 echo ============================================================
-pause
-endlocal
-exit /b 0
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% logs -f --tail=40 %WEB%"
+goto end
+
+:update
+echo.
+echo Pull + restart (sin rebuild)...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && git pull origin main && %COMPOSE% restart %WEB%"
+if errorlevel 1 goto error
+goto end
+
+:logs
+echo.
+echo Logs en vivo (Ctrl+C para volver)...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% logs -f --tail=80 %WEB%"
+goto end
+
+:restart
+echo.
+echo Reiniciando contenedor web...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% restart %WEB%"
+if errorlevel 1 goto error
+echo [OK] Reiniciado.
+goto end
+
+:dbpush
+echo.
+echo [ATENCION] Sincroniza el schema con --accept-data-loss.
+set /p YN="   Continuar? (s/n): "
+if /i not "%YN%"=="s" goto menu
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% exec -T %WEB% npx prisma@5.22.0 db push --accept-data-loss --skip-generate"
+if errorlevel 1 goto error
+goto end
+
+:seed
+echo.
+echo ============================================================
+echo  [PELIGRO] El seed en produccion puede duplicar/sobrescribir.
+echo  Usar solo en primer arranque o bases vacias.
+echo ============================================================
+set /p YN="   Escribe SEED para confirmar: "
+if /i not "%YN%"=="SEED" (
+    echo Cancelado.
+    goto end
+)
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% exec -T %WEB% npx prisma@5.22.0 db seed"
+if errorlevel 1 goto error
+goto end
+
+:status
+echo.
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% ps"
+echo.
+echo --- Redes del contenedor web ---
+ssh %REMOTE_USER%@%REMOTE_HOST% "docker inspect %WEB% --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'"
+goto end
+
+:health
+echo.
+echo Health check interno...
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% exec -T %WEB% wget -qO- http://localhost:3000/api/health"
+echo.
+echo Health check externo (HTTPS publico)...
+ssh %REMOTE_USER%@%REMOTE_HOST% "curl -s -o /dev/null -w 'HTTP %%{http_code} - tiempo %%{time_total}s' https://cocina.sotodelprior.com/api/health"
+echo.
+goto end
+
+:backup
+echo.
+echo Generando backup en /backups/cocina/...
+ssh %REMOTE_USER%@%REMOTE_HOST% "mkdir -p /backups/cocina && docker exec %DB% pg_dump -U %DBUSER% %DBNAME% | gzip > /backups/cocina/db-manual-$(date +%%Y%%m%%d-%%H%%M%%S).sql.gz && ls -lh /backups/cocina/ | tail -5"
+if errorlevel 1 goto error
+echo [OK] Backup creado.
+goto end
+
+:sshvps
+echo.
+echo Abriendo sesion SSH (escribe 'exit' para volver al menu)...
+ssh %REMOTE_USER%@%REMOTE_HOST%
+goto end
 
 :error
 echo.
 echo ============================================================
-echo   [ERROR] El despliegue de %APP_NAME% ha fallado.
-echo   Revisa el mensaje anterior.
+echo   [ERROR] Operacion fallida en %APP_NAME%. Revisa la salida.
 echo.
-echo   Si el fallo fue en el paso [1/5] (git pull):
-echo   suele ser por cambios locales sin guardar. Ejecuta:
-echo       git stash
-echo   y vuelve a lanzar DESPLEGAR.bat. (git stash pop para recuperarlos)
+echo   Si fallo el git pull: el servidor puede tener cambios
+echo   locales. Entra por SSH (opcion 10) y ejecuta:
+echo       cd %REMOTE_PATH% ^&^& git stash ^&^& git pull origin main
 echo ============================================================
-if exist %ARCHIVE% del %ARCHIVE%
 pause
-endlocal
-exit /b 1
+goto menu
+
+:end
+echo.
+pause
+goto menu
