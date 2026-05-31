@@ -282,6 +282,9 @@ model Customer {
   locationId String?
   location   Location? @relation("CustomerLocation", fields: [locationId], references: [id])
 
+  // Lotes de producción cuyo destino es este cliente / punto de venta.
+  batches ObradorProductionBatch[] @relation("BatchToCustomer")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -924,6 +927,10 @@ model ObradorProductionBatch {
   masterProductId String?
   masterProduct   MasterProduct? @relation("ObradorBatchToMaster", fields: [masterProductId], references: [id])
 
+  // Destino del lote: cliente / punto de venta (Fase 4, aditivo y opcional).
+  customerId String?
+  customer   Customer? @relation("BatchToCustomer", fields: [customerId], references: [id])
+
   ownerId String?
   owner   User?   @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
 
@@ -932,6 +939,7 @@ model ObradorProductionBatch {
 
   @@index([recipeId])
   @@index([masterProductId])
+  @@index([customerId])
 }
 
 model ObradorBatchIngredient {

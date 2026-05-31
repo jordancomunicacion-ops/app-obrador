@@ -9,6 +9,7 @@ import { locationScope } from '@/app/lib/auth/scope';
 
 const BatchSchema = z.object({
   masterProductId: z.string().min(1, { message: 'Selecciona un producto.' }),
+  customerId: z.string().optional(),
   productionDate: z.string().min(1, { message: 'La fecha de producción es obligatoria.' }),
   expiryDate: z.string().min(1, { message: 'La fecha de caducidad es obligatoria.' }),
   quantityProduced: z.coerce.number().positive({ message: 'La cantidad debe ser > 0.' }),
@@ -41,6 +42,7 @@ export async function createObradorBatch(
 ): Promise<ObradorBatchFormState> {
   const validated = BatchSchema.safeParse({
     masterProductId: formData.get('masterProductId'),
+    customerId: formData.get('customerId'),
     productionDate: formData.get('productionDate'),
     expiryDate: formData.get('expiryDate'),
     quantityProduced: formData.get('quantityProduced'),
@@ -83,6 +85,7 @@ export async function createObradorBatch(
       data: {
         batchCode,
         masterProductId: product.id,
+        customerId: d.customerId || null,
         productionDate: prodDate,
         expiryDate: new Date(d.expiryDate),
         quantityProduced: d.quantityProduced,

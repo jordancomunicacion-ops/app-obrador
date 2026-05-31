@@ -1,6 +1,5 @@
 import {
   BuildingStorefrontIcon,
-  UserGroupIcon,
   ArchiveBoxIcon,
   BeakerIcon,
   TagIcon,
@@ -33,13 +32,6 @@ const modules = [
     href: '/dashboard/obrador/production',
     icon: BeakerIcon,
     color: 'bg-purple-100 text-purple-700',
-  },
-  {
-    name: 'Clientes y Puntos de Venta',
-    description: 'Gestión de clientes minoristas y venta directa',
-    href: '/dashboard/obrador/customers',
-    icon: UserGroupIcon,
-    color: 'bg-cyan-100 text-cyan-700',
   },
   {
     name: 'Etiquetado Alimentario',

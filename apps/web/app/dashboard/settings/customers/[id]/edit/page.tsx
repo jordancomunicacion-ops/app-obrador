@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/app/lib/prisma';
 import { locationScope } from '@/app/lib/auth/scope';
-import ObradorCustomerForm from '@/app/ui/obrador/customer-form';
-import { updateObradorCustomer } from '@/app/lib/actions/obrador-customers';
+import CustomerForm from '@/app/ui/customers/customer-form';
+import { updateCustomer } from '@/app/lib/actions/customers';
 
-export default async function EditObradorCustomerPage({
+export default async function EditCustomerPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -17,7 +17,7 @@ export default async function EditObradorCustomerPage({
 
   if (!customer) notFound();
 
-  const updateWithId = updateObradorCustomer.bind(null, customer.id);
+  const updateWithId = updateCustomer.bind(null, customer.id);
 
-  return <ObradorCustomerForm action={updateWithId} initial={customer} />;
+  return <CustomerForm action={updateWithId} initial={customer} />;
 }

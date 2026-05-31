@@ -16,7 +16,7 @@ const CustomerSchema = z.object({
   contactPerson: z.string().optional(),
 });
 
-export type ObradorCustomerFormState = {
+export type CustomerFormState = {
   errors?: { name?: string[] };
   message: string | null;
 };
@@ -45,10 +45,10 @@ function data(d: z.infer<typeof CustomerSchema>) {
   };
 }
 
-export async function createObradorCustomer(
-  prevState: ObradorCustomerFormState,
+export async function createCustomer(
+  prevState: CustomerFormState,
   formData: FormData,
-): Promise<ObradorCustomerFormState> {
+): Promise<CustomerFormState> {
   const validated = parseForm(formData);
   if (!validated.success) {
     return { errors: validated.error.flatten().fieldErrors, message: 'Faltan campos obligatorios.' };
@@ -62,15 +62,15 @@ export async function createObradorCustomer(
     return { message: 'Error al crear el cliente.' };
   }
 
-  revalidatePath('/dashboard/obrador/customers');
-  redirect('/dashboard/obrador/customers');
+  revalidatePath('/dashboard/settings/customers');
+  redirect('/dashboard/settings/customers');
 }
 
-export async function updateObradorCustomer(
+export async function updateCustomer(
   id: string,
-  prevState: ObradorCustomerFormState,
+  prevState: CustomerFormState,
   formData: FormData,
-): Promise<ObradorCustomerFormState> {
+): Promise<CustomerFormState> {
   const validated = parseForm(formData);
   if (!validated.success) {
     return { errors: validated.error.flatten().fieldErrors, message: 'Faltan campos obligatorios.' };
@@ -88,11 +88,11 @@ export async function updateObradorCustomer(
     return { message: 'Error al actualizar el cliente.' };
   }
 
-  revalidatePath('/dashboard/obrador/customers');
-  redirect('/dashboard/obrador/customers');
+  revalidatePath('/dashboard/settings/customers');
+  redirect('/dashboard/settings/customers');
 }
 
-export async function deleteObradorCustomer(id: string) {
+export async function deleteCustomer(id: string) {
   const existing = await prisma.customer.findFirst({
     where: { id, ...(await locationScope()) },
     select: { id: true },
@@ -100,5 +100,5 @@ export async function deleteObradorCustomer(id: string) {
   if (!existing) return;
 
   await prisma.customer.delete({ where: { id } });
-  revalidatePath('/dashboard/obrador/customers');
+  revalidatePath('/dashboard/settings/customers');
 }

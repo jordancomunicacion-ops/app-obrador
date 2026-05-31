@@ -3,10 +3,10 @@
 import { useActionState } from 'react';
 import Link from 'next/link';
 import { UserGroupIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { type ObradorCustomerFormState } from '@/app/lib/actions/obrador-customers';
+import { type CustomerFormState } from '@/app/lib/actions/customers';
 import { CUSTOMER_TYPES } from '@/app/lib/obrador-constants';
 
-export type ObradorCustomerInitial = {
+export type CustomerInitial = {
   id: string;
   name: string;
   customerType: string | null;
@@ -17,17 +17,17 @@ export type ObradorCustomerInitial = {
   contactPerson: string | null;
 };
 
-export default function ObradorCustomerForm({
+export default function CustomerForm({
   action,
   initial,
 }: {
   action: (
-    prevState: ObradorCustomerFormState,
+    prevState: CustomerFormState,
     formData: FormData,
-  ) => Promise<ObradorCustomerFormState>;
-  initial?: ObradorCustomerInitial;
+  ) => Promise<CustomerFormState>;
+  initial?: CustomerInitial;
 }) {
-  const [state, formAction] = useActionState<ObradorCustomerFormState, FormData>(action, {
+  const [state, formAction] = useActionState<CustomerFormState, FormData>(action, {
     message: null,
     errors: {},
   });
@@ -39,7 +39,7 @@ export default function ObradorCustomerForm({
     <div className="p-6 max-w-3xl mx-auto pb-20">
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/dashboard/obrador/customers"
+          href="/dashboard/settings/customers"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -116,7 +116,7 @@ export default function ObradorCustomerForm({
 
         <div className="flex justify-end gap-4">
           <Link
-            href="/dashboard/obrador/customers"
+            href="/dashboard/settings/customers"
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar
