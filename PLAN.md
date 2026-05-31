@@ -28,7 +28,7 @@ recolocar secciones según su naturaleza y reducir el hub de Obrador a lo purame
 3. **Controles sanitarios → Operaciones** + **Documentación y Aviso legal → Administración**.
    🟢 Reagrupación de menú (las rutas se mantienen bajo `/obrador`). ✅ hecho (#27)
 4. **Clientes y PdV → Administración + vínculo lote→destino**. 🟡 Schema additivo + UI. ✅ hecho (#27)
-   - Pendiente menor: mostrar el destino en la *lista* de Producción y Lotes (solo se captura/guarda).
+   (incluye columna "Destino" en la lista de Producción y Lotes).
 5. **Establecimiento → Locales**: añadir campos sanitarios/fiscales a `Location`, migrar datos de
    `ObradorConfig`, repuntar etiquetas, actualizar UI de Locales, eliminar la pestaña del obrador.
    🔴 Requiere backfill de datos (script puntual).
