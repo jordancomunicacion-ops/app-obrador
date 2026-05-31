@@ -1,47 +1,20 @@
-'use client';
-
-import { 
-  UserGroupIcon, 
-  PlusIcon, 
-  MagnifyingGlassIcon,
+import Link from 'next/link';
+import {
+  UserGroupIcon,
+  PlusIcon,
   MapPinIcon,
   EnvelopeIcon,
-  TagIcon
+  TagIcon,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { prisma } from '@/app/lib/prisma';
+import { locationScope } from '@/app/lib/auth/scope';
+import DeleteObradorCustomer from '@/app/ui/obrador/delete-customer';
 
-const mockCustomers = [
-  {
-    id: '1',
-    name: 'Restaurante El Jardín',
-    type: 'Minorista',
-    address: 'Av. Libertad 10, Madrid',
-    contact: 'Laura San José',
-    email: 'pedidos@eljardin.com',
-    status: 'Activo',
-  },
-  {
-    id: '2',
-    name: 'Tienda Gourmet Centro',
-    type: 'Minorista',
-    address: 'Plaza Mayor 5, Madrid',
-    contact: 'Carlos Ruiz',
-    email: 'ventas@gourmetcentro.com',
-    status: 'Activo',
-  },
-  {
-    id: '3',
-    name: 'Consumidor Final (Directo)',
-    type: 'Venta Directa',
-    address: 'N/A',
-    contact: 'N/A',
-    email: 'N/A',
-    status: 'Activo',
-  },
-];
-
-export default function ObradorCustomersPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+export default async function ObradorCustomersPage() {
+  const customers = await prisma.customer.findMany({
+    where: { ...(await locationScope()) },
+    orderBy: { name: 'asc' },
+  });
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -55,65 +28,76 @@ export default function ObradorCustomersPage() {
             Gestión de puntos de venta y establecimientos minoristas.
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
+        <Link
+          href="/dashboard/obrador/customers/create"
+          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-sm"
+        >
           <PlusIcon className="w-5 h-5" />
           Nuevo Cliente
-        </button>
+        </Link>
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Buscar por nombre o tipo..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {customers.length === 0 ? (
+        <div className="text-center p-16 border-2 border-dashed border-slate-200 rounded-2xl">
+          <UserGroupIcon className="w-12 h-12 mx-auto text-slate-300" />
+          <p className="mt-3 text-slate-500">
+            Aún no hay clientes. Crea el primero con “Nuevo Cliente”.
+          </p>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {customers.map((customer) => (
+            <div
+              key={customer.id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-emerald-300 transition-colors"
+            >
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded uppercase">
+                    {customer.customerType || 'Sin tipo'}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">{customer.name}</h3>
+                {customer.contactPerson && (
+                  <p className="text-sm text-slate-500">{customer.contactPerson}</p>
+                )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockCustomers.map((customer) => (
-          <div key={customer.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-emerald-300 transition-colors">
-            <div className="p-5">
-              <div className="flex justify-between items-start mb-3">
-                <span className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded uppercase">
-                  {customer.type}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600 uppercase">
-                  {customer.status}
-                </span>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">{customer.name}</h3>
-              
-              <div className="space-y-2 mt-4 mb-6">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <MapPinIcon className="w-4 h-4 text-slate-400" />
-                  {customer.address}
+                <div className="space-y-2 mt-4 mb-6">
+                  {customer.address && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <MapPinIcon className="w-4 h-4 text-slate-400" />
+                      {customer.address}
+                    </div>
+                  )}
+                  {customer.email && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <EnvelopeIcon className="w-4 h-4 text-slate-400" />
+                      {customer.email}
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <EnvelopeIcon className="w-4 h-4 text-slate-400" />
-                  {customer.email}
-                </div>
-              </div>
 
-              {customer.type === 'Minorista' && (
-                <div className="bg-amber-50 p-2 rounded text-[10px] text-amber-800 flex gap-2 items-start">
-                  <TagIcon className="w-4 h-4 flex-shrink-0" />
-                  <span>Sujeto a normativa de suministro marginal y restringido.</span>
+                {customer.customerType === 'Minorista' && (
+                  <div className="bg-amber-50 p-2 rounded text-[10px] text-amber-800 flex gap-2 items-start">
+                    <TagIcon className="w-4 h-4 flex-shrink-0" />
+                    <span>Sujeto a normativa de suministro marginal y restringido.</span>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-50 pt-4 mt-4 flex items-center justify-between">
+                  <Link
+                    href={`/dashboard/obrador/customers/${customer.id}/edit`}
+                    className="text-emerald-600 text-sm font-bold hover:underline"
+                  >
+                    Editar
+                  </Link>
+                  <DeleteObradorCustomer id={customer.id} />
                 </div>
-              )}
-              
-              <div className="border-t border-slate-50 pt-4 mt-4 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">ID: {customer.id}</span>
-                <button className="text-emerald-600 text-sm font-bold hover:underline">Ver Ventas</button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -12,12 +12,12 @@ datasource db {
 
 // 1. Users & Roles
 model User {
-  id       String @id @default(cuid())
-  name     String
-  email    String @unique
-  password String
-  role     String @default("USER") // SUPERADMIN (propietario de plataforma, cross-tenant), ADMIN (cliente/tenant), USER (empleado), VET
-  approved Boolean @default(false)
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        String   @default("USER") // SUPERADMIN (propietario de plataforma, cross-tenant), ADMIN (cliente/tenant), USER (empleado), VET
+  approved    Boolean  @default(false)
   permissions String[] @default([])
 
   // Extended Profile Fields (Matches App Ganadera)
@@ -31,9 +31,9 @@ model User {
 
   // Worker/Admin Relationship
   // If this user is a WORKER, who is their ADMIN?
-  adminId   String?
-  admin     User?   @relation("AdminWorkers", fields: [adminId], references: [id])
-  workers   User[]  @relation("AdminWorkers") // If this user is ADMIN, these are their workers
+  adminId String?
+  admin   User?   @relation("AdminWorkers", fields: [adminId], references: [id])
+  workers User[]  @relation("AdminWorkers") // If this user is ADMIN, these are their workers
 
   tasks     Task[]     @relation("AssignedTasks")
   auditLogs AuditLog[]
@@ -42,48 +42,46 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Multi-Tenancy Relations (Owned Data)
-  ownedEvents        Event[]           @relation("EventOwner")
-  ownedRecipes       Recipe[]          @relation("RecipeOwner")
-  ownedIngredients   Ingredient[]      @relation("IngredientOwner")
-  ownedSuppliers     Supplier[]        @relation("SupplierOwner")
-  ownedTasks         Task[]            @relation("TaskOwner")
-  ownedMenuServices  MenuService[]     @relation("MenuServiceOwner")
-  ownedAppConfigs    AppConfig[]       @relation("AppConfigOwner")
-  ownedStorage       StorageLocation[] @relation("StorageOwner")
-  ownedMiseEnPlace   MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
-  
+  ownedEvents       Event[]           @relation("EventOwner")
+  ownedRecipes      Recipe[]          @relation("RecipeOwner")
+  ownedIngredients  Ingredient[]      @relation("IngredientOwner")
+  ownedSuppliers    Supplier[]        @relation("SupplierOwner")
+  ownedTasks        Task[]            @relation("TaskOwner")
+  ownedMenuServices MenuService[]     @relation("MenuServiceOwner")
+  ownedAppConfigs   AppConfig[]       @relation("AppConfigOwner")
+  ownedStorage      StorageLocation[] @relation("StorageOwner")
+  ownedMiseEnPlace  MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
+
   // Obrador Relations
-  ownedObradorConfigs    ObradorConfig[]           @relation("ObradorConfigOwner")
-  ownedObradorProducts   ObradorProduct[]          @relation("ObradorProductOwner")
-  ownedObradorBatches    ObradorProductionBatch[]  @relation("ObradorBatchOwner")
-  ownedObradorIntake     ObradorRawMaterialEntry[] @relation("ObradorIntakeOwner")
-  ownedObradorCustomers  ObradorCustomer[]         @relation("ObradorCustomerOwner")
-  ownedObradorDocs       ObradorSanitaryDocument[] @relation("ObradorDocOwner")
-  ownedObradorTemps      ObradorTemperatureLog[]   @relation("ObradorTempOwner")
-  ownedObradorIncidents  ObradorIncident[]         @relation("ObradorIncidentOwner")
+  ownedObradorConfigs   ObradorConfig[]           @relation("ObradorConfigOwner")
+  ownedObradorBatches   ObradorProductionBatch[]  @relation("ObradorBatchOwner")
+  ownedObradorIntake    ObradorRawMaterialEntry[] @relation("ObradorIntakeOwner")
+  ownedObradorDocs      ObradorSanitaryDocument[] @relation("ObradorDocOwner")
+  ownedObradorTemps     ObradorTemperatureLog[]   @relation("ObradorTempOwner")
+  ownedObradorIncidents ObradorIncident[]         @relation("ObradorIncidentOwner")
 
   // Empresas (empleador legal: razón social + NIF) bajo una misma cuenta de cliente
-  ownedEmpresas          Empresa[]                 @relation("EmpresaOwner")
+  ownedEmpresas Empresa[] @relation("EmpresaOwner")
 
   // Empleo: contratos de esta persona (uno por empresa empleadora)
-  employments            Employment[]              @relation("UserEmployments")
+  employments Employment[] @relation("UserEmployments")
 
   // Locales (multi-location bajo un mismo admin)
-  ownedLocations         Location[]                @relation("LocationOwner")
-  locationId             String?
-  location               Location?                 @relation("LocationMembers", fields: [locationId], references: [id])
+  ownedLocations Location[] @relation("LocationOwner")
+  locationId     String?
+  location       Location?  @relation("LocationMembers", fields: [locationId], references: [id])
 
   // Checklists (patrón yurest)
-  ownedChecklistTemplates  ChecklistTemplate[]   @relation("ChecklistTemplateOwner")
-  ownedChecklistSchedules  ChecklistSchedule[]   @relation("ChecklistScheduleOwner")
-  closedChecklistInstances ChecklistInstance[]   @relation("ChecklistInstanceClosedBy")
-  answeredChecklistResponses ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
+  ownedChecklistTemplates      ChecklistTemplate[] @relation("ChecklistTemplateOwner")
+  ownedChecklistSchedules      ChecklistSchedule[] @relation("ChecklistScheduleOwner")
+  closedChecklistInstances     ChecklistInstance[] @relation("ChecklistInstanceClosedBy")
+  answeredChecklistResponses   ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 
   // Comunicaciones (averías, avisos, eventos, reuniones)
-  authoredCommunications  Communication[]        @relation("CommunicationAuthor")
-  authoredCommComments    CommunicationComment[] @relation("CommunicationCommentAuthor")
-  ownedCommunications     Communication[]        @relation("CommunicationOwner")
+  authoredCommunications Communication[]        @relation("CommunicationAuthor")
+  authoredCommComments   CommunicationComment[] @relation("CommunicationCommentAuthor")
+  ownedCommunications    Communication[]        @relation("CommunicationOwner")
 
   // Pedidos y albaranes
   ownedPurchaseOrders   PurchaseOrder[] @relation("PurchaseOrderOwner")
@@ -93,6 +91,9 @@ model User {
   // Etiquetas
   ownedProductLabels   ProductLabel[] @relation("ProductLabelOwner")
   createdProductLabels ProductLabel[] @relation("ProductLabelCreator")
+
+  // Clientes (núcleo, Frente A)
+  ownedCustomers Customer[] @relation("CustomerOwner")
 
   // Push notifications
   pushSubscriptions PushSubscription[]
@@ -110,21 +111,21 @@ model AppConfig {
 }
 
 model RecipeCategory {
-  id    String @id @default(cuid())
-  name  String @unique
-  
-  order Int    @default(0)
+  id   String @id @default(cuid())
+  name String @unique
+
+  order Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model RecipePackaging {
-  id    String @id @default(cuid())
-  name  String @unique
-  type  String @default("ENVASE") // ENVASE, MOLDE
-  
-  order Int    @default(0)
+  id   String @id @default(cuid())
+  name String @unique
+  type String @default("ENVASE") // ENVASE, MOLDE
+
+  order Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,6 +162,9 @@ model Ingredient {
   // New Relation: Ingredient used in StepIngredients
   recipeStepIngredients RecipeStepIngredient[]
 
+  // Puente convergencia obrador → núcleo (Frente A, aditivo).
+  obradorBatchIngredients ObradorBatchIngredient[] @relation("ObradorBatchIngredientToCore")
+
   // Storage Location
   storageLocation   StorageLocation? @relation(fields: [storageLocationId], references: [id])
   storageLocationId String?
@@ -184,12 +188,21 @@ model Ingredient {
 
 // Canonical Product (e.g. "Aceite de Oliva")
 model MasterProduct {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   category    String?
   description String?
 
+  // Ficha única: un producto puede ser de cocina y/o de obrador (Fase 3, Frente A).
+  isObrador Boolean @default(false)
+
   supplierProducts SupplierProduct[]
+
+  // Sección sanitaria/nutricional/legal como extensión 1:1 (pestaña de la misma ficha).
+  sanitaryInfo ProductSanitaryInfo?
+
+  // Puentes de convergencia obrador → núcleo (aditivos, Frente A).
+  obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToMaster")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -201,23 +214,84 @@ model MasterProduct {
   @@index([locationId])
 }
 
+// Extensión 1:1 de MasterProduct con la info sanitaria/nutricional/legal
+// (pestaña de la ficha única del producto, no un producto aparte).
+model ProductSanitaryInfo {
+  id              String        @id @default(cuid())
+  masterProductId String        @unique
+  masterProduct   MasterProduct @relation(fields: [masterProductId], references: [id], onDelete: Cascade)
+
+  // Legal / conservación / uso
+  legalDenomination     String?
+  commercialDescription String?
+  conservationType      String? // refrigerado, congelado, ambiente
+  recommendedTemp       String?
+  shelfLifeDays         Int?
+  requiresCooking       Boolean @default(true)
+  usageInstructions     String?
+  saleFormat            String? // unidad, peso, bandeja, etc.
+  defaultWeight         Float?
+  labelTemplate         String  @default("100x70")
+  allergens             String? // lista separada por comas de los 14 alérgenos
+  ingredientsList       String? // composición en orden decreciente (para etiqueta)
+
+  // Información nutricional
+  energyKj          Float?
+  energyKcal        Float?
+  fat               Float?
+  saturatedFat      Float?
+  carbs             Float?
+  sugars            Float?
+  protein           Float?
+  salt              Float?
+  nutritionalStatus String @default("pendiente") // pendiente, verificado
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Cliente del núcleo (reutilizable), acotado por local. Usado por obrador
+// (puntos de venta / destinos) y disponible para el resto de la app (Frente A).
+model Customer {
+  id            String  @id @default(cuid())
+  name          String
+  nif           String?
+  address       String?
+  phone         String?
+  email         String?
+  contactPerson String? // persona de contacto
+  customerType  String? // Consumidor final, Minorista, Online, Profesional
+
+  ownerId String?
+  owner   User?   @relation("CustomerOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("CustomerLocation", fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId])
+}
+
 // Vendor/Provider (e.g. "Makro", "Frutería Pepe")
 model Supplier {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  nif         String?
-  address     String?
-  phone       String?
-  contactInfo String?
-  email       String?
-  contactPerson String?
-  productType   String?
+  id             String  @id @default(cuid())
+  name           String  @unique
+  nif            String?
+  address        String?
+  phone          String?
+  contactInfo    String?
+  email          String?
+  contactPerson  String?
+  productType    String?
   healthRegistry String?
-  isActive      Boolean  @default(true)
+  isActive       Boolean @default(true)
 
-  products SupplierProduct[]
+  products       SupplierProduct[]
   obradorIntakes ObradorRawMaterialEntry[]
-  purchaseOrders PurchaseOrder[] @relation("PurchaseOrderSupplier")
+  purchaseOrders PurchaseOrder[]           @relation("PurchaseOrderSupplier")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,15 +308,15 @@ model Supplier {
 
 // Lo que compras (SupplierProduct) - Specific variant from a supplier
 model SupplierProduct {
-  id       String  @id @default(cuid())
-  name     String // "Solomillo Vaca Rubia - Prov A"
-  
+  id   String @id @default(cuid())
+  name String // "Solomillo Vaca Rubia - Prov A"
+
   // Legacy string field (to be tracked/migrated)
   supplier String?
 
   // New Relation to canonical Supplier entity
-  supplierEntity   Supplier? @relation(fields: [supplierId], references: [id])
-  supplierId String?
+  supplierEntity Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId     String?
 
   // Relation to Canonical Ingredient
   ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
@@ -252,10 +326,10 @@ model SupplierProduct {
   masterProduct   MasterProduct? @relation(fields: [masterProductId], references: [id])
   masterProductId String?
 
-  price    Float // Price per unit (e.g. 18.00)
-  unit     String // KG, BOX, PACK
+  price           Float // Price per unit (e.g. 18.00)
+  unit            String // KG, BOX, PACK
   quantityPerUnit Float? // e.g. 4 (if unit is PACK), or 15 (if unit is BOX and it's 15kg)
-  sapiensWorld String? // Reino Animal, Reino Vegetal, Reino Fungi, Mundo Mineral
+  sapiensWorld    String? // Reino Animal, Reino Vegetal, Reino Fungi, Mundo Mineral
 
   transformations Transformation[]
 
@@ -338,12 +412,12 @@ model Recipe {
   instructions  String?
   isSubRecipe   Boolean @default(false)
 
-  category        String        @default("ELABORACION_FINAL") // PRODUCTO_NO_ELABORADO, ELABORACION_INTERMEDIA, ELABORACION_FINAL
-  classification  String?       // Old "Category" (e.g. Postres, Salsas)
-  packaging String?
-  portions  Int?
-  prepTime  Int? // Minutes
-  cookTime  Int? // Minutes
+  category       String  @default("ELABORACION_FINAL") // PRODUCTO_NO_ELABORADO, ELABORACION_INTERMEDIA, ELABORACION_FINAL
+  classification String? // Old "Category" (e.g. Postres, Salsas)
+  packaging      String?
+  portions       Int?
+  prepTime       Int? // Minutes
+  cookTime       Int? // Minutes
 
   // Diet & Allergens
   isGlutenFree  Boolean @default(false)
@@ -376,6 +450,9 @@ model Recipe {
   menuServiceItems      MenuServiceItem[]
   salesRecords          SalesRecord[]
 
+  // Puentes convergencia obrador → núcleo (Frente A, aditivo).
+  obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToRecipe")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -405,8 +482,8 @@ model RecipeStep {
   ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
   ingredientId String?
 
-  subRecipe    Recipe?     @relation("SubRecipeStep", fields: [subRecipeId], references: [id])
-  subRecipeId  String?
+  subRecipe   Recipe? @relation("SubRecipeStep", fields: [subRecipeId], references: [id])
+  subRecipeId String?
 
   // New Relation: Multiple Ingredients/SubRecipes per step
   stepIngredients RecipeStepIngredient[]
@@ -415,16 +492,16 @@ model RecipeStep {
 model RecipeStepIngredient {
   id String @id @default(cuid())
 
-  step      RecipeStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  stepId    String
+  step   RecipeStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  stepId String
 
   // Link to Ingredient
   ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
   ingredientId String?
 
   // Link to SubRecipe
-  subRecipe    Recipe?     @relation(fields: [subRecipeId], references: [id])
-  subRecipeId  String?
+  subRecipe   Recipe? @relation(fields: [subRecipeId], references: [id])
+  subRecipeId String?
 
   // Action per ingredient
   action    String?
@@ -505,7 +582,7 @@ model Task {
   assignedTo       User?   @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
   assignedToUserId String?
 
-  status String @default("PENDING") // PENDING, IN_PROGRESS, DONE, ISSUE
+  status      String  @default("PENDING") // PENDING, IN_PROGRESS, DONE, ISSUE
   issueReason String?
 
   plannedStart DateTime?
@@ -550,7 +627,7 @@ model AuditLog {
   changedByUserId String?
 
   timestamp DateTime @default(now())
-  changes   String? 
+  changes   String?
 }
 
 // 8. STORAGE & LOGISTICS (ALMACEN)
@@ -562,23 +639,23 @@ enum StorageZone {
 }
 
 model StorageLocation {
-  id          String      @id @default(cuid())
-  name        String      // "Timbre 1", "Estantería A"
-  zone        StorageZone
-  
+  id   String      @id @default(cuid())
+  name String // "Timbre 1", "Estantería A"
+  zone StorageZone
+
   description String?
-  
+
   // Hierarchy: Area -> Shelf -> Position
-  parentId    String?
-  parent      StorageLocation? @relation("LocationHierarchy", fields: [parentId], references: [id])
-  children    StorageLocation[] @relation("LocationHierarchy")
+  parentId String?
+  parent   StorageLocation?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children StorageLocation[] @relation("LocationHierarchy")
 
   // Products stored here
   storedIngredients Ingredient[]
   storedProducts    SupplierProduct[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   ownerId String?
   owner   User?   @relation("StorageOwner", fields: [ownerId], references: [id])
@@ -610,24 +687,24 @@ enum StationType {
 }
 
 model MiseEnPlaceTask {
-  id          String   @id @default(cuid())
-  name        String   // "Corte de Cebolla" or "Salsas Mesa 1"
-  station     StationType
-  
+  id      String      @id @default(cuid())
+  name    String // "Corte de Cebolla" or "Salsas Mesa 1"
+  station StationType
+
   // Linked Recipe (Optional, e.g. "Salsa Tomate")
-  recipe      Recipe?  @relation(fields: [recipeId], references: [id])
-  recipeId    String?
+  recipe   Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId String?
 
   typicalVolume String? // "2KG" or "10L" text for now, or float
-  
+
   // Recommended GN
   recommendedGhSize  GastronormSize
   recommendedGhDepth GastronormDepth
-  
+
   refillRequired Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   ownerId String?
   owner   User?   @relation("MiseEnPlaceOwner", fields: [ownerId], references: [id])
@@ -638,59 +715,59 @@ model SalesData {
   id          String   @id @default(cuid())
   date        DateTime
   productName String
-  quantity    Float    // Quantity sold
-  amount      Float?   // Revenue
-  
-  source      String   @default("AGORA") // AGORA, MANUAL, ETC
+  quantity    Float // Quantity sold
+  amount      Float? // Revenue
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  source String @default("AGORA") // AGORA, MANUAL, ETC
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 11. TIMBRE CONFIGURATION & MISE EN PLACE
 model Timbre {
-  id          String   @id @default(cuid())
-  name        String   // e.g., "Timbre Zona Caliente"
-  shelves     Shelf[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String // e.g., "Timbre Zona Caliente"
+  shelves   Shelf[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Shelf {
-  id          String   @id @default(cuid())
-  timbreId    String
-  timbre      Timbre   @relation(fields: [timbreId], references: [id], onDelete: Cascade)
-  position    Int      // 1 (top) to N (bottom)
-  height      Int      // Available height in mm (availableHeight)
-  partitions  Partition[]
+  id         String      @id @default(cuid())
+  timbreId   String
+  timbre     Timbre      @relation(fields: [timbreId], references: [id], onDelete: Cascade)
+  position   Int // 1 (top) to N (bottom)
+  height     Int // Available height in mm (availableHeight)
+  partitions Partition[]
 }
 
 model Partition {
-  id            String   @id @default(cuid())
-  name          String
-  
+  id   String @id @default(cuid())
+  name String
+
   // Characteristics
-  type          String   // PartitionType: "topping", "garnish", "medium", "large", "production"
-  volumeLevel   String   // VolumeLevel: "bajo", "medio", "alto"
-  serviceRhythm String   // ServiceRhythm: "bajo", "medio", "alto"
-  
+  type          String // PartitionType: "topping", "garnish", "medium", "large", "production"
+  volumeLevel   String // VolumeLevel: "bajo", "medio", "alto"
+  serviceRhythm String // ServiceRhythm: "bajo", "medio", "alto"
+
   // Calculated/Assigned values
   shelfId       String?
-  shelf         Shelf?   @relation(fields: [shelfId], references: [id])
-  assignedGN    String?  // e.g., "1/6", "1/3"
-  assignedDepth Int?     // e.g., 65, 100, 150
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  shelf         Shelf?  @relation(fields: [shelfId], references: [id])
+  assignedGN    String? // e.g., "1/6", "1/3"
+  assignedDepth Int? // e.g., 65, 100, 150
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 6. Daily Menu & POS Integration
 model MenuService {
-  id     String   @id @default(cuid())
-  name   String // e.g., "Almuerzo", "Cena"
-  startDate   DateTime
-  endDate     DateTime
-  status String   @default("PLANNED") // PLANNED, ACTIVE, COMPLETED
+  id        String   @id @default(cuid())
+  name      String // e.g., "Almuerzo", "Cena"
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("PLANNED") // PLANNED, ACTIVE, COMPLETED
 
   items MenuServiceItem[]
 
@@ -720,7 +797,7 @@ model MenuServiceItem {
 }
 
 model POSIntegration {
-  id        String @id @default(cuid())
+  id        String    @id @default(cuid())
   provider  String // e.g., "REVO", "SQUARE"
   apiKey    String
   apiSecret String?
@@ -742,279 +819,189 @@ model SalesRecord {
 
   source String // e.g., "REVO"
 
+  // Puente convergencia obrador → núcleo (Frente A, aditivo).
+
   createdAt DateTime @default(now())
 }
 
 // 12. OBRADOR MODULE
 
 model ObradorConfig {
-  id                String   @id @default("default")
-  businessName      String?  // Nombre comercial
-  companyName       String?  // Razón social
-  nif               String?
-  address           String?
-  phone             String?
-  email             String?
-  activity          String?  // restaurante, obrador, elaboración propia, etc.
-  registryType      String?  // Registro autonómico, RGSEAA, etc.
-  registryNumber    String?
-  requestDate       DateTime?
-  resolutionDate    DateTime?
-  status            String   @default("no_iniciado") // no_iniciado, solicitado, aprobado, etc.
-  region            String?  // Comunidad autónoma
-  
-  ownerId           String?
-  owner             User?    @relation("ObradorConfigOwner", fields: [ownerId], references: [id])
-  
-  updatedAt         DateTime @updatedAt
-}
+  id             String    @id @default("default")
+  businessName   String? // Nombre comercial
+  companyName    String? // Razón social
+  nif            String?
+  address        String?
+  phone          String?
+  email          String?
+  activity       String? // restaurante, obrador, elaboración propia, etc.
+  registryType   String? // Registro autonómico, RGSEAA, etc.
+  registryNumber String?
+  requestDate    DateTime?
+  resolutionDate DateTime?
+  status         String    @default("no_iniciado") // no_iniciado, solicitado, aprobado, etc.
+  region         String? // Comunidad autónoma
 
-model ObradorProduct {
-  id                  String   @id @default(cuid())
-  name                String
-  category            String   // embutido, carne fresca, carne picada, pan, hamburguesa, otro
-  legalDenomination   String?
-  commercialDescription String?
-  conservationType    String?  // refrigerado, congelado, ambiente
-  recommendedTemp     String?
-  shelfLifeDays       Int?
-  requiresCooking     Boolean  @default(true)
-  usageInstructions   String?
-  saleFormat          String?  // unidad, peso, bandeja, etc.
-  defaultWeight       Float?
-  isActive            Boolean  @default(true)
-  imageUrl            String?
-  labelTemplate       String   @default("100x70")
+  ownerId String?
+  owner   User?   @relation("ObradorConfigOwner", fields: [ownerId], references: [id])
 
-  // Nutritional Info
-  energyKj            Float?
-  energyKcal          Float?
-  fat                 Float?
-  saturatedFat        Float?
-  carbs               Float?
-  sugars              Float?
-  protein             Float?
-  salt                Float?
-  nutritionalStatus   String   @default("pendiente") // pendiente, verificado
-
-  recipe              ObradorRecipe?
-  productionBatches   ObradorProductionBatch[]
-
-  ownerId             String?
-  owner               User?    @relation("ObradorProductOwner", fields: [ownerId], references: [id])
-
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-}
-
-model ObradorRecipe {
-  id            String   @id @default(cuid())
-  productId     String   @unique
-  product       ObradorProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  ingredients   ObradorRecipeIngredient[]
-  
-  totalCost     Float?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model ObradorRecipeIngredient {
-  id            String   @id @default(cuid())
-  recipeId      String
-  recipe        ObradorRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  
-  name          String
-  percentage    Float?
-  quantity      Float?
-  unit          String?
-  allergens     String? // Comma separated list of 14 main allergens
-  isAdditive    Boolean  @default(false)
-  
-  supplierId    String?
-  
-  cost          Float?
-
-  createdAt     DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ObradorRawMaterialEntry {
-  id                String   @id @default(cuid())
-  
-  supplierId        String?
-  supplier          Supplier? @relation(fields: [supplierId], references: [id])
-  supplierName      String // Fallback or manually entered
-  
-  productName       String
-  supplierBatch     String?
-  receptionDate     DateTime @default(now())
-  expiryDate        DateTime?
-  quantityReceived  Float
-  unit              String
-  receptionTemp     Float?
-  visualStatus      String?  // Correcto, Incorrecto
-  documentUrl       String?  // Factura/Albarán
-  isApto            Boolean  @default(true)
-  observations      String?
+  id String @id @default(cuid())
 
-  batchIngredients  ObradorBatchIngredient[]
+  supplierId   String?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id])
+  supplierName String // Fallback or manually entered
 
-  ownerId           String?
-  owner             User?    @relation("ObradorIntakeOwner", fields: [ownerId], references: [id])
+  productName      String
+  supplierBatch    String?
+  receptionDate    DateTime  @default(now())
+  expiryDate       DateTime?
+  quantityReceived Float
+  unit             String
+  receptionTemp    Float?
+  visualStatus     String? // Correcto, Incorrecto
+  documentUrl      String? // Factura/Albarán
+  isApto           Boolean   @default(true)
+  observations     String?
 
-  createdAt         DateTime @default(now())
+  batchIngredients ObradorBatchIngredient[]
+
+  ownerId String?
+  owner   User?   @relation("ObradorIntakeOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model ObradorProductionBatch {
-  id                String   @id @default(cuid())
-  batchCode         String   @unique // L-YYYYMMDD-PROD-NNN
-  
-  productId         String
-  product           ObradorProduct @relation(fields: [productId], references: [id])
-  
-  productionDate    DateTime @default(now())
-  expiryDate        DateTime
-  quantityProduced  Float
-  unit              String
-  
-  operatorId        String?
-  operatorName      String? // Fallback if user is deleted
-  
-  wasteQuantity     Float?
-  observations      String?
-  status            String   @default("abierto") // abierto, cerrado, bloqueado, retirado
+  id        String @id @default(cuid())
+  batchCode String @unique // L-YYYYMMDD-PROD-NNN
 
-  usedMaterials     ObradorBatchIngredient[]
-  sales             ObradorSale[]
+  productionDate   DateTime @default(now())
+  expiryDate       DateTime
+  quantityProduced Float
+  unit             String
 
-  ownerId           String?
-  owner             User?    @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
+  operatorId   String?
+  operatorName String? // Fallback if user is deleted
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  wasteQuantity Float?
+  observations  String?
+  status        String  @default("abierto") // abierto, cerrado, bloqueado, retirado
+
+  usedMaterials ObradorBatchIngredient[]
+
+  // Puentes convergencia → núcleo (Frente A, aditivo). Los lotes nunca se tocan;
+  // solo ganan FK a la receta/ficha del núcleo para trazabilidad unificada.
+  recipeId        String?
+  recipe          Recipe?        @relation("ObradorBatchToRecipe", fields: [recipeId], references: [id])
+  masterProductId String?
+  masterProduct   MasterProduct? @relation("ObradorBatchToMaster", fields: [masterProductId], references: [id])
+
+  ownerId String?
+  owner   User?   @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recipeId])
+  @@index([masterProductId])
 }
 
 model ObradorBatchIngredient {
-  id                String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   productionBatchId String
   productionBatch   ObradorProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
-  
+
   rawMaterialEntryId String
   rawMaterialEntry   ObradorRawMaterialEntry @relation(fields: [rawMaterialEntryId], references: [id])
-  
-  quantityUsed      Float?
 
-  createdAt         DateTime @default(now())
-}
+  quantityUsed Float?
 
-model ObradorCustomer {
-  id                String   @id @default(cuid())
-  name              String
-  nif               String?
-  address           String?
-  phone             String?
-  email             String?
-  customerType      String?  // Consumidor final, Minorista, Online, Profesional
-  
-  sales             ObradorSale[]
+  // Puente convergencia → ingrediente del núcleo (Frente A, aditivo).
+  ingredientId String?
+  ingredient   Ingredient? @relation("ObradorBatchIngredientToCore", fields: [ingredientId], references: [id])
 
-  ownerId           String?
-  owner             User?    @relation("ObradorCustomerOwner", fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-}
-
-model ObradorSale {
-  id                String   @id @default(cuid())
-  
-  customerId        String
-  customer          ObradorCustomer @relation(fields: [customerId], references: [id])
-  
-  batchId           String
-  batch             ObradorProductionBatch @relation(fields: [batchId], references: [id])
-  
-  quantitySold      Float
-  saleDate          DateTime @default(now())
-  documentUrl       String?
-
-  createdAt         DateTime @default(now())
+  @@index([ingredientId])
 }
 
 model ObradorTemperatureLog {
-  id                String   @id @default(cuid())
-  equipmentName     String   // Cámara 1, Obrador, etc.
-  temperature       Float
-  logDate           DateTime @default(now())
-  operatorName      String
-  hasIncidence      Boolean  @default(false)
-  correctiveAction  String?
+  id               String   @id @default(cuid())
+  equipmentName    String // Cámara 1, Obrador, etc.
+  temperature      Float
+  logDate          DateTime @default(now())
+  operatorName     String
+  hasIncidence     Boolean  @default(false)
+  correctiveAction String?
 
-  ownerId           String?
-  owner             User?    @relation("ObradorTempOwner", fields: [ownerId], references: [id])
+  ownerId String?
+  owner   User?   @relation("ObradorTempOwner", fields: [ownerId], references: [id])
 
-  createdAt         DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model ObradorCleaningTask {
-  id                String   @id @default(cuid())
-  area              String
-  task              String
-  frequency         String   // Diaria, Semanal, Mensual
-  
-  logs              ObradorCleaningLog[]
+  id        String @id @default(cuid())
+  area      String
+  task      String
+  frequency String // Diaria, Semanal, Mensual
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  logs ObradorCleaningLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ObradorCleaningLog {
-  id                String   @id @default(cuid())
-  
-  taskId            String
-  task              ObradorCleaningTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  
-  logDate           DateTime @default(now())
-  operatorName      String
-  status            String   // Realizado, No realizado
-  observations      String?
-  signatureUrl      String?
+  id String @id @default(cuid())
 
-  createdAt         DateTime @default(now())
+  taskId String
+  task   ObradorCleaningTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  logDate      DateTime @default(now())
+  operatorName String
+  status       String // Realizado, No realizado
+  observations String?
+  signatureUrl String?
+
+  createdAt DateTime @default(now())
 }
 
 model ObradorIncident {
-  id                String   @id @default(cuid())
-  type              String
-  description       String
-  affectedBatchId   String?
-  incidentDate      DateTime @default(now())
-  correctiveAction  String?
-  operatorName      String
-  status            String   @default("abierto") // abierto, cerrado
-  documentUrl       String?
+  id               String   @id @default(cuid())
+  type             String
+  description      String
+  affectedBatchId  String?
+  incidentDate     DateTime @default(now())
+  correctiveAction String?
+  operatorName     String
+  status           String   @default("abierto") // abierto, cerrado
+  documentUrl      String?
 
-  ownerId           String?
-  owner             User?    @relation("ObradorIncidentOwner", fields: [ownerId], references: [id])
+  ownerId String?
+  owner   User?   @relation("ObradorIncidentOwner", fields: [ownerId], references: [id])
 
-  createdAt         DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model ObradorSanitaryDocument {
-  id                String   @id @default(cuid())
-  title             String
-  category          String   // Registro, APPCC, Limpieza, Plagas, Formación, Fichas, Albaranes, Facturas, Certificados, Incidencias, Retiradas, Inspecciones
-  fileUrl           String
-  expiryDate        DateTime?
-  associatedId      String?  // Optional link to product, supplier or batch
-  
-  ownerId           String?
-  owner             User?    @relation("ObradorDocOwner", fields: [ownerId], references: [id])
+  id           String    @id @default(cuid())
+  title        String
+  category     String // Registro, APPCC, Limpieza, Plagas, Formación, Fichas, Albaranes, Facturas, Certificados, Incidencias, Retiradas, Inspecciones
+  fileUrl      String
+  expiryDate   DateTime?
+  associatedId String? // Optional link to product, supplier or batch
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  ownerId String?
+  owner   User?   @relation("ObradorDocOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================================
@@ -1028,7 +1015,7 @@ model ObradorSanitaryDocument {
 // una sola empresa por cuenta y la UI colapsa el nivel.
 model Empresa {
   id            String  @id @default(cuid())
-  razonSocial   String  // Nombre legal (razón social)
+  razonSocial   String // Nombre legal (razón social)
   comercialName String? // Nombre comercial
   nif           String? // CIF/NIF
   address       String?
@@ -1059,18 +1046,18 @@ model Empresa {
 // cesión ilegal de trabajadores queda imposible por diseño. Dentro de su
 // empresa, el empleado puede asignarse a varios locales (assignedLocations).
 model Employment {
-  id           String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Persona empleada
-  userId       String
-  user         User      @relation("UserEmployments", fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation("UserEmployments", fields: [userId], references: [id], onDelete: Cascade)
 
   // Empresa empleadora (parte contractual)
-  empresaId    String
-  empresa      Empresa   @relation("EmpresaEmployments", fields: [empresaId], references: [id], onDelete: Cascade)
+  empresaId String
+  empresa   Empresa @relation("EmpresaEmployments", fields: [empresaId], references: [id], onDelete: Cascade)
 
-  position     String?   // Puesto / categoría
-  contractType String?   // INDEFINIDO, TEMPORAL, FORMACION, PRACTICAS, FIJO_DISCONTINUO...
+  position     String? // Puesto / categoría
+  contractType String? // INDEFINIDO, TEMPORAL, FORMACION, PRACTICAS, FIJO_DISCONTINUO...
   startDate    DateTime?
   endDate      DateTime? // null = vigente
   isActive     Boolean   @default(true)
@@ -1078,19 +1065,19 @@ model Employment {
   // Centros de trabajo (locales) de la empresa a los que está asignado.
   assignedLocations Location[] @relation("EmploymentLocations")
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([empresaId])
 }
 
 model Location {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   name      String
   shortCode String?
   address   String?
-  isActive  Boolean  @default(true)
+  isActive  Boolean @default(true)
 
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
@@ -1103,19 +1090,20 @@ model Location {
   // Empleados asignados a este centro de trabajo (vía su contrato de empleo).
   employments Employment[] @relation("EmploymentLocations")
 
-  members        User[]              @relation("LocationMembers")
-  recipes        Recipe[]            @relation("RecipeLocation")
-  ingredients    Ingredient[]        @relation("IngredientLocation")
-  masterProducts MasterProduct[]     @relation("MasterProductLocation")
-  supplierProducts2 SupplierProduct[] @relation("SupplierProductLocation")
-  suppliers      Supplier[]          @relation("SupplierLocation")
-  events         Event[]             @relation("EventLocation")
-  tasks          Task[]              @relation("TaskLocation")
-  menuServices   MenuService[]       @relation("MenuServiceLocation")
-  templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
-  schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
-  communications Communication[]     @relation("CommunicationLocation")
-  productLabels   ProductLabel[]      @relation("ProductLabelLocation")
+  members           User[]              @relation("LocationMembers")
+  recipes           Recipe[]            @relation("RecipeLocation")
+  ingredients       Ingredient[]        @relation("IngredientLocation")
+  masterProducts    MasterProduct[]     @relation("MasterProductLocation")
+  supplierProducts2 SupplierProduct[]   @relation("SupplierProductLocation")
+  suppliers         Supplier[]          @relation("SupplierLocation")
+  events            Event[]             @relation("EventLocation")
+  tasks             Task[]              @relation("TaskLocation")
+  menuServices      MenuService[]       @relation("MenuServiceLocation")
+  templates         ChecklistTemplate[] @relation("ChecklistTemplateLocation")
+  schedules         ChecklistSchedule[] @relation("ChecklistScheduleLocation")
+  communications    Communication[]     @relation("CommunicationLocation")
+  productLabels     ProductLabel[]      @relation("ProductLabelLocation")
+  customers         Customer[]          @relation("CustomerLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1192,9 +1180,9 @@ model ChecklistField {
 }
 
 model ChecklistSchedule {
-  id                 String    @id @default(cuid())
-  templateId         String
-  template           ChecklistTemplate @relation(fields: [templateId], references: [id])
+  id         String            @id @default(cuid())
+  templateId String
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id])
 
   locationId String
   location   Location @relation("ChecklistScheduleLocation", fields: [locationId], references: [id])
@@ -1202,19 +1190,19 @@ model ChecklistSchedule {
   frequency          Frequency
   startDate          DateTime
   endDate            DateTime?
-  executionStartTime String     // "HH:MM"
-  executionEndTime   String     // "HH:MM"
-  excludeWeekdays    Int[]      @default([])  // 0=domingo … 6=sábado
-  autoClose          Boolean    @default(false)
-  pinned             Boolean    @default(false)
+  executionStartTime String // "HH:MM"
+  executionEndTime   String // "HH:MM"
+  excludeWeekdays    Int[]     @default([]) // 0=domingo … 6=sábado
+  autoClose          Boolean   @default(false)
+  pinned             Boolean   @default(false)
 
   // Asignación (string[] de User ids para flexibilidad inicial)
-  performerUserIds   String[]   @default([])
-  supervisorUserIds  String[]   @default([])
-  followerUserIds    String[]   @default([])
-  performerRoles     String[]   @default([])
-  supervisorRoles    String[]   @default([])
-  followerRoles      String[]   @default([])
+  performerUserIds  String[] @default([])
+  supervisorUserIds String[] @default([])
+  followerUserIds   String[] @default([])
+  performerRoles    String[] @default([])
+  supervisorRoles   String[] @default([])
+  followerRoles     String[] @default([])
 
   ownerId String
   owner   User   @relation("ChecklistScheduleOwner", fields: [ownerId], references: [id])
@@ -1226,7 +1214,7 @@ model ChecklistSchedule {
 }
 
 model ChecklistInstance {
-  id         String   @id @default(cuid())
+  id         String            @id @default(cuid())
   scheduleId String
   schedule   ChecklistSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   dueDate    DateTime
@@ -1235,7 +1223,7 @@ model ChecklistInstance {
   openedAt       DateTime?
   closedAt       DateTime?
   closedByUserId String?
-  closedBy       User?    @relation("ChecklistInstanceClosedBy", fields: [closedByUserId], references: [id])
+  closedBy       User?          @relation("ChecklistInstanceClosedBy", fields: [closedByUserId], references: [id])
   scoreAvg       Float?
 
   responses ChecklistResponse[]
@@ -1251,12 +1239,12 @@ model ChecklistInstance {
 // ============================================================================
 
 enum CommunicationType {
-  BREAKDOWN  // Avería
-  NOTICE     // Aviso
-  EVENT      // Evento
-  MEETING    // Reunión
-  TASK       // Tarea programada (Comunicación > Programadas)
-  LIST       // Listas
+  BREAKDOWN // Avería
+  NOTICE // Aviso
+  EVENT // Evento
+  MEETING // Reunión
+  TASK // Tarea programada (Comunicación > Programadas)
+  LIST // Listas
 }
 
 enum CommunicationStatus {
@@ -1316,7 +1304,7 @@ model CommunicationComment {
 }
 
 model ChecklistResponse {
-  id         String @id @default(cuid())
+  id         String            @id @default(cuid())
   instanceId String
   instance   ChecklistInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
   fieldId    String
@@ -1331,11 +1319,11 @@ model ChecklistResponse {
   incidentNote String?
 
   answeredByUserId String?
-  answeredBy       User?   @relation("ChecklistResponseAnsweredBy", fields: [answeredByUserId], references: [id])
+  answeredBy       User?     @relation("ChecklistResponseAnsweredBy", fields: [answeredByUserId], references: [id])
   answeredAt       DateTime?
 
   supervisedByUserId String?
-  supervisedBy       User?    @relation("ChecklistResponseSupervisedBy", fields: [supervisedByUserId], references: [id])
+  supervisedBy       User?     @relation("ChecklistResponseSupervisedBy", fields: [supervisedByUserId], references: [id])
   supervisedAt       DateTime?
 
   createdAt DateTime @default(now())
@@ -1349,10 +1337,10 @@ model ChecklistResponse {
 // ============================================================================
 
 enum PurchaseOrderStatus {
-  DRAFT       // borrador editable
-  SENT        // enviado al proveedor
-  RECEIVED    // mercancía recibida (parcial o total)
-  CLOSED      // cerrado, no se aceptan cambios
+  DRAFT // borrador editable
+  SENT // enviado al proveedor
+  RECEIVED // mercancía recibida (parcial o total)
+  CLOSED // cerrado, no se aceptan cambios
   CANCELLED
 }
 
@@ -1370,11 +1358,11 @@ model PurchaseOrder {
 
   status PurchaseOrderStatus @default(DRAFT)
 
-  reference     String?  // número/referencia del pedido
-  expectedDate  DateTime?
-  sentAt        DateTime?
-  closedAt      DateTime?
-  notes         String?
+  reference    String? // número/referencia del pedido
+  expectedDate DateTime?
+  sentAt       DateTime?
+  closedAt     DateTime?
+  notes        String?
 
   lines         PurchaseOrderLine[]
   deliveryNotes DeliveryNote[]
@@ -1396,13 +1384,13 @@ model PurchaseOrderLine {
   supplierProductId String?
   supplierProduct   SupplierProduct? @relation("PurchaseOrderLineProduct", fields: [supplierProductId], references: [id])
 
-  productName String  // siempre rellenado para no perder histórico
-  unit        String  // KG, UD, L, BOX...
+  productName String // siempre rellenado para no perder histórico
+  unit        String // KG, UD, L, BOX...
   quantity    Float
-  unitPrice   Float?  // opcional
+  unitPrice   Float? // opcional
 
   // Lo que finalmente se recibió (puede ser distinto)
-  receivedQuantity Float?  @default(0)
+  receivedQuantity Float? @default(0)
 }
 
 model DeliveryNote {
@@ -1416,12 +1404,12 @@ model DeliveryNote {
 
   receivedAt DateTime @default(now())
 
-  photoUrls    String[]  @default([])   // fotos del albarán/mercancía
-  signatureSvg String?                  // firma del receptor
+  photoUrls    String[] @default([]) // fotos del albarán/mercancía
+  signatureSvg String? // firma del receptor
   note         String?
 
   // Opcionalmente las líneas concretas recibidas (si parcial)
-  receivedLines Json?  // [{orderLineId, qty}]
+  receivedLines Json? // [{orderLineId, qty}]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1454,9 +1442,9 @@ model ProductLabel {
   productionDate DateTime
   expiryDate     DateTime?
   storageMode    LabelStorageMode @default(REFRIGERATED)
-  allergens      String[]  @default([])
+  allergens      String[]         @default([])
   ingredients    String?
-  weight         String?    // "500 g", "2 kg", etc.
+  weight         String? // "500 g", "2 kg", etc.
   note           String?
   photoUrl       String?
 
