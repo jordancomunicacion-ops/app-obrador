@@ -50,6 +50,7 @@ model User {
   ownedMenuServices MenuService[]     @relation("MenuServiceOwner")
   ownedAppConfigs   AppConfig[]       @relation("AppConfigOwner")
   ownedStorage      StorageLocation[] @relation("StorageOwner")
+  ownedMiseEnPlace  MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
 
   // Obrador Relations
   ownedObradorConfigs   ObradorConfig[]           @relation("ObradorConfigOwner")
@@ -452,6 +453,7 @@ model Recipe {
   taskInstances   TaskInstance[]   @relation("TaskInstanceRecipe")
 
   // For Mise En Place
+  miseEnPlaceTasks MiseEnPlaceTask[]
 
   // Inverse relation: This recipe used as a sub-recipe in steps
   usedInSteps RecipeStep[] @relation("SubRecipeStep")
@@ -674,6 +676,55 @@ model StorageLocation {
 
   ownerId String?
   owner   User?   @relation("StorageOwner", fields: [ownerId], references: [id])
+}
+
+// 9. MISE EN PLACE
+enum GastronormSize {
+  GN_1_1
+  GN_1_2
+  GN_1_3
+  GN_1_4
+  GN_1_6
+  GN_1_9
+}
+
+enum GastronormDepth {
+  D_20
+  D_40
+  D_65
+  D_100
+  D_150
+  D_200
+}
+
+enum StationType {
+  FRIO
+  CALIENTE
+  PASE
+}
+
+model MiseEnPlaceTask {
+  id      String      @id @default(cuid())
+  name    String // "Corte de Cebolla" or "Salsas Mesa 1"
+  station StationType
+
+  // Linked Recipe (Optional, e.g. "Salsa Tomate")
+  recipe   Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId String?
+
+  typicalVolume String? // "2KG" or "10L" text for now, or float
+
+  // Recommended GN
+  recommendedGhSize  GastronormSize
+  recommendedGhDepth GastronormDepth
+
+  refillRequired Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String?
+  owner   User?   @relation("MiseEnPlaceOwner", fields: [ownerId], references: [id])
 }
 
 // 10. SALES DATA (SMART SHOPPING)
