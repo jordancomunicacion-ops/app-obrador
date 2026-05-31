@@ -54,10 +54,8 @@ model User {
 
   // Obrador Relations
   ownedObradorConfigs   ObradorConfig[]           @relation("ObradorConfigOwner")
-  ownedObradorProducts  ObradorProduct[]          @relation("ObradorProductOwner")
   ownedObradorBatches   ObradorProductionBatch[]  @relation("ObradorBatchOwner")
   ownedObradorIntake    ObradorRawMaterialEntry[] @relation("ObradorIntakeOwner")
-  ownedObradorCustomers ObradorCustomer[]         @relation("ObradorCustomerOwner")
   ownedObradorDocs      ObradorSanitaryDocument[] @relation("ObradorDocOwner")
   ownedObradorTemps     ObradorTemperatureLog[]   @relation("ObradorTempOwner")
   ownedObradorIncidents ObradorIncident[]         @relation("ObradorIncidentOwner")
@@ -204,8 +202,7 @@ model MasterProduct {
   sanitaryInfo ProductSanitaryInfo?
 
   // Puentes de convergencia obrador → núcleo (aditivos, Frente A).
-  obradorProducts ObradorProduct[]         @relation("ObradorProductToMaster")
-  obradorBatches  ObradorProductionBatch[] @relation("ObradorBatchToMaster")
+  obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToMaster")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -218,7 +215,7 @@ model MasterProduct {
 }
 
 // Extensión 1:1 de MasterProduct con la info sanitaria/nutricional/legal
-// (proviene de ObradorProduct; pestaña de la ficha única, no un producto aparte).
+// (pestaña de la ficha única del producto, no un producto aparte).
 model ProductSanitaryInfo {
   id              String        @id @default(cuid())
   masterProductId String        @unique
@@ -253,20 +250,17 @@ model ProductSanitaryInfo {
   updatedAt DateTime @updatedAt
 }
 
-// Cliente del núcleo (reutilizable). Hoy solo existe ObradorCustomer; este lo promueve
-// a modelo común acotado por local (Frente A).
+// Cliente del núcleo (reutilizable), acotado por local. Usado por obrador
+// (puntos de venta / destinos) y disponible para el resto de la app (Frente A).
 model Customer {
-  id           String  @id @default(cuid())
-  name         String
-  nif          String?
-  address      String?
-  phone        String?
-  email        String?
+  id            String  @id @default(cuid())
+  name          String
+  nif           String?
+  address       String?
+  phone         String?
+  email         String?
   contactPerson String? // persona de contacto
-  customerType String? // Consumidor final, Minorista, Online, Profesional
-
-  // Puente: clientes de obrador que se backfillean aquí.
-  obradorCustomers ObradorCustomer[] @relation("ObradorCustomerToCore")
+  customerType  String? // Consumidor final, Minorista, Online, Profesional
 
   ownerId String?
   owner   User?   @relation("CustomerOwner", fields: [ownerId], references: [id])
@@ -457,7 +451,6 @@ model Recipe {
   salesRecords          SalesRecord[]
 
   // Puentes convergencia obrador → núcleo (Frente A, aditivo).
-  obradorRecipes ObradorRecipe[]          @relation("ObradorRecipeToCore")
   obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToRecipe")
 
   createdAt DateTime @default(now())
@@ -827,7 +820,6 @@ model SalesRecord {
   source String // e.g., "REVO"
 
   // Puente convergencia obrador → núcleo (Frente A, aditivo).
-  obradorSales ObradorSale[] @relation("ObradorSaleToCore")
 
   createdAt DateTime @default(now())
 }
@@ -854,90 +846,6 @@ model ObradorConfig {
   owner   User?   @relation("ObradorConfigOwner", fields: [ownerId], references: [id])
 
   updatedAt DateTime @updatedAt
-}
-
-model ObradorProduct {
-  id                    String  @id @default(cuid())
-  name                  String
-  category              String // embutido, carne fresca, carne picada, pan, hamburguesa, otro
-  legalDenomination     String?
-  commercialDescription String?
-  conservationType      String? // refrigerado, congelado, ambiente
-  recommendedTemp       String?
-  shelfLifeDays         Int?
-  requiresCooking       Boolean @default(true)
-  usageInstructions     String?
-  saleFormat            String? // unidad, peso, bandeja, etc.
-  defaultWeight         Float?
-  isActive              Boolean @default(true)
-  imageUrl              String?
-  labelTemplate         String  @default("100x70")
-
-  // Nutritional Info
-  energyKj          Float?
-  energyKcal        Float?
-  fat               Float?
-  saturatedFat      Float?
-  carbs             Float?
-  sugars            Float?
-  protein           Float?
-  salt              Float?
-  nutritionalStatus String @default("pendiente") // pendiente, verificado
-
-  recipe            ObradorRecipe?
-  productionBatches ObradorProductionBatch[]
-
-  // Puente convergencia → ficha única del núcleo (Frente A, aditivo).
-  masterProductId String?
-  masterProduct   MasterProduct? @relation("ObradorProductToMaster", fields: [masterProductId], references: [id])
-  migratedAt      DateTime?
-
-  ownerId String?
-  owner   User?   @relation("ObradorProductOwner", fields: [ownerId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([masterProductId])
-}
-
-model ObradorRecipe {
-  id        String         @id @default(cuid())
-  productId String         @unique
-  product   ObradorProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  ingredients ObradorRecipeIngredient[]
-
-  totalCost Float?
-
-  // Puente convergencia → receta del núcleo (Frente A, aditivo).
-  recipeId   String?
-  recipe     Recipe?   @relation("ObradorRecipeToCore", fields: [recipeId], references: [id])
-  migratedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([recipeId])
-}
-
-model ObradorRecipeIngredient {
-  id       String        @id @default(cuid())
-  recipeId String
-  recipe   ObradorRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-
-  name       String
-  percentage Float?
-  quantity   Float?
-  unit       String?
-  allergens  String? // Comma separated list of 14 main allergens
-  isAdditive Boolean @default(false)
-
-  supplierId String?
-
-  cost Float?
-
-  createdAt DateTime @default(now())
 }
 
 model ObradorRawMaterialEntry {
@@ -971,11 +879,6 @@ model ObradorProductionBatch {
   id        String @id @default(cuid())
   batchCode String @unique // L-YYYYMMDD-PROD-NNN
 
-  // Producto legacy (ObradorProduct, en deprecación). El lote referencia ahora
-  // la ficha del núcleo vía masterProductId (más abajo).
-  productId String?
-  product   ObradorProduct? @relation(fields: [productId], references: [id])
-
   productionDate   DateTime @default(now())
   expiryDate       DateTime
   quantityProduced Float
@@ -989,7 +892,6 @@ model ObradorProductionBatch {
   status        String  @default("abierto") // abierto, cerrado, bloqueado, retirado
 
   usedMaterials ObradorBatchIngredient[]
-  sales         ObradorSale[]
 
   // Puentes convergencia → núcleo (Frente A, aditivo). Los lotes nunca se tocan;
   // solo ganan FK a la receta/ficha del núcleo para trazabilidad unificada.
@@ -1026,54 +928,6 @@ model ObradorBatchIngredient {
   createdAt DateTime @default(now())
 
   @@index([ingredientId])
-}
-
-model ObradorCustomer {
-  id           String  @id @default(cuid())
-  name         String
-  nif          String?
-  address      String?
-  phone        String?
-  email        String?
-  customerType String? // Consumidor final, Minorista, Online, Profesional
-
-  sales ObradorSale[]
-
-  // Puente convergencia → cliente del núcleo (Frente A, aditivo).
-  customerId   String?
-  coreCustomer Customer? @relation("ObradorCustomerToCore", fields: [customerId], references: [id])
-  migratedAt   DateTime?
-
-  ownerId String?
-  owner   User?   @relation("ObradorCustomerOwner", fields: [ownerId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([customerId])
-}
-
-model ObradorSale {
-  id String @id @default(cuid())
-
-  customerId String
-  customer   ObradorCustomer @relation(fields: [customerId], references: [id])
-
-  batchId String
-  batch   ObradorProductionBatch @relation(fields: [batchId], references: [id])
-
-  quantitySold Float
-  saleDate     DateTime @default(now())
-  documentUrl  String?
-
-  // Puente convergencia → registro de ventas del núcleo (Frente A, aditivo).
-  salesRecordId String?
-  salesRecord   SalesRecord? @relation("ObradorSaleToCore", fields: [salesRecordId], references: [id])
-  migratedAt    DateTime?
-
-  createdAt DateTime @default(now())
-
-  @@index([salesRecordId])
 }
 
 model ObradorTemperatureLog {

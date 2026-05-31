@@ -1,16 +1,18 @@
-import { 
-  BuildingStorefrontIcon, 
-  UserGroupIcon, 
-  ArchiveBoxIcon, 
-  BeakerIcon, 
-  ClipboardDocumentCheckIcon, 
-  TruckIcon, 
-  TagIcon, 
-  DocumentChartBarIcon, 
-  ShieldCheckIcon, 
-  ExclamationTriangleIcon 
+import {
+  BuildingStorefrontIcon,
+  UserGroupIcon,
+  ArchiveBoxIcon,
+  BeakerIcon,
+  ClipboardDocumentCheckIcon,
+  TruckIcon,
+  TagIcon,
+  DocumentChartBarIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { prisma } from '@/app/lib/prisma';
+import { auth } from '@/auth';
 
 const modules = [
   {
@@ -21,8 +23,8 @@ const modules = [
     color: 'bg-emerald-100 text-emerald-700',
   },
   {
-    name: 'Productos y Recetas',
-    description: 'Catálogo de productos envasados y sus composiciones',
+    name: 'Productos',
+    description: 'Catálogo de productos envasados y su ficha sanitaria',
     href: '/dashboard/obrador/products',
     icon: ArchiveBoxIcon,
     color: 'bg-blue-100 text-blue-700',
@@ -49,13 +51,6 @@ const modules = [
     color: 'bg-purple-100 text-purple-700',
   },
   {
-    name: 'Trazabilidad y Ventas',
-    description: 'Seguimiento de lotes y registro de destinos de venta',
-    href: '/dashboard/obrador/traceability',
-    icon: DocumentChartBarIcon,
-    color: 'bg-indigo-100 text-indigo-700',
-  },
-  {
     name: 'Clientes y Puntos de Venta',
     description: 'Gestión de clientes minoristas y venta directa',
     href: '/dashboard/obrador/customers',
@@ -64,24 +59,17 @@ const modules = [
   },
   {
     name: 'Etiquetado Alimentario',
-    description: 'Generación de etiquetas, ZPL y plantillas',
-    href: '/dashboard/obrador/labeling',
+    description: 'Generación de etiquetas y plantillas',
+    href: '/dashboard/obrador/labeling/preview',
     icon: TagIcon,
     color: 'bg-rose-100 text-rose-700',
   },
   {
     name: 'Controles Sanitarios',
-    description: 'Temperaturas, Limpieza y Plan APPCC',
+    description: 'Temperaturas, incidencias y Plan APPCC',
     href: '/dashboard/obrador/compliance',
     icon: ShieldCheckIcon,
     color: 'bg-teal-100 text-teal-700',
-  },
-  {
-    name: 'Incidencias',
-    description: 'Registro de desviaciones y acciones correctoras',
-    href: '/dashboard/obrador/incidents',
-    icon: ExclamationTriangleIcon,
-    color: 'bg-red-100 text-red-700',
   },
   {
     name: 'Documentación',
@@ -92,7 +80,45 @@ const modules = [
   },
 ];
 
-export default function ObradorPage() {
+export default async function ObradorPage() {
+  const session = await auth();
+  const ownerId = session?.user?.id ?? '__none__';
+
+  const now = new Date();
+  const in3days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [activeBatches, expiringBatches, tempIssuesToday, openIncidents] = await Promise.all([
+    prisma.obradorProductionBatch.count({ where: { ownerId, status: 'abierto' } }),
+    prisma.obradorProductionBatch.count({
+      where: {
+        ownerId,
+        status: { not: 'retirado' },
+        expiryDate: { gte: now, lte: in3days },
+      },
+    }),
+    prisma.obradorTemperatureLog.count({
+      where: { ownerId, hasIncidence: true, logDate: { gte: todayStart } },
+    }),
+    prisma.obradorIncident.count({ where: { ownerId, status: 'abierto' } }),
+  ]);
+
+  const stats = [
+    { label: 'Lotes Activos', value: String(activeBatches), cls: 'text-slate-900' },
+    { label: 'Alertas de Caducidad', value: String(expiringBatches), cls: 'text-rose-600' },
+    {
+      label: 'Desviaciones Temp. hoy',
+      value: String(tempIssuesToday),
+      cls: tempIssuesToday > 0 ? 'text-amber-600' : 'text-emerald-600',
+    },
+    {
+      label: 'Incidencias Abiertas',
+      value: String(openIncidents),
+      cls: openIncidents > 0 ? 'text-rose-600' : 'text-emerald-600',
+    },
+  ];
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -105,24 +131,13 @@ export default function ObradorPage() {
         </p>
       </div>
 
-      {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Lotes Activos</p>
-          <p className="text-2xl font-bold text-slate-900">12</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Alertas de Caducidad</p>
-          <p className="text-2xl font-bold text-rose-600">3</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Temp. Cámaras OK</p>
-          <p className="text-2xl font-bold text-emerald-600">4/4</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Limpieza Hoy</p>
-          <p className="text-2xl font-bold text-amber-600">80%</p>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.cls}`}>{s.value}</p>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -132,15 +147,15 @@ export default function ObradorPage() {
             href={module.href}
             className="group relative bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all hover:border-emerald-300"
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${module.color}`}>
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors ${module.color}`}
+            >
               <module.icon className="w-7 h-7" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
               {module.name}
             </h3>
-            <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-              {module.description}
-            </p>
+            <p className="mt-2 text-sm text-slate-500 leading-relaxed">{module.description}</p>
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="text-emerald-600 font-bold">→</div>
             </div>
@@ -148,14 +163,14 @@ export default function ObradorPage() {
         ))}
       </div>
 
-      {/* Warnings / Important Info */}
       <div className="mt-12 bg-amber-50 border border-amber-200 p-4 rounded-xl flex gap-4">
         <ShieldCheckIcon className="w-6 h-6 text-amber-600 flex-shrink-0" />
         <div>
           <h4 className="font-semibold text-amber-900">Aviso legal y sanitario</h4>
           <p className="text-sm text-amber-800 mt-1">
-            Esta aplicación ayuda a organizar información sanitaria, trazabilidad y etiquetado alimentario. 
-            No sustituye el asesoramiento de un técnico de seguridad alimentaria ni la validación de la autoridad sanitaria competente.
+            Esta aplicación ayuda a organizar información sanitaria, trazabilidad y etiquetado
+            alimentario. No sustituye el asesoramiento de un técnico de seguridad alimentaria ni la
+            validación de la autoridad sanitaria competente.
           </p>
         </div>
       </div>
