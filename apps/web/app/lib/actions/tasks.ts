@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateTaskSchema, UpdateTaskSchema, TaskFormState } from '@/app/lib/definitions';
 import { scopedLocationId } from '@/app/lib/auth/scope';
+import { auth, currentOrgId } from '@/auth';
 
 export async function createTask(prevState: TaskFormState, formData: FormData) {
     const validatedFields = CreateTaskSchema.safeParse({
@@ -107,6 +108,34 @@ export async function assignAndStartTask(taskId: string, userId: string, planned
     } catch (error) {
         console.error('Failed to assign and start task:', error);
         return { success: false, message: 'Failed to assign task' };
+    }
+}
+
+/**
+ * Reordena manualmente las tareas del propio empleado en su vista del día.
+ * El orden recibido (orderedIds) se persiste en `sortOrder`, que manda sobre la hora.
+ * Solo afecta a tareas asignadas al usuario actual y de su organización.
+ */
+export async function reorderMyTasks(orderedIds: string[]) {
+    const session = await auth();
+    const userId = session?.user?.id;
+    const orgId = await currentOrgId();
+    if (!userId || !orgId) return { success: false, message: 'No autenticado' };
+
+    try {
+        await prisma.$transaction(
+            orderedIds.map((id, idx) =>
+                prisma.task.updateMany({
+                    where: { id, assignedToUserId: userId, ownerId: orgId },
+                    data: { sortOrder: idx },
+                }),
+            ),
+        );
+        revalidatePath('/dashboard/today');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to reorder tasks:', error);
+        return { success: false, message: 'No se pudo reordenar' };
     }
 }
 

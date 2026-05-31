@@ -605,6 +605,9 @@ model Task {
   realStart    DateTime?
   realEnd      DateTime?
 
+  // Orden manual del empleado en su vista del día (NULL = sin reordenar, manda la hora).
+  sortOrder Int?
+
   // Linking a task to a recipe production
   recipe         Recipe? @relation(fields: [recipeId], references: [id])
   recipeId       String?

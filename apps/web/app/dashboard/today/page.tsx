@@ -4,6 +4,7 @@ import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { generateInstancesForDate } from "@/app/lib/actions/checklist-instances";
+import ProductionList from "@/app/ui/today/production-list";
 import {
   ClockIcon,
   CameraIcon,
@@ -52,14 +53,13 @@ export default async function TodayPage() {
     select: {
       id: true,
       title: true,
-      description: true,
       status: true,
-      plannedStart: true,
       targetQuantity: true,
       unit: true,
       recipe: { select: { name: true, category: true } },
     },
-    orderBy: { plannedStart: "asc" },
+    // El orden manual del empleado (sortOrder) manda; sin él, manda la hora.
+    orderBy: [{ sortOrder: { sort: "asc", nulls: "last" } }, { plannedStart: "asc" }],
   });
 
   // 3. Checklists del día asignadas a mí (como ejecutor)
@@ -191,11 +191,7 @@ export default async function TodayPage() {
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
                 Producción ({productionTasks.length})
               </h2>
-              <div className="space-y-2">
-                {productionTasks.map((t) => (
-                  <ProductionTaskCard key={t.id} task={t} />
-                ))}
-              </div>
+              <ProductionList tasks={productionTasks} />
             </section>
           )}
         </div>
@@ -284,68 +280,3 @@ function ChecklistCard({ instance }: { instance: ChecklistInst }) {
   );
 }
 
-type ProdTask = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  plannedStart: Date | null;
-  targetQuantity: number | null;
-  unit: string | null;
-  recipe: { name: string; category: string } | null;
-};
-
-function ProductionTaskCard({ task }: { task: ProdTask }) {
-  const categoryBadge =
-    task.recipe?.category === "ELABORACION_FINAL"
-      ? { label: "Final", cls: "bg-indigo-100 text-indigo-700" }
-      : task.recipe?.category === "ELABORACION_INTERMEDIA"
-        ? { label: "Intermedia", cls: "bg-teal-100 text-teal-700" }
-        : null;
-  const statusCls: Record<string, string> = {
-    PENDING: "text-gray-600 bg-gray-100",
-    IN_PROGRESS: "text-amber-700 bg-amber-100",
-    DONE: "text-green-700 bg-green-100",
-    ISSUE: "text-red-700 bg-red-100",
-  };
-  return (
-    <Link
-      href={`/dashboard/tasks/board?focus=${task.id}`}
-      className="block bg-white border-2 border-gray-200 rounded-xl p-4 hover:shadow-md transition-all active:scale-[0.99]"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-800 truncate">{task.title}</h3>
-            {categoryBadge && (
-              <span
-                className={clsx(
-                  "text-[10px] font-medium px-1.5 py-0.5 rounded flex-none",
-                  categoryBadge.cls,
-                )}
-              >
-                {categoryBadge.label}
-              </span>
-            )}
-          </div>
-          {task.recipe && (
-            <p className="text-xs text-gray-500">Receta: {task.recipe.name}</p>
-          )}
-          {task.targetQuantity && (
-            <p className="text-xs text-gray-700 mt-1">
-              Objetivo: {task.targetQuantity} {task.unit ?? "ud"}
-            </p>
-          )}
-        </div>
-        <span
-          className={clsx(
-            "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-none",
-            statusCls[task.status] ?? "bg-gray-100 text-gray-600",
-          )}
-        >
-          {task.status}
-        </span>
-      </div>
-    </Link>
-  );
-}
