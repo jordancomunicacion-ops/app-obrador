@@ -46,6 +46,12 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
         quantity: r.quantity,
         unit: r.unit,
     }));
+
+    // Índice por ingrediente para comprobar si otros outputs de una transformación
+    // también se necesitan (antes se usaba demandMap).
+    const demandByIngredient = new Map<string, IngredientDemand>(
+        needs.map((n) => [n.ingredientId, n])
+    );
     const recommendations: PurchaseRecommendation[] = [];
 
     // 2. Resolve Needs
@@ -106,7 +112,7 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
                 if (output.ingredientId === need.ingredientId) return; // Skip self
 
                 const outputQty = rawProductNeeded * (output.percentage / 100);
-                const otherNeed = demandMap.get(output.ingredientId || '');
+                const otherNeed = demandByIngredient.get(output.ingredientId || '');
 
                 if (otherNeed) {
                     // We need this too!
