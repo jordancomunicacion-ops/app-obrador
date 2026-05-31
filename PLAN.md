@@ -29,9 +29,10 @@ recolocar secciones según su naturaleza y reducir el hub de Obrador a lo purame
    🟢 Reagrupación de menú (las rutas se mantienen bajo `/obrador`). ✅ hecho (#27)
 4. **Clientes y PdV → Administración + vínculo lote→destino**. 🟡 Schema additivo + UI. ✅ hecho (#27)
    (incluye columna "Destino" en la lista de Producción y Lotes).
-5. **Establecimiento → Locales**: añadir campos sanitarios/fiscales a `Location`, migrar datos de
-   `ObradorConfig`, repuntar etiquetas, actualizar UI de Locales, eliminar la pestaña del obrador.
-   🔴 Requiere backfill de datos (script puntual).
+5. **Establecimiento → Locales**: campos sanitarios/fiscales añadidos a `Location`; UI de Locales
+   ampliada; etiquetas leen del local del producto con *fallback* a `ObradorConfig` (sin backfill);
+   pestaña "Datos del Establecimiento" eliminada (redirige a Locales); `ObradorConfig` se conserva
+   como respaldo de solo lectura. 🔴 ✅ hecho (#27)
 
 ## Mejoras futuras (anotadas, fuera del alcance inicial)
 - Vínculo **Entrada de materia prima ↔ Compras/Pedidos** (hoy no conectados como datos).
