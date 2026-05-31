@@ -198,3 +198,26 @@ Resueltas con el usuario:
 
 Pendiente (no bloquea el arranque):
 - ⏳ `ObradorRawMaterialEntry`: ¿unificar con compras/albaranes o conservar como recepción específica? Se decide al llegar a ese punto del Frente A.
+
+---
+
+## E. Límite cocina ↔ contabilidad (RRHH y finanzas) *(decisión del usuario)*
+
+`contabilidad.sotodelprior.com` es **otra app**. Cocina = **solo cosas de cocina**. RRHH y contabilidad viven en contabilidad, incluida la **ficha completa del empleado**.
+
+**Se van a contabilidad** (hoy en cocina): `ClockIn` (Fichajes), `Shift` (Turnos), `EmployeeRequest` (Solicitudes: vacaciones/bajas), `CashClosing` (Cierres de caja), `FinancialEntry` (Finanzas/EBITDA).
+
+**Fuente común:** el lector de huella físico es la fuente única del fichaje; **de esos datos beben cocina y contabilidad** (cocina solo lo que necesite para analítica de tareas; contabilidad para nóminas/variables).
+
+**Secuenciación (para NO perder datos):**
+1. ✅ **Quitar del menú** de cocina (hecho — PR #13). Las rutas siguen por URL; nada borrado.
+2. ⏳ **Copiar/adaptar** esos datos y pantallas en `contabilidad.sotodelprior.com` (trabajo en la otra app).
+3. ⏳ **Eliminar de cocina** del todo (rutas `/dashboard/{clock-in,shifts,requests,cash,finance}`, sus acciones/UI y los modelos `ClockIn`/`Shift`/`EmployeeRequest`/`CashClosing`/`FinancialEntry`) **solo cuando** el paso 2 esté hecho.
+
+> Mientras tanto, esos modelos siguen en el esquema de cocina (no estorban; solo quedan fuera del menú).
+
+### Pipeline de catálogo (aclaración del usuario)
+**Productos → Recetas → Planificación Menú** son un mismo flujo (por eso van juntos en el grupo "Catálogo"):
+- **Productos**: ficha única por producto (harina, limón…) con proveedores + test carnicero + **perfiles aromáticos** *(en desarrollo → enlaza con Bloque C química molecular)*.
+- **Recetas**: combinan productos según proveedor y perfil aromático; definen cantidades por tarea; sirven para calcular eficiencia de pedidos.
+- **Planificación Menú**: usa las recetas para estructurar el menú y **agregar las cantidades totales** necesarias.
