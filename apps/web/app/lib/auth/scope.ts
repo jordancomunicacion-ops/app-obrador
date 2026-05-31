@@ -1,6 +1,6 @@
 import { auth, currentOrgId } from "@/auth";
-import { isPlatformOwner } from "@/lib/auth/platform";
-import { currentLocationId } from "@/lib/auth/location";
+import { isPlatformOwner } from "@/app/lib/auth/platform";
+import { currentLocationId } from "@/app/lib/auth/location";
 
 /**
  * Ámbito (scope) resuelto para la petición actual, base del aislamiento por local.

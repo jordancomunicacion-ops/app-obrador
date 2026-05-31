@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
+import { currentLocationId } from "@/app/lib/auth/location";
 import {
   startOfWeekUTC,
   addDaysUTC,
   isoDate,
   weekDays,
   WEEKDAY_LABELS,
-} from "@/lib/week";
+} from "@/app/lib/week";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

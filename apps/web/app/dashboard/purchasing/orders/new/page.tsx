@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { locationScope } from "@/lib/auth/scope";
+import { locationScope } from "@/app/lib/auth/scope";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { createOrder } from "@/app/lib/actions/purchase-orders";
 

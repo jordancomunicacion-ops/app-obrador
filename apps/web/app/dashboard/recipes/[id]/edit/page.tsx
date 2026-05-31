@@ -1,9 +1,9 @@
 import Form from '@/app/ui/recipes/edit-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

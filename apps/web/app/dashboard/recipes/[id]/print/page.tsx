@@ -1,7 +1,7 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Ingredient, RecipeItem, RecipeStep } from '@prisma/client';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

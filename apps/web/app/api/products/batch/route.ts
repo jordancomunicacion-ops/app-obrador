@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { scopedLocationId } from '@/lib/auth/scope';
+import { scopedLocationId } from '@/app/lib/auth/scope';
 
 const prisma = new PrismaClient();
 

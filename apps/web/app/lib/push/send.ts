@@ -1,6 +1,6 @@
 import "server-only";
 import webpush from "web-push";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 
 let configured = false;
 

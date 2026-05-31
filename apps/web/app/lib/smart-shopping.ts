@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { Ingredient, Transformation, TransformationOutput, SupplierProduct } from '@prisma/client';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 import { getRequirementsForEvents } from './production';
 
 interface IngredientDemand {

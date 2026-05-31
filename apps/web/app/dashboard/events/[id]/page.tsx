@@ -1,11 +1,11 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { PencilIcon, CalendarIcon, UserGroupIcon, ShieldCheckIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import GenerateTasksButton from '@/app/ui/events/generate-tasks-button';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

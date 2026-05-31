@@ -2,9 +2,9 @@ import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { authConfig } from './auth.config';
-import { isPlatformOwnerEmail, PLATFORM_ROLE } from '@/lib/auth/platform';
+import { isPlatformOwnerEmail, PLATFORM_ROLE } from '@/app/lib/auth/platform';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,

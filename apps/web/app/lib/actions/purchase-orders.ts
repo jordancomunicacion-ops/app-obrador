@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { locationScope } from "@/lib/auth/scope";
+import { locationScope } from "@/app/lib/auth/scope";
 
 async function assertOwner(id: string) {
   const orgId = await currentOrgId();

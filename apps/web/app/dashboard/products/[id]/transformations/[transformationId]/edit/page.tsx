@@ -1,8 +1,8 @@
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import EditTransformationForm from '@/app/ui/transformations/edit-form';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: { id: string, transformationId: string } }) {
     const { id, transformationId } = await params;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { uploadPhoto } from "@/lib/storage/spaces";
+import { uploadPhoto } from "@/app/lib/storage/spaces";
 
 const MAX_BYTES = 15 * 1024 * 1024; // 15 MB hard limit before compression
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];

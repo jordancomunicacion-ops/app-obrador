@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from '@/auth';
 import { AuthError } from 'next-auth';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 
 export async function authenticate(
     prevState: string | undefined,
@@ -42,7 +42,7 @@ export async function signOutAction() {
 import { CreateUserSchema, UserFormState } from './definitions';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
-import { isPlatformOwnerEmail } from '@/lib/auth/platform';
+import { isPlatformOwnerEmail } from '@/app/lib/auth/platform';
 
 export async function registerUser(prevState: UserFormState | undefined, formData: FormData): Promise<UserFormState> {
     const validatedFields = CreateUserSchema.safeParse({

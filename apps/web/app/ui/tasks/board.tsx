@@ -1,9 +1,9 @@
 import { TaskStatusButton, AssignTaskButton } from '@/app/ui/tasks/buttons';
 import TimeInfo from './time-info';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 type TaskWithRelations = {
     id: string;

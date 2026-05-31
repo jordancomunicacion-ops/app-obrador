@@ -1,6 +1,6 @@
 import Link from "next/link";
 import clsx from "clsx";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { PlusIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 

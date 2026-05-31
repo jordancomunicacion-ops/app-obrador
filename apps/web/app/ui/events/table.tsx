@@ -1,8 +1,8 @@
 import { UpdateEvent, DeleteEvent, ViewShoppingList, ConfirmEvent } from '@/app/ui/events/buttons';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function EventsTable({
     query,

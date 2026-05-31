@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
+import { currentLocationId } from "@/app/lib/auth/location";
 import { ArrowLeftIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 import ClosingForm from "@/app/ui/cash/closing-form";
 

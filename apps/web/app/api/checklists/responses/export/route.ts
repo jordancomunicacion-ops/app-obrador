@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
-import { prisma } from "@/lib/prisma";
-import { parseDateRange } from "@/lib/reports/kpi";
+import { currentLocationId } from "@/app/lib/auth/location";
+import { prisma } from "@/app/lib/prisma";
+import { parseDateRange } from "@/app/lib/reports/kpi";
 
 function csvEscape(v: unknown): string {
   if (v === null || v === undefined) return "";

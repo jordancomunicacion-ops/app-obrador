@@ -1,8 +1,8 @@
 import { UpdateRecipe, DeleteRecipe } from '@/app/ui/recipes/buttons';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { formatUnit } from '@/app/lib/units';
 import { calculateRecipeCost, formatCurrency } from '@/app/lib/costing';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function RecipesTable({
     query,

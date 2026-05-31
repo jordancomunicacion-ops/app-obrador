@@ -1,5 +1,5 @@
 import { UpdateEmployee, DeleteEmployee, ToggleApproval, DemoteAdmin } from '@/app/ui/employees/buttons';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import {
     BriefcaseIcon,

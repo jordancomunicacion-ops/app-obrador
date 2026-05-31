@@ -1,6 +1,6 @@
 import { UpdateIngredient, DeleteIngredient } from '@/app/ui/inventory/buttons';
-import { prisma } from '@/lib/prisma';
-import { locationScope } from '@/lib/auth/scope';
+import { prisma } from '@/app/lib/prisma';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function InventoryTable({
     query,

@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { generateAllRecommendations } from '../timbre/recommendations';
 import { Partition as PartitionType, Shelf as ShelfType, VolumeLevel, ServiceRhythm, PartitionType as PType } from '../timbre/types';

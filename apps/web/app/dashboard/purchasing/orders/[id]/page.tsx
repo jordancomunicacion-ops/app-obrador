@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import clsx from "clsx";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { locationScope } from "@/lib/auth/scope";
+import { locationScope } from "@/app/lib/auth/scope";
 import {
   ArrowLeftIcon,
   PaperAirplaneIcon,

@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUsers } from "@/lib/push/send";
+import { sendPushToUsers } from "@/app/lib/push/send";
 
 async function assertCanSupervise(responseId: string) {
   const session = await auth();

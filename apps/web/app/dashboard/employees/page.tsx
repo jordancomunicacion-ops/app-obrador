@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import EmployeesTable from '@/app/ui/employees/table';
 import { CreateEmployee } from '@/app/ui/employees/buttons';
 import { Suspense } from 'react';
@@ -7,7 +7,7 @@ import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { auth } from '@/auth';
-import { isPlatformOwner } from '@/lib/auth/platform';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 import EmployeesList from '@/app/ui/employees/list';
 
 export default async function Page({

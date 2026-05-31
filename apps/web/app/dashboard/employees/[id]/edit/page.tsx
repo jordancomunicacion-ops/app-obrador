@@ -1,5 +1,5 @@
 import Form from '@/app/ui/employees/edit-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';

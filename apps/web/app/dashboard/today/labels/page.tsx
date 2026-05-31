@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
+import { currentLocationId } from "@/app/lib/auth/location";
 import { ArrowLeftIcon, TagIcon } from "@heroicons/react/24/outline";
 import LabelForm from "@/app/ui/labels/label-form";
 

@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DeleteTransformationButton } from '@/app/ui/products/delete-transformation-button';
 import { PencilIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { locationScope } from '@/lib/auth/scope';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;

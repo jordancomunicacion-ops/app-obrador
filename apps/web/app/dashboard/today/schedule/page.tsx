@@ -1,6 +1,6 @@
 import Link from "next/link";
 import clsx from "clsx";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import {
   startOfWeekUTC,
@@ -8,7 +8,7 @@ import {
   isoDate,
   weekDays,
   WEEKDAY_LABELS_LONG,
-} from "@/lib/week";
+} from "@/app/lib/week";
 import {
   ArrowLeftIcon,
   ChevronLeftIcon,

@@ -1,12 +1,12 @@
 'use server';
 
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateEventSchema, UpdateEventSchema, type EventFormState } from '@/app/lib/definitions';
 import { syncAggregatedTasks } from '@/app/lib/production';
-import { scopedLocationId, locationScope } from '@/lib/auth/scope';
+import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 export type { EventFormState };
 
 // --- EVENTS ---

@@ -1,5 +1,5 @@
 import { UpdateEmployee, DeleteEmployee, ToggleApproval } from '@/app/ui/employees/buttons';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import {
     BriefcaseIcon,
@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { auth } from '@/auth';
-import { isPlatformOwner } from '@/lib/auth/platform';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 
 export default async function EmployeesTable({
     query,

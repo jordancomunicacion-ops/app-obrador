@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
-import { isPlatformOwner } from "@/lib/auth/platform";
+import { isPlatformOwner } from "@/app/lib/auth/platform";
 
 export const LOCATION_COOKIE = "active_location_id";
 

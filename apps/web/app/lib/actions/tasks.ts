@@ -1,11 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateTaskSchema, UpdateTaskSchema, TaskFormState } from '@/app/lib/definitions';
-import { scopedLocationId } from '@/lib/auth/scope';
+import { scopedLocationId } from '@/app/lib/auth/scope';
 
 export async function createTask(prevState: TaskFormState, formData: FormData) {
     const validatedFields = CreateTaskSchema.safeParse({
