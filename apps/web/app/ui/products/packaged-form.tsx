@@ -10,10 +10,10 @@ import {
   CheckIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import { type ObradorProductFormState } from '@/app/lib/actions/obrador-products';
+import { type PackagedProductFormState } from '@/app/lib/actions/packaged-products';
 import { OBRADOR_ALLERGENS } from '@/app/lib/obrador-constants';
 
-export type ObradorProductInitial = {
+export type PackagedProductInitial = {
   id: string;
   name: string;
   category: string | null;
@@ -46,17 +46,17 @@ const NUTRIENTS: { name: string; label: string }[] = [
   { name: 'salt', label: 'Sal (g)' },
 ];
 
-export default function ObradorProductForm({
+export default function PackagedProductForm({
   action,
   initial,
 }: {
   action: (
-    prevState: ObradorProductFormState,
+    prevState: PackagedProductFormState,
     formData: FormData,
-  ) => Promise<ObradorProductFormState>;
-  initial?: ObradorProductInitial;
+  ) => Promise<PackagedProductFormState>;
+  initial?: PackagedProductInitial;
 }) {
-  const [state, formAction] = useActionState<ObradorProductFormState, FormData>(action, {
+  const [state, formAction] = useActionState<PackagedProductFormState, FormData>(action, {
     message: null,
     errors: {},
   });
@@ -80,7 +80,7 @@ export default function ObradorProductForm({
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard/obrador/products"
+            href="/dashboard/products"
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
             <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -238,7 +238,7 @@ export default function ObradorProductForm({
         {/* Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 flex justify-end gap-4 shadow-2xl z-10 md:static md:bg-transparent md:border-0 md:shadow-none md:px-0">
           <Link
-            href="/dashboard/obrador/products"
+            href="/dashboard/products"
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar

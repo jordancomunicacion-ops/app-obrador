@@ -80,8 +80,8 @@ export default function ObradorProductionForm({ products }: { products: ProductO
       {products.length === 0 ? (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-amber-800">
           No hay productos de obrador todavía. Crea uno en{' '}
-          <Link href="/dashboard/obrador/products/create" className="font-bold underline">
-            Catálogo de Productos
+          <Link href="/dashboard/products/packaged/create" className="font-bold underline">
+            Productos
           </Link>{' '}
           antes de iniciar una producción.
         </div>

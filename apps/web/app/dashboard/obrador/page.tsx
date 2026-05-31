@@ -22,13 +22,6 @@ const modules = [
     color: 'bg-emerald-100 text-emerald-700',
   },
   {
-    name: 'Productos',
-    description: 'Catálogo de productos envasados y su ficha sanitaria',
-    href: '/dashboard/obrador/products',
-    icon: ArchiveBoxIcon,
-    color: 'bg-blue-100 text-blue-700',
-  },
-  {
     name: 'Entradas de Materia Prima',
     description: 'Registro de recepción y control de insumos',
     href: '/dashboard/obrador/intake',

@@ -21,9 +21,9 @@ recolocar secciones según su naturaleza y reducir el hub de Obrador a lo purame
 - **Clientes ↔ lotes**: no existe vínculo de datos hoy. → Funcionalidad nueva.
 
 ## Fases (un PR por tema, orden de riesgo)
-1. **Proveedores → Administración** (`/dashboard/settings/suppliers`). 🟢 Sin migración. ← *en curso*
-2. **Productos → Catálogo**: fusionar el formulario de obrador (ficha sanitaria) en
-   `/dashboard/products` con selector "ingrediente / producto envasado". 🟡 Sin migración.
+1. **Proveedores → Administración** (`/dashboard/settings/suppliers`). 🟢 Sin migración. ✅ hecho (#27)
+2. **Productos → Catálogo**: una sola lista de Productos con tipo "Ingrediente / Envasado"; el
+   formulario de envasado (ficha sanitaria) se conserva detrás. 🟡 Sin migración. ← *en curso*
 3. **Controles sanitarios → Operaciones** + **Documentación y Aviso legal → Administración**.
    🟢 Solo navegación (rutas con redirección).
 4. **Clientes y PdV → Administración + vínculo lote→destino**. 🟡 Schema additivo + UI.
