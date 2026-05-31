@@ -11,7 +11,6 @@ export default async function LocationsSettingsPage() {
   const locations = await prisma.location.findMany({
     where: { ownerId: orgId },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, shortCode: true, address: true, isActive: true },
   });
 
   return (
@@ -53,6 +52,43 @@ export default async function LocationsSettingsPage() {
               className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm"
             />
           </label>
+          <div className="sm:col-span-4 border-t border-gray-100 pt-3 mt-1">
+            <p className="text-xs font-semibold text-gray-500 mb-2">Datos de establecimiento (para etiquetado y registro sanitario)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Razón social
+                <input name="companyName" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                NIF / CIF
+                <input name="nif" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Tipo de registro
+                <input name="registryType" placeholder="RGSEAA / autonómico" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Nº registro sanitario
+                <input name="registryNumber" placeholder="26.00001/M" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Comunidad autónoma
+                <input name="region" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Actividad
+                <input name="activity" placeholder="obrador, restaurante…" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Teléfono
+                <input name="phone" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col text-xs font-medium text-gray-600">
+                Email
+                <input name="email" type="email" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+              </label>
+            </div>
+          </div>
           <button
             type="submit"
             className="sm:col-span-4 sm:w-fit bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
@@ -108,7 +144,44 @@ export default async function LocationsSettingsPage() {
                       className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm"
                     />
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="sm:col-span-5 border-t border-gray-100 pt-3 mt-1">
+                    <p className="text-xs font-semibold text-gray-500 mb-2">Datos de establecimiento (para etiquetado y registro sanitario)</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Razón social
+                        <input name="companyName" defaultValue={loc.companyName ?? ""} className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        NIF / CIF
+                        <input name="nif" defaultValue={loc.nif ?? ""} className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Tipo de registro
+                        <input name="registryType" defaultValue={loc.registryType ?? ""} placeholder="RGSEAA / autonómico" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Nº registro sanitario
+                        <input name="registryNumber" defaultValue={loc.registryNumber ?? ""} placeholder="26.00001/M" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Comunidad autónoma
+                        <input name="region" defaultValue={loc.region ?? ""} className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Actividad
+                        <input name="activity" defaultValue={loc.activity ?? ""} placeholder="obrador, restaurante…" className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Teléfono
+                        <input name="phone" defaultValue={loc.phone ?? ""} className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                      <label className="flex flex-col text-xs font-medium text-gray-600">
+                        Email
+                        <input name="email" type="email" defaultValue={loc.email ?? ""} className="mt-1 border border-gray-300 rounded px-2 py-1.5 text-sm" />
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 sm:col-span-5">
                     <label className="flex items-center gap-1 text-xs text-gray-700">
                       <input type="checkbox" name="isActive" defaultChecked={loc.isActive} />
                       Activo

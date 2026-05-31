@@ -13,13 +13,6 @@ import { auth } from '@/auth';
 
 const modules = [
   {
-    name: 'Datos del Establecimiento',
-    description: 'Configuración de registro sanitario y datos fiscales',
-    href: '/dashboard/obrador/config',
-    icon: BuildingStorefrontIcon,
-    color: 'bg-emerald-100 text-emerald-700',
-  },
-  {
     name: 'Entradas de Materia Prima',
     description: 'Registro de recepción y control de insumos',
     href: '/dashboard/obrador/intake',

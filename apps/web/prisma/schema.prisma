@@ -1111,6 +1111,20 @@ model Location {
   address   String?
   isActive  Boolean @default(true)
 
+  // Datos de establecimiento (antes en ObradorConfig, ahora por local). Se usan
+  // en el etiquetado (operador, nº de registro, origen) y la ficha del local.
+  companyName    String? // Razón social
+  nif            String?
+  phone          String?
+  email          String?
+  activity       String? // restaurante, obrador, elaboración propia, etc.
+  registryType   String? // Registro autonómico, RGSEAA, etc.
+  registryNumber String? // Nº RGSEAA / registro sanitario
+  registryStatus String?   @default("no_iniciado")
+  region         String? // Comunidad autónoma
+  requestDate    DateTime?
+  resolutionDate DateTime?
+
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
 
