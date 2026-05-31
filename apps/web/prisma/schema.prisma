@@ -971,8 +971,10 @@ model ObradorProductionBatch {
   id        String @id @default(cuid())
   batchCode String @unique // L-YYYYMMDD-PROD-NNN
 
-  productId String
-  product   ObradorProduct @relation(fields: [productId], references: [id])
+  // Producto legacy (ObradorProduct, en deprecación). El lote referencia ahora
+  // la ficha del núcleo vía masterProductId (más abajo).
+  productId String?
+  product   ObradorProduct? @relation(fields: [productId], references: [id])
 
   productionDate   DateTime @default(now())
   expiryDate       DateTime
