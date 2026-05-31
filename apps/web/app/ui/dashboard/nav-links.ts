@@ -70,7 +70,6 @@ export const groups: NavGroup[] = [
             // RRHH y contabilidad (fichajes, turnos, solicitudes, caja, EBITDA) viven en
             // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
-            { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon },
             { name: 'Clientes y Puntos de Venta', href: '/dashboard/settings/customers', icon: UserGroupIcon },
             { name: 'Documentación', href: '/dashboard/obrador/documents', icon: ClipboardDocumentCheckIcon },
