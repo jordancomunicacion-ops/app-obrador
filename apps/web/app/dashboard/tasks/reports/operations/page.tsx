@@ -1,6 +1,6 @@
 import { currentOrgId } from "@/auth";
-import { currentLocationId, currentLocation } from "@/lib/auth/location";
-import { computeOperationsKPIs, parseDateRange } from "@/lib/reports/kpi";
+import { currentLocationId, currentLocation } from "@/app/lib/auth/location";
+import { computeOperationsKPIs, parseDateRange } from "@/app/lib/reports/kpi";
 import DateRangeFilter from "@/app/ui/tasks/date-range-filter";
 
 export default async function OperationsPage({

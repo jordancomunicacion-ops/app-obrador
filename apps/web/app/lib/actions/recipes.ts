@@ -1,10 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { CreateRecipeSchema, UpdateRecipeSchema, type RecipeFormState } from '@/app/lib/definitions';
+import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
 // --- RECIPES ---
 
@@ -56,6 +57,7 @@ export async function createRecipe(prevState: RecipeFormState, formData: FormDat
     try {
         await prisma.recipe.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 category: category as any,
                 classification,
@@ -149,6 +151,15 @@ export async function updateRecipe(
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Faltan campos obligatorios.',
         };
+    }
+
+    // Verifica que la receta pertenece al ámbito (local) del usuario antes de editar.
+    const inScope = await prisma.recipe.findFirst({
+        where: { ...(await locationScope()), id },
+        select: { id: true },
+    });
+    if (!inScope) {
+        return { message: 'No autorizado: la receta no pertenece a tu local.' };
     }
 
     const {
@@ -256,6 +267,14 @@ export async function updateRecipe(
 
 export async function deleteRecipe(id: string) {
     try {
+        // Verifica que la receta pertenece al ámbito (local) del usuario antes de borrar.
+        const scoped = await prisma.recipe.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: la receta no pertenece a tu local.' };
+        }
         await prisma.recipe.delete({
             where: { id },
         });

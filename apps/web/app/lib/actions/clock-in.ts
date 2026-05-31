@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
+import { currentLocationId } from "@/app/lib/auth/location";
 
 /**
  * Devuelve el fichaje abierto (sin endAt) del usuario actual si existe.

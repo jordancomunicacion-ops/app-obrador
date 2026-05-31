@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { convertTo, UnitType } from '@/app/lib/units';
 
 export type Requirement = {

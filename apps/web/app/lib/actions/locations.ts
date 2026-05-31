@@ -2,9 +2,9 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { LOCATION_COOKIE } from "@/lib/auth/location";
+import { LOCATION_COOKIE } from "@/app/lib/auth/location";
 
 export async function setActiveLocation(locationId: string) {
   const orgId = await currentOrgId();

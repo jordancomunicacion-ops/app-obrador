@@ -1,10 +1,11 @@
 import Form from '@/app/ui/menu-planning/create-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import Breadcrumbs from '@/app/ui/breadcrumbs';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page() {
     const recipes = await prisma.recipe.findMany({
-        where: { category: 'ELABORACION_FINAL' },
+        where: { ...(await locationScope()), category: 'ELABORACION_FINAL' },
         orderBy: { name: 'asc' },
     });
 

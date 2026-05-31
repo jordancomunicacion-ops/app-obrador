@@ -1,9 +1,10 @@
 'use server';
 
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
 // --- Master Product Schemas ---
 const MasterProductSchema = z.object({
@@ -62,6 +63,7 @@ export async function createMasterProduct(prevState: any, formData: FormData) {
     try {
         await prisma.masterProduct.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 category,
                 description,
@@ -101,12 +103,14 @@ export async function createProduct(prevState: ProductFormState, formData: FormD
     }
 
     const { name, category, sapiensWorld, suppliers: validatedSuppliers } = validatedFields.data;
+    const locationId = await scopedLocationId();
 
     try {
         await prisma.$transaction(async (tx) => {
             // 1. Create Master Product
             const masterProduct = await tx.masterProduct.create({
                 data: {
+                    locationId,
                     name,
                     category,
                 },
@@ -118,12 +122,13 @@ export async function createProduct(prevState: ProductFormState, formData: FormD
                 const supplierObj = await tx.supplier.upsert({
                     where: { name: s.supplierName },
                     update: {},
-                    create: { name: s.supplierName },
+                    create: { name: s.supplierName, locationId },
                 });
 
                 // Create SupplierProduct
                 const supplierProduct = await tx.supplierProduct.create({
                     data: {
+                        locationId,
                         name: `${name} (${s.supplierName})`,
                         supplier: s.supplierName,
                         supplierId: supplierObj.id,
@@ -163,6 +168,15 @@ export async function createProduct(prevState: ProductFormState, formData: FormD
 }
 
 export async function updateProduct(id: string, prevState: ProductFormState, formData: FormData): Promise<ProductFormState> {
+    // Verifica que el producto pertenece al local del usuario antes de editar.
+    const inScope = await prisma.masterProduct.findFirst({
+        where: { ...(await locationScope()), id },
+        select: { id: true },
+    });
+    if (!inScope) {
+        return { message: 'No autorizado: el producto no pertenece a tu local.' };
+    }
+
     const suppliersJson = formData.get('suppliersJson') as string;
     let suppliersInput = [];
     try {
@@ -290,6 +304,13 @@ export async function updateProduct(id: string, prevState: ProductFormState, for
 
 export async function deleteProduct(id: string) {
     try {
+        const scoped = await prisma.masterProduct.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: el producto no pertenece a tu local.' };
+        }
         await prisma.masterProduct.delete({
             where: { id },
         });

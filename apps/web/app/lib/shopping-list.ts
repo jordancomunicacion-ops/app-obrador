@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { UnitType } from '@/app/lib/units';
 import { Ingredient } from '@prisma/client';
 import { getRequirementsForEvents, resolveTransformations, Requirement, TransformationResult } from './production';

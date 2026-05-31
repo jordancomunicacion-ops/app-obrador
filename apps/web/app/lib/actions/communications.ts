@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUsers } from "@/lib/push/send";
+import { sendPushToUsers } from "@/app/lib/push/send";
 import type { CommunicationType, CommunicationStatus } from "@prisma/client";
 
 const TYPE_LABEL: Record<CommunicationType, string> = {

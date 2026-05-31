@@ -1,13 +1,14 @@
 import Form from '@/app/ui/inventory/edit-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const ingredient = await prisma.ingredient.findUnique({
-        where: { id },
+    const ingredient = await prisma.ingredient.findFirst({
+        where: { ...(await locationScope()), id },
     });
 
     if (!ingredient) {

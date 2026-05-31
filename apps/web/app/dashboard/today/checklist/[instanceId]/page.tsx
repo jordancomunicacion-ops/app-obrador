@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import ChecklistRunner from "@/app/ui/today/checklist-runner";

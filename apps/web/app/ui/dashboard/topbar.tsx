@@ -1,4 +1,4 @@
-import { listLocations, currentLocationId } from "@/lib/auth/location";
+import { listLocations, currentLocationId } from "@/app/lib/auth/location";
 import LocationSwitcher from "@/app/ui/locations/location-switcher";
 import PWAInstaller from "@/app/ui/pwa/pwa-installer";
 import NotificationsToggle from "@/app/ui/pwa/notifications-toggle";

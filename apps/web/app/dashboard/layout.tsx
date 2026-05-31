@@ -1,7 +1,7 @@
 import SideNav from '@/app/ui/dashboard/sidenav';
 import TopBar from '@/app/ui/dashboard/topbar';
 import { auth } from '@/auth';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
     const session = await auth();

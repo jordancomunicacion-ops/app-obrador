@@ -1,19 +1,21 @@
 import Form from '@/app/ui/events/edit-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const scope = await locationScope();
 
     const [event, recipes] = await Promise.all([
-        prisma.event.findUnique({
-            where: { id },
+        prisma.event.findFirst({
+            where: { ...scope, id },
             include: { menuItems: true },
         }),
         prisma.recipe.findMany({
-            where: { category: 'ELABORACION_FINAL' },
+            where: { ...scope, category: 'ELABORACION_FINAL' },
             orderBy: { name: 'asc' },
         }),
     ]);

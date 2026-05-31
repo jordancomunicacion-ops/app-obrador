@@ -1,9 +1,10 @@
 'use server';
 
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
 const MenuServiceItemSchema = z.object({
     recipeId: z.string(),
@@ -50,6 +51,7 @@ export async function createMenuService(prevState: MenuServiceFormState, formDat
     try {
         await prisma.menuService.create({
             data: {
+                locationId: await scopedLocationId(),
                 name,
                 startDate,
                 endDate,
@@ -117,6 +119,13 @@ export async function updateMenuService(id: string, prevState: MenuServiceFormSt
 
 export async function deleteMenuService(id: string) {
     try {
+        const scoped = await prisma.menuService.findFirst({
+            where: { ...(await locationScope()), id },
+            select: { id: true },
+        });
+        if (!scoped) {
+            return { message: 'No autorizado: el servicio no pertenece a tu local.' };
+        }
         await prisma.menuService.delete({
             where: { id },
         });

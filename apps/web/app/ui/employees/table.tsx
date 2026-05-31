@@ -1,5 +1,5 @@
 import { UpdateEmployee, DeleteEmployee, ToggleApproval } from '@/app/ui/employees/buttons';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import {
     BriefcaseIcon,
@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { auth } from '@/auth';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 
 export default async function EmployeesTable({
     query,
@@ -23,7 +24,7 @@ export default async function EmployeesTable({
     tab?: string;
 }) {
     const session = await auth();
-    const isMasterAdmin = session?.user?.email?.toLowerCase() === 'gerencia@sotodelprior.com';
+    const isMasterAdmin = isPlatformOwner(session);
     const userId = session?.user?.id;
 
     let whereClause: any = {};

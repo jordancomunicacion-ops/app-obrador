@@ -1,16 +1,19 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import TransformationForm from '@/app/ui/transformations/create-form';
 import { notFound } from 'next/navigation';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page({ params }: { params: { id: string } }) {
     const { id } = await params;
+    const scope = await locationScope();
 
     const [product, ingredients] = await Promise.all([
-        prisma.masterProduct.findUnique({
-            where: { id },
+        prisma.masterProduct.findFirst({
+            where: { ...scope, id },
             include: { supplierProducts: true }
         }),
         prisma.ingredient.findMany({
+            where: { ...scope },
             orderBy: { name: 'asc' },
             include: {
                 transformationOutputs: {

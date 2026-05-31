@@ -1,8 +1,9 @@
 import { TaskStatusButton, AssignTaskButton } from '@/app/ui/tasks/buttons';
 import TimeInfo from './time-info';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
+import { locationScope } from '@/app/lib/auth/scope';
 
 type TaskWithRelations = {
     id: string;
@@ -17,6 +18,7 @@ type TaskWithRelations = {
 
 export default async function TaskBoard() {
     const tasks = await prisma.task.findMany({
+        where: { ...(await locationScope()) },
         include: {
             assignedTo: true,
             recipe: true

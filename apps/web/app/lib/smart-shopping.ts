@@ -1,5 +1,7 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { Ingredient, Transformation, TransformationOutput, SupplierProduct } from '@prisma/client';
+import { locationScope } from '@/app/lib/auth/scope';
+import { getRequirementsForEvents } from './production';
 
 interface IngredientDemand {
     ingredientId: string;
@@ -24,71 +26,32 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
     // 1. Fetch Events & Aggregate Demand
     const events = await prisma.event.findMany({
         where: {
+            ...(await locationScope()),
             date: {
                 gte: startDate,
                 lte: endDate
             },
             status: 'CONFIRMED'
         },
-        include: {
-            menuItems: {
-                include: {
-                    recipe: {
-                        include: {
-                            items: {
-                                include: {
-                                    ingredient: true,
-                                    subRecipe: {
-                                        include: {
-                                            items: {
-                                                include: { ingredient: true }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        select: { id: true }
     });
 
-    const demandMap = new Map<string, IngredientDemand>();
+    // Demanda agregada con el motor recursivo de producción (production.ts),
+    // evitando duplicar aquí la explosión de recetas/sub-recetas.
+    const requirements = await getRequirementsForEvents(events.map((e) => e.id));
 
-    // Helper to add demand
-    const addDemand = (ingId: string, name: string, qty: number, unit: string) => {
-        const current = demandMap.get(ingId) || { ingredientId: ingId, ingredientName: name, quantity: 0, unit };
-        current.quantity += qty;
-        demandMap.set(ingId, current);
-    };
+    const needs: IngredientDemand[] = requirements.map((r) => ({
+        ingredientId: r.ingredientId,
+        ingredientName: r.ingredientName,
+        quantity: r.quantity,
+        unit: r.unit,
+    }));
 
-    // Calculate Raw Ingredient Needs (flattening sub-recipes one level deep for simplicity for now)
-    // TODO: Recursive flattening for deep sub-recipes
-    events.forEach(event => {
-        event.menuItems.forEach(menuItem => {
-            const pax = menuItem.servingsOverride || event.pax;
-            // Apply safety margin (e.g. 1.1)
-            const qtyMultiplier = (pax / menuItem.recipe.yieldQuantity) * event.safetyMargin;
-
-            menuItem.recipe.items.forEach(item => {
-                if (item.type === 'INGREDIENT' && item.ingredient) {
-                    addDemand(item.ingredient.id, item.ingredient.name, item.quantityGross * qtyMultiplier, item.unit);
-                } else if (item.type === 'SUB_RECIPE' && item.subRecipe) {
-                    // For now, assume sub-recipe items are what we need. 
-                    // ideally we recurse. Simplified:
-                    const subMultiplier = (item.quantityGross / item.subRecipe.yieldQuantity) * qtyMultiplier;
-                    item.subRecipe.items.forEach(subItem => {
-                        if (subItem.type === 'INGREDIENT' && subItem.ingredient) {
-                            addDemand(subItem.ingredient.id, subItem.ingredient.name, subItem.quantityGross * subMultiplier, subItem.unit);
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    const needs = Array.from(demandMap.values());
+    // Índice por ingrediente para comprobar si otros outputs de una transformación
+    // también se necesitan (antes se usaba demandMap).
+    const demandByIngredient = new Map<string, IngredientDemand>(
+        needs.map((n) => [n.ingredientId, n])
+    );
     const recommendations: PurchaseRecommendation[] = [];
 
     // 2. Resolve Needs
@@ -149,7 +112,7 @@ export async function calculateSmartShoppingList(startDate: Date, endDate: Date)
                 if (output.ingredientId === need.ingredientId) return; // Skip self
 
                 const outputQty = rawProductNeeded * (output.percentage / 100);
-                const otherNeed = demandMap.get(output.ingredientId || '');
+                const otherNeed = demandByIngredient.get(output.ingredientId || '');
 
                 if (otherNeed) {
                     // We need this too!

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { createLocation, updateLocation, deleteLocation } from "@/app/lib/actions/locations";
 import { BuildingStorefrontIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";

@@ -1,10 +1,12 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import Link from 'next/link';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { DeleteProduct } from '@/app/ui/products/buttons';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page() {
     const products = await prisma.masterProduct.findMany({
+        where: { ...(await locationScope()) },
         include: {
             supplierProducts: {
                 orderBy: { price: 'asc' }

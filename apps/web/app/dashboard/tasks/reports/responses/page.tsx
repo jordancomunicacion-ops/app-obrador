@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
-import { parseDateRange } from "@/lib/reports/kpi";
+import { currentLocationId } from "@/app/lib/auth/location";
+import { parseDateRange } from "@/app/lib/reports/kpi";
 import DateRangeFilter from "@/app/ui/tasks/date-range-filter";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 

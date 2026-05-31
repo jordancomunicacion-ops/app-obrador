@@ -1,11 +1,12 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { toggleApproval, resetPassword, makeAdmin } from '@/app/lib/actions/system';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 
 export default async function Page() {
     const session = await auth();
-    if (session?.user?.email !== 'gerencia@sotodelprior.com') {
+    if (!isPlatformOwner(session)) {
         redirect('/dashboard');
     }
 

@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import ImageUpload from '@/app/ui/settings/image-upload';
 import { updateProfileImage, updateAppLogo } from '@/app/lib/actions/settings';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 
 export default async function ProfilePage() {
     const session = await auth();

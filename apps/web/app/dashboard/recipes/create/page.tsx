@@ -1,11 +1,14 @@
 import Form from '@/app/ui/recipes/create-form';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { HomeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { locationScope } from '@/app/lib/auth/scope';
 
 export default async function Page() {
+    const recipeScope = await locationScope();
     const [ingredientsRaw, categories, packaging, subRecipes, transformedProducts] = await Promise.all([
         prisma.ingredient.findMany({
+            where: { ...recipeScope },
             orderBy: { name: 'asc' },
             include: {
                 transformationOutputs: {
@@ -32,6 +35,7 @@ export default async function Page() {
         prisma.recipePackaging.findMany({ orderBy: { name: 'asc' } }),
         prisma.recipe.findMany({
             where: {
+                ...recipeScope,
                 category: {
                     in: ['ELABORACION_INTERMEDIA', 'PRODUCTO_NO_ELABORADO']
                 }
@@ -40,6 +44,7 @@ export default async function Page() {
         }),
         prisma.supplierProduct.findMany({
             where: {
+                ...recipeScope,
                 transformations: { some: {} }
             },
             select: { ingredientId: true }

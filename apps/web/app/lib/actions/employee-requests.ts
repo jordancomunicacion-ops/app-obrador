@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUser } from "@/lib/push/send";
+import { sendPushToUser } from "@/app/lib/push/send";
 import type { EmployeeRequestType } from "@prisma/client";
 
 const REQ_TYPE_LABEL: Record<EmployeeRequestType, string> = {

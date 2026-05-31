@@ -1,8 +1,8 @@
 import Link from "next/link";
 import clsx from "clsx";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
-import { currentLocationId } from "@/lib/auth/location";
+import { currentLocationId } from "@/app/lib/auth/location";
 import CommunicationTypeTabs from "@/app/ui/communications/type-tabs";
 import {
   PlusIcon,

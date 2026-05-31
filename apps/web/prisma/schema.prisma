@@ -16,7 +16,7 @@ model User {
   name     String
   email    String @unique
   password String
-  role     String @default("USER") // ADMIN, USER, VET
+  role     String @default("USER") // SUPERADMIN (propietario de plataforma, cross-tenant), ADMIN (cliente/tenant), USER (empleado), VET
   approved Boolean @default(false)
   permissions String[] @default([])
 
@@ -61,6 +61,12 @@ model User {
   ownedObradorDocs       ObradorSanitaryDocument[] @relation("ObradorDocOwner")
   ownedObradorTemps      ObradorTemperatureLog[]   @relation("ObradorTempOwner")
   ownedObradorIncidents  ObradorIncident[]         @relation("ObradorIncidentOwner")
+
+  // Empresas (empleador legal: razón social + NIF) bajo una misma cuenta de cliente
+  ownedEmpresas          Empresa[]                 @relation("EmpresaOwner")
+
+  // Empleo: contratos de esta persona (uno por empresa empleadora)
+  employments            Employment[]              @relation("UserEmployments")
 
   // Locales (multi-location bajo un mismo admin)
   ownedLocations         Location[]                @relation("LocationOwner")
@@ -185,6 +191,12 @@ model Ingredient {
 
   ownerId String?
   owner   User?   @relation("IngredientOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local (centro de trabajo). Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("IngredientLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // -----------------------------------------------------------------------------
@@ -202,6 +214,12 @@ model MasterProduct {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("MasterProductLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // Vendor/Provider (e.g. "Makro", "Frutería Pepe")
@@ -227,6 +245,12 @@ model Supplier {
 
   ownerId String?
   owner   User?   @relation("SupplierOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("SupplierLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // Lo que compras (SupplierProduct) - Specific variant from a supplier
@@ -265,6 +289,12 @@ model SupplierProduct {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   RecipeItem RecipeItem[]
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("SupplierProductLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // La regla de conversión (Transformation/Despiece)
@@ -372,6 +402,12 @@ model Recipe {
 
   ownerId String?
   owner   User?   @relation("RecipeOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local (centro de trabajo). Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("RecipeLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model RecipeStep {
@@ -462,6 +498,12 @@ model Event {
 
   ownerId String?
   owner   User?   @relation("EventOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("EventLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model EventMenuItem {
@@ -510,6 +552,12 @@ model Task {
 
   ownerId String?
   owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("TaskLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 // 6. Audit & Logs
@@ -672,6 +720,12 @@ model MenuService {
 
   ownerId String?
   owner   User?   @relation("MenuServiceOwner", fields: [ownerId], references: [id])
+
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("MenuServiceLocation", fields: [locationId], references: [id])
+
+  @@index([locationId])
 }
 
 model MenuServiceItem {
@@ -987,6 +1041,71 @@ model ObradorSanitaryDocument {
 // ============================================================================
 // 9. LOCATIONS (multi-local bajo un mismo admin/cliente)
 // ============================================================================
+// Empresa = empleador legal (razón social + NIF). Nivel intermedio entre la
+// cuenta de cliente (tenant/owner) y el local. Una cuenta puede agrupar varias
+// empresas; cada empresa, varios locales. El empleo se vinculará a la empresa
+// (no al local) para reflejar la relación contractual y evitar representar
+// cesión ilegal de trabajadores. En el caso simple (cliente = empresa) habrá
+// una sola empresa por cuenta y la UI colapsa el nivel.
+model Empresa {
+  id            String  @id @default(cuid())
+  razonSocial   String  // Nombre legal (razón social)
+  comercialName String? // Nombre comercial
+  nif           String? // CIF/NIF
+  address       String?
+  phone         String?
+  email         String?
+  isActive      Boolean @default(true)
+
+  // Cuenta de cliente (tenant) propietaria de la empresa.
+  ownerId String
+  owner   User   @relation("EmpresaOwner", fields: [ownerId], references: [id])
+
+  // Locales / centros de trabajo de esta empresa.
+  locations Location[] @relation("EmpresaLocations")
+
+  // Contratos de empleo de esta empresa (el empleo se vincula a la empresa).
+  employments Employment[] @relation("EmpresaEmployments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+// Employment = relación contractual entre una persona (User) y una Empresa.
+// El empleo se vincula a la EMPRESA (empleador legal), no al local. Una persona
+// puede tener varios contratos (uno por empresa); para trabajar en locales de
+// otra empresa necesita un contrato propio con esa empresa, de modo que la
+// cesión ilegal de trabajadores queda imposible por diseño. Dentro de su
+// empresa, el empleado puede asignarse a varios locales (assignedLocations).
+model Employment {
+  id           String    @id @default(cuid())
+
+  // Persona empleada
+  userId       String
+  user         User      @relation("UserEmployments", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Empresa empleadora (parte contractual)
+  empresaId    String
+  empresa      Empresa   @relation("EmpresaEmployments", fields: [empresaId], references: [id], onDelete: Cascade)
+
+  position     String?   // Puesto / categoría
+  contractType String?   // INDEFINIDO, TEMPORAL, FORMACION, PRACTICAS, FIJO_DISCONTINUO...
+  startDate    DateTime?
+  endDate      DateTime? // null = vigente
+  isActive     Boolean   @default(true)
+
+  // Centros de trabajo (locales) de la empresa a los que está asignado.
+  assignedLocations Location[] @relation("EmploymentLocations")
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([empresaId])
+}
+
 model Location {
   id        String   @id @default(cuid())
   name      String
@@ -997,7 +1116,23 @@ model Location {
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])
 
+  // Empresa (empleador legal) a la que pertenece este local / centro de trabajo.
+  // Nullable durante la transición: los locales existentes se vincularán por backfill.
+  empresaId String?
+  empresa   Empresa? @relation("EmpresaLocations", fields: [empresaId], references: [id])
+
+  // Empleados asignados a este centro de trabajo (vía su contrato de empleo).
+  employments Employment[] @relation("EmploymentLocations")
+
   members        User[]              @relation("LocationMembers")
+  recipes        Recipe[]            @relation("RecipeLocation")
+  ingredients    Ingredient[]        @relation("IngredientLocation")
+  masterProducts MasterProduct[]     @relation("MasterProductLocation")
+  supplierProducts2 SupplierProduct[] @relation("SupplierProductLocation")
+  suppliers      Supplier[]          @relation("SupplierLocation")
+  events         Event[]             @relation("EventLocation")
+  tasks          Task[]              @relation("TaskLocation")
+  menuServices   MenuService[]       @relation("MenuServiceLocation")
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")
