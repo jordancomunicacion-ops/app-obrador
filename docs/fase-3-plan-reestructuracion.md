@@ -25,7 +25,7 @@ De ellos, unos **duplican** el núcleo y otros son **legítimamente propios** de
 
 | Obrador (duplica) | Núcleo destino | Acción |
 |---|---|---|
-| `ObradorProduct` | `MasterProduct` (+ `SupplierProduct`) | Migrar a producto del núcleo con `tipo=OBRADOR` o flag `esObrador` + campos sanitarios (denominación legal, conservación, nutricional) como extensión |
+| `ObradorProduct` | `MasterProduct` + `ProductSanitaryInfo` (nueva, extensión 1:1) | **Catálogo único con flag** `esObrador` en `MasterProduct`; los datos legales/nutricionales/conservación van a una **tabla de extensión separada** `ProductSanitaryInfo` (no columnas en MasterProduct) |
 | `ObradorRecipe` + `ObradorRecipeIngredient` | `Recipe` + `RecipeItem`/`RecipeStep` | Migrar a receta del núcleo; los % y aditivos pasan a `RecipeItem` (+ campo `esAditivo`) |
 | `ObradorSale` | `SalesRecord` (+ `MenuService`) | Migrar ventas a `SalesRecord` con referencia a lote |
 | `ObradorCustomer` | *(nuevo)* `Customer` del núcleo | Promover a un modelo `Customer` reutilizable (hoy solo existe en obrador) |
@@ -57,7 +57,7 @@ De ellos, unos **duplican** el núcleo y otros son **legítimamente propios** de
 4. **Deprecación.** Tras validar, eliminar `ObradorProduct/ObradorRecipe/ObradorRecipeIngredient/ObradorSale/ObradorCustomer` y sus rutas. Conservar lo sanitario/lotes ya enlazado al núcleo.
 
 ### A.4 Riesgos y mitigación
-- **Campos sanitarios sin hueco en el núcleo** (denominación legal, info nutricional, conservación): se añaden como columnas opcionales a `MasterProduct` o a una tabla de extensión `ProductSanitaryInfo`. Decisión en A.6.
+- **Campos sanitarios**: ✅ resuelto → tabla de extensión `ProductSanitaryInfo` (1:1 con `MasterProduct`), no columnas. Mantiene `MasterProduct` limpio.
 - **Pérdida de trazabilidad de lotes**: los lotes NUNCA se tocan; solo ganan FK al núcleo. Riesgo bajo.
 
 ### A.5 Criterios de done (Frente A)
@@ -65,10 +65,10 @@ De ellos, unos **duplican** el núcleo y otros son **legítimamente propios** de
 - Lotes, temperaturas, limpieza, incidencias y documentos siguen operativos, enlazados al núcleo.
 - Cero duplicación producto/receta/venta. Las pantallas de obrador consumen el núcleo.
 
-### A.6 Decisiones pendientes (Frente A)
-1. Info sanitaria/nutricional: ¿columnas en `MasterProduct` o tabla de extensión `ProductSanitaryInfo`?
-2. `ObradorRawMaterialEntry`: ¿se unifica con `DeliveryNote`/compras, o se conserva como recepción específica del obrador con FK a `Supplier`?
-3. ¿Un producto puede ser "de obrador" y "de cocina" a la vez (flag) o son catálogos disjuntos dentro del mismo modelo?
+### A.6 Decisiones (resueltas)
+1. ✅ Info sanitaria/nutricional → **tabla de extensión `ProductSanitaryInfo`** (disjunta de `MasterProduct`).
+2. ✅ Catálogo → **único con flag `esObrador`** (un producto es el mismo para cocina y obrador; puede ser ambos).
+3. ⏳ `ObradorRawMaterialEntry`: pendiente — ¿se unifica con `DeliveryNote`/compras o se conserva como recepción específica con FK a `Supplier`? *(no bloquea el arranque; se decide al llegar a recepción)*
 
 ---
 
@@ -127,6 +127,20 @@ Cómo encaja cada sistema actual:
 
 > Las UIs se mantienen separadas (Tareas de producción ≠ Checklists operativos), pero comparten **un solo modelo de datos** debajo: misma asignación, mismo seguimiento, reporting unificado.
 
+#### B.2.1 Fuentes/generadores de tareas
+El motor recibe tareas desde varias **fuentes**, no solo creación manual (igual que hoy un evento genera tareas de producción):
+
+| Fuente | Genera | Familia |
+|---|---|---|
+| Evento | Tareas de producción de sus recetas | PRODUCCIÓN |
+| Menú / servicio | Tareas de producción | PRODUCCIÓN |
+| Lote de obrador | Tareas de elaboración del lote | PRODUCCIÓN |
+| **Módulo APPCC** (limpieza, temperaturas) | Tareas operativas/limpieza recurrentes | OPERATIVA |
+| Plantilla de checklist + schedule | Instancias operativas por frecuencia | OPERATIVA |
+| Manual | Tarea suelta | cualquiera |
+
+Es decir, **desde APPCC se crean tareas** (de limpieza/control) que aterrizan en el mismo motor y se asignan/siguen igual que las de producción. El módulo APPCC sigue siendo el "dueño" de la definición sanitaria, pero la ejecución y el seguimiento viven en el motor de tareas único.
+
 ### B.3 Estrategia de migración (aditiva)
 1. Crear `TaskDefinition`/`TaskInstance`/`TaskField`/`TaskResponse`/`TaskSchedule` **junto a** los modelos actuales.
 2. Backfill: convertir `Task`, `Checklist*`, `MiseEnPlaceTask`, `ObradorCleaningTask` a la nueva estructura (script idempotente).
@@ -142,10 +156,10 @@ Cómo encaja cada sistema actual:
 - Las UIs de producción y de checklists operativos siguen separadas, pero sobre el mismo modelo.
 - Reportes y supervisión unificados y preservados. Aislamiento por local intacto.
 
-### B.6 Decisiones pendientes (Frente B)
-1. ✅ **Resuelto:** base común + dos familias especializadas (operativa vs producción), no unificación plana (ver B.2).
-2. ¿Migramos el histórico de `ChecklistResponse` o lo archivamos en frío?
-3. Limpieza del obrador: ¿entra en el motor de tareas como `family=OPERATIONAL, origin=CLEANING` o se queda en su módulo APPCC?
+### B.6 Decisiones (resueltas)
+1. ✅ Base común + dos familias especializadas (operativa vs producción), no unificación plana (ver B.2).
+2. ✅ Histórico de `ChecklistResponse` → **se migra entero** al nuevo modelo (volumen pequeño/nulo; preserva reportes sin archivado en frío).
+3. ✅ Limpieza del obrador → **motor de tareas** (`family=OPERATIONAL, origin=CLEANING`), **generada desde el módulo APPCC** (ver B.2.1). APPCC define; el motor ejecuta y sigue.
 
 ---
 
@@ -158,7 +172,14 @@ Cómo encaja cada sistema actual:
 
 Cada frente, igual que la Fase 1: **commits/PRs pequeños** (puente → backfill → cutover → deprecación), validables por pasos.
 
-## D. Resumen de decisiones que necesito de ti
-- **A.6**: ubicación de la info sanitaria/nutricional; destino de `ObradorRawMaterialEntry`; ¿catálogo único con flag o disjunto?
-- **B.6**: ¿unificación total o base común + vistas?; histórico de checklists; limpieza obrador dentro/fuera del motor.
-- **Orden**: ¿empezamos por Obrador (recomendado) o por el motor de tareas?
+## D. Decisiones (estado)
+Resueltas con el usuario:
+- ✅ Catálogo **único con flag `esObrador`** (no disjunto).
+- ✅ Info sanitaria/nutricional en **tabla de extensión `ProductSanitaryInfo`** (disjunta de `MasterProduct`).
+- ✅ Tareas: **base común + dos familias** (operativa/producción).
+- ✅ Histórico de checklists: **se migra entero**.
+- ✅ Limpieza obrador: **en el motor de tareas, generada desde APPCC** (fuentes de tareas, B.2.1).
+- ✅ Orden: **Obrador → núcleo primero**, luego motor de tareas, luego taxonomías.
+
+Pendiente (no bloquea el arranque):
+- ⏳ `ObradorRawMaterialEntry`: ¿unificar con compras/albaranes o conservar como recepción específica? Se decide al llegar a ese punto del Frente A.
