@@ -22,10 +22,11 @@ recolocar secciones según su naturaleza y reducir el hub de Obrador a lo purame
 
 ## Fases (un PR por tema, orden de riesgo)
 1. **Proveedores → Administración** (`/dashboard/settings/suppliers`). 🟢 Sin migración. ✅ hecho (#27)
-2. **Productos → Catálogo**: una sola lista de Productos con tipo "Ingrediente / Envasado"; el
-   formulario de envasado (ficha sanitaria) se conserva detrás. 🟡 Sin migración. ← *en curso*
+2. **Productos → Catálogo**: una sola lista de Productos con tipo "No elaborado / Elaborado"; el
+   formulario de elaborado (ficha sanitaria) se conserva detrás. + Sapiens (Mundo/Reino) en todos
+   los productos. 🟡 ✅ hecho (#27)
 3. **Controles sanitarios → Operaciones** + **Documentación y Aviso legal → Administración**.
-   🟢 Solo navegación (rutas con redirección).
+   🟢 Reagrupación de menú (las rutas se mantienen bajo `/obrador`). ✅ hecho (#27)
 4. **Clientes y PdV → Administración + vínculo lote→destino**. 🟡 Schema additivo + UI.
 5. **Establecimiento → Locales**: añadir campos sanitarios/fiscales a `Location`, migrar datos de
    `ObradorConfig`, repuntar etiquetas, actualizar UI de Locales, eliminar la pestaña del obrador.

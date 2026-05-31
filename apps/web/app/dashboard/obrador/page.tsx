@@ -3,7 +3,6 @@ import {
   UserGroupIcon,
   ArchiveBoxIcon,
   BeakerIcon,
-  ClipboardDocumentCheckIcon,
   TagIcon,
   DocumentChartBarIcon,
   ShieldCheckIcon,
@@ -48,20 +47,6 @@ const modules = [
     href: '/dashboard/obrador/labeling/preview',
     icon: TagIcon,
     color: 'bg-rose-100 text-rose-700',
-  },
-  {
-    name: 'Controles Sanitarios',
-    description: 'Temperaturas, incidencias y Plan APPCC',
-    href: '/dashboard/obrador/compliance',
-    icon: ShieldCheckIcon,
-    color: 'bg-teal-100 text-teal-700',
-  },
-  {
-    name: 'Documentación',
-    description: 'Gestión documental y expedientes sanitarios',
-    href: '/dashboard/obrador/documents',
-    icon: ClipboardDocumentCheckIcon,
-    color: 'bg-slate-100 text-slate-700',
   },
 ];
 
