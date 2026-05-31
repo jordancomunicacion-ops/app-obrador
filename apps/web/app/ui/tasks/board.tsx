@@ -72,6 +72,16 @@ export default async function TaskBoard() {
                                             🍳 {task.recipe.name}
                                         </span>
                                     )}
+                                    {task.recipe?.category === 'ELABORACION_FINAL' && (
+                                        <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">
+                                            Final
+                                        </span>
+                                    )}
+                                    {task.recipe?.category === 'ELABORACION_INTERMEDIA' && (
+                                        <span className="bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded font-medium">
+                                            Intermedia
+                                        </span>
+                                    )}
                                 </div>
 
                                 <TimeInfo
@@ -80,6 +90,7 @@ export default async function TaskBoard() {
                                     realStart={task.realStart}
                                     realEnd={task.realEnd}
                                     status={task.status}
+                                    category={task.recipe?.category}
                                 />
 
                                 <div className="mt-3 flex justify-end gap-1 pt-2 border-t border-gray-50">
