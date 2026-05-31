@@ -11,12 +11,7 @@ import {
     BuildingStorefrontIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
-    ClockIcon,
-    EnvelopeIcon,
-    CalendarDaysIcon,
     TagIcon,
-    BanknotesIcon,
-    ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 export const groups = [
@@ -53,11 +48,6 @@ export const groups = [
         name: 'Administración',
         items: [
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
-            { name: 'Fichajes', href: '/dashboard/clock-in', icon: ClockIcon },
-            { name: 'Turnos', href: '/dashboard/shifts', icon: CalendarDaysIcon },
-            { name: 'Solicitudes', href: '/dashboard/requests', icon: EnvelopeIcon },
-            { name: 'Cierres de caja', href: '/dashboard/cash', icon: BanknotesIcon },
-            { name: 'Finanzas / EBITDA', href: '/dashboard/finance', icon: ChartBarIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
