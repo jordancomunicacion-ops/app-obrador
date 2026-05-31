@@ -15,6 +15,7 @@ import {
 } from '@/app/lib/actions/obrador-production';
 
 type ProductOption = { id: string; name: string; shelfLifeDays: number | null };
+type CustomerOption = { id: string; name: string; customerType: string | null };
 
 function localDateTimeNow(): string {
   const d = new Date();
@@ -28,7 +29,13 @@ function addDaysISO(base: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export default function ObradorProductionForm({ products }: { products: ProductOption[] }) {
+export default function ObradorProductionForm({
+  products,
+  customers,
+}: {
+  products: ProductOption[];
+  customers: CustomerOption[];
+}) {
   const [state, formAction] = useActionState<ObradorBatchFormState, FormData>(createObradorBatch, {
     message: null,
     errors: {},
@@ -80,8 +87,8 @@ export default function ObradorProductionForm({ products }: { products: ProductO
       {products.length === 0 ? (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-amber-800">
           No hay productos de obrador todavía. Crea uno en{' '}
-          <Link href="/dashboard/obrador/products/create" className="font-bold underline">
-            Catálogo de Productos
+          <Link href="/dashboard/products/packaged/create" className="font-bold underline">
+            Productos
           </Link>{' '}
           antes de iniciar una producción.
         </div>
@@ -181,6 +188,17 @@ export default function ObradorProductionForm({ products }: { products: ProductO
                     placeholder="Nombre del operario"
                   />
                 </div>
+              </div>
+              <div>
+                <label className={labelCls}>Destino (Cliente / Punto de venta)</label>
+                <select name="customerId" defaultValue="" className={fieldCls}>
+                  <option value="">Sin asignar</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}{c.customerType ? ` · ${c.customerType}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={labelCls}>Mermas (opcional)</label>

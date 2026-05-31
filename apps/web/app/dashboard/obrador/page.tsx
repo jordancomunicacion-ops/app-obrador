@@ -1,10 +1,7 @@
 import {
   BuildingStorefrontIcon,
-  UserGroupIcon,
   ArchiveBoxIcon,
   BeakerIcon,
-  ClipboardDocumentCheckIcon,
-  TruckIcon,
   TagIcon,
   DocumentChartBarIcon,
   ShieldCheckIcon,
@@ -15,27 +12,6 @@ import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 
 const modules = [
-  {
-    name: 'Datos del Establecimiento',
-    description: 'Configuración de registro sanitario y datos fiscales',
-    href: '/dashboard/obrador/config',
-    icon: BuildingStorefrontIcon,
-    color: 'bg-emerald-100 text-emerald-700',
-  },
-  {
-    name: 'Productos',
-    description: 'Catálogo de productos envasados y su ficha sanitaria',
-    href: '/dashboard/obrador/products',
-    icon: ArchiveBoxIcon,
-    color: 'bg-blue-100 text-blue-700',
-  },
-  {
-    name: 'Proveedores',
-    description: 'Gestión de proveedores homologados',
-    href: '/dashboard/obrador/suppliers',
-    icon: TruckIcon,
-    color: 'bg-amber-100 text-amber-700',
-  },
   {
     name: 'Entradas de Materia Prima',
     description: 'Registro de recepción y control de insumos',
@@ -51,32 +27,11 @@ const modules = [
     color: 'bg-purple-100 text-purple-700',
   },
   {
-    name: 'Clientes y Puntos de Venta',
-    description: 'Gestión de clientes minoristas y venta directa',
-    href: '/dashboard/obrador/customers',
-    icon: UserGroupIcon,
-    color: 'bg-cyan-100 text-cyan-700',
-  },
-  {
     name: 'Etiquetado Alimentario',
     description: 'Generación de etiquetas y plantillas',
     href: '/dashboard/obrador/labeling/preview',
     icon: TagIcon,
     color: 'bg-rose-100 text-rose-700',
-  },
-  {
-    name: 'Controles Sanitarios',
-    description: 'Temperaturas, incidencias y Plan APPCC',
-    href: '/dashboard/obrador/compliance',
-    icon: ShieldCheckIcon,
-    color: 'bg-teal-100 text-teal-700',
-  },
-  {
-    name: 'Documentación',
-    description: 'Gestión documental y expedientes sanitarios',
-    href: '/dashboard/obrador/documents',
-    icon: ClipboardDocumentCheckIcon,
-    color: 'bg-slate-100 text-slate-700',
   },
 ];
 

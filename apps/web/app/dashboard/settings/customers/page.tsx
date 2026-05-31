@@ -8,9 +8,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { prisma } from '@/app/lib/prisma';
 import { locationScope } from '@/app/lib/auth/scope';
-import DeleteObradorCustomer from '@/app/ui/obrador/delete-customer';
+import DeleteCustomer from '@/app/ui/customers/delete-customer';
 
-export default async function ObradorCustomersPage() {
+export default async function CustomersPage() {
   const customers = await prisma.customer.findMany({
     where: { ...(await locationScope()) },
     orderBy: { name: 'asc' },
@@ -22,14 +22,14 @@ export default async function ObradorCustomersPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
             <UserGroupIcon className="w-8 h-8 text-emerald-600" />
-            Clientes y Destinos de Venta
+            Clientes y Puntos de Venta
           </h1>
           <p className="text-slate-600 mt-1">
             Gestión de puntos de venta y establecimientos minoristas.
           </p>
         </div>
         <Link
-          href="/dashboard/obrador/customers/create"
+          href="/dashboard/settings/customers/create"
           className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-sm"
         >
           <PlusIcon className="w-5 h-5" />
@@ -86,12 +86,12 @@ export default async function ObradorCustomersPage() {
 
                 <div className="border-t border-slate-50 pt-4 mt-4 flex items-center justify-between">
                   <Link
-                    href={`/dashboard/obrador/customers/${customer.id}/edit`}
+                    href={`/dashboard/settings/customers/${customer.id}/edit`}
                     className="text-emerald-600 text-sm font-bold hover:underline"
                   >
                     Editar
                   </Link>
-                  <DeleteObradorCustomer id={customer.id} />
+                  <DeleteCustomer id={customer.id} />
                 </div>
               </div>
             </div>

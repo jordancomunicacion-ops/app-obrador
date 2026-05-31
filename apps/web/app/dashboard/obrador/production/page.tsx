@@ -30,7 +30,10 @@ export default async function ObradorProductionPage() {
 
   const batches = await prisma.obradorProductionBatch.findMany({
     where: { ownerId },
-    include: { masterProduct: { select: { name: true } } },
+    include: {
+      masterProduct: { select: { name: true } },
+      customer: { select: { name: true } },
+    },
     orderBy: { productionDate: 'desc' },
   });
 
@@ -102,6 +105,7 @@ export default async function ObradorProductionPage() {
                 <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Código de Lote</th>
                   <th className="px-6 py-4">Producto</th>
+                  <th className="px-6 py-4">Destino</th>
                   <th className="px-6 py-4">Fecha Producción</th>
                   <th className="px-6 py-4">Caducidad</th>
                   <th className="px-6 py-4">Cantidad</th>
@@ -120,6 +124,9 @@ export default async function ObradorProductionPage() {
                     </td>
                     <td className="px-6 py-4 font-semibold text-slate-900">
                       {batch.masterProduct?.name ?? '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {batch.customer?.name ?? '—'}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
                       <div className="flex items-center gap-2">

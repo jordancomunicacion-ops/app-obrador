@@ -113,6 +113,7 @@ export async function createProduct(prevState: ProductFormState, formData: FormD
                     locationId,
                     name,
                     category,
+                    sapiensWorld,
                 },
             });
 
@@ -209,6 +210,7 @@ export async function updateProduct(id: string, prevState: ProductFormState, for
                 data: {
                     name,
                     category,
+                    sapiensWorld,
                 },
             });
 

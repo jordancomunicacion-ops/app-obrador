@@ -202,6 +202,10 @@ model MasterProduct {
   category    String?
   description String?
 
+  // Mundo/Reino (taxonomía Sapiens): aplica a TODOS los productos, comprados y
+  // elaborados. En comprados se escribe también en cada SupplierProduct (legacy).
+  sapiensWorld String?
+
   // Ficha única: un producto puede ser de cocina y/o de obrador (Fase 3, Frente A).
   isObrador Boolean @default(false)
 
@@ -277,6 +281,9 @@ model Customer {
   // Aislamiento por local. Nullable durante la transición.
   locationId String?
   location   Location? @relation("CustomerLocation", fields: [locationId], references: [id])
+
+  // Lotes de producción cuyo destino es este cliente / punto de venta.
+  batches ObradorProductionBatch[] @relation("BatchToCustomer")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -920,6 +927,10 @@ model ObradorProductionBatch {
   masterProductId String?
   masterProduct   MasterProduct? @relation("ObradorBatchToMaster", fields: [masterProductId], references: [id])
 
+  // Destino del lote: cliente / punto de venta (Fase 4, aditivo y opcional).
+  customerId String?
+  customer   Customer? @relation("BatchToCustomer", fields: [customerId], references: [id])
+
   ownerId String?
   owner   User?   @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
 
@@ -928,6 +939,7 @@ model ObradorProductionBatch {
 
   @@index([recipeId])
   @@index([masterProductId])
+  @@index([customerId])
 }
 
 model ObradorBatchIngredient {
@@ -1098,6 +1110,20 @@ model Location {
   shortCode String?
   address   String?
   isActive  Boolean @default(true)
+
+  // Datos de establecimiento (antes en ObradorConfig, ahora por local). Se usan
+  // en el etiquetado (operador, nº de registro, origen) y la ficha del local.
+  companyName    String? // Razón social
+  nif            String?
+  phone          String?
+  email          String?
+  activity       String? // restaurante, obrador, elaboración propia, etc.
+  registryType   String? // Registro autonómico, RGSEAA, etc.
+  registryNumber String? // Nº RGSEAA / registro sanitario
+  registryStatus String?   @default("no_iniciado")
+  region         String? // Comunidad autónoma
+  requestDate    DateTime?
+  resolutionDate DateTime?
 
   ownerId String
   owner   User   @relation("LocationOwner", fields: [ownerId], references: [id])

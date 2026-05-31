@@ -8,10 +8,13 @@ import {
     Cog6ToothIcon,
     ShoppingCartIcon,
     BuildingStorefrontIcon,
+    TruckIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
     TagIcon,
-    TableCellsIcon
+    TableCellsIcon,
+    ShieldCheckIcon,
+    ScaleIcon
 } from '@heroicons/react/24/outline';
 
 export type NavItem = {
@@ -59,6 +62,7 @@ export const groups: NavGroup[] = [
             { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon },
             { name: 'Etiquetas', href: '/dashboard/labels', icon: TagIcon },
             { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon },
+            { name: 'Controles sanitarios', href: '/dashboard/obrador/compliance', icon: ShieldCheckIcon },
         ]
     },
     {
@@ -68,6 +72,10 @@ export const groups: NavGroup[] = [
             // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
+            { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon },
+            { name: 'Clientes y Puntos de Venta', href: '/dashboard/settings/customers', icon: UserGroupIcon },
+            { name: 'Documentación', href: '/dashboard/obrador/documents', icon: ClipboardDocumentCheckIcon },
+            { name: 'Aviso legal', href: '/dashboard/obrador/legal', icon: ScaleIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
     }

@@ -1,10 +1,10 @@
 'use client';
 
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { deleteObradorCustomer } from '@/app/lib/actions/obrador-customers';
+import { deleteSupplier } from '@/app/lib/actions/suppliers';
 
-export default function DeleteObradorCustomer({ id }: { id: string }) {
-  const deleteWithId = deleteObradorCustomer.bind(null, id);
+export default function DeleteSupplier({ id }: { id: string }) {
+  const deleteWithId = deleteSupplier.bind(null, id);
   return (
     <form action={deleteWithId}>
       <button

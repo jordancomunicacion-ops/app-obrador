@@ -8,9 +8,10 @@ import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
 const num = z.coerce.number().optional().nullable();
 
-const ObradorProductSchema = z.object({
+const PackagedProductSchema = z.object({
   name: z.string().min(1, { message: 'El nombre comercial es obligatorio.' }),
   category: z.string().optional(),
+  sapiensWorld: z.string().optional(),
   legalDenomination: z.string().optional(),
   conservationType: z.string().optional(),
   shelfLifeDays: z.coerce.number().int().min(0).optional().nullable(),
@@ -24,7 +25,7 @@ const ObradorProductSchema = z.object({
   salt: num,
 });
 
-export type ObradorProductFormState = {
+export type PackagedProductFormState = {
   errors?: {
     name?: string[];
     category?: string[];
@@ -35,9 +36,10 @@ export type ObradorProductFormState = {
 
 // Extrae y valida los campos comunes del formulario (crear/editar).
 function parseForm(formData: FormData) {
-  return ObradorProductSchema.safeParse({
+  return PackagedProductSchema.safeParse({
     name: formData.get('name'),
     category: formData.get('category'),
+    sapiensWorld: formData.get('sapiensWorld'),
     legalDenomination: formData.get('legalDenomination'),
     conservationType: formData.get('conservationType'),
     shelfLifeDays: formData.get('shelfLifeDays') || null,
@@ -53,7 +55,7 @@ function parseForm(formData: FormData) {
 }
 
 // Construye el bloque ProductSanitaryInfo a partir del formulario.
-function sanitaryData(data: z.infer<typeof ObradorProductSchema>, allergens: string[]) {
+function sanitaryData(data: z.infer<typeof PackagedProductSchema>, allergens: string[]) {
   return {
     legalDenomination: data.legalDenomination || null,
     conservationType: data.conservationType || null,
@@ -70,10 +72,10 @@ function sanitaryData(data: z.infer<typeof ObradorProductSchema>, allergens: str
   };
 }
 
-export async function createObradorProduct(
-  prevState: ObradorProductFormState,
+export async function createPackagedProduct(
+  prevState: PackagedProductFormState,
   formData: FormData,
-): Promise<ObradorProductFormState> {
+): Promise<PackagedProductFormState> {
   const validated = parseForm(formData);
   if (!validated.success) {
     return {
@@ -88,24 +90,25 @@ export async function createObradorProduct(
       data: {
         name: validated.data.name,
         category: validated.data.category || null,
+        sapiensWorld: validated.data.sapiensWorld || null,
         isObrador: true,
         locationId: await scopedLocationId(),
         sanitaryInfo: { create: sanitaryData(validated.data, allergens) },
       },
     });
   } catch (error) {
-    return { message: 'Error al crear el producto de obrador.' };
+    return { message: 'Error al crear el producto envasado.' };
   }
 
-  revalidatePath('/dashboard/obrador/products');
-  redirect('/dashboard/obrador/products');
+  revalidatePath('/dashboard/products');
+  redirect('/dashboard/products');
 }
 
-export async function updateObradorProduct(
+export async function updatePackagedProduct(
   id: string,
-  prevState: ObradorProductFormState,
+  prevState: PackagedProductFormState,
   formData: FormData,
-): Promise<ObradorProductFormState> {
+): Promise<PackagedProductFormState> {
   const validated = parseForm(formData);
   if (!validated.success) {
     return {
@@ -128,6 +131,7 @@ export async function updateObradorProduct(
       data: {
         name: validated.data.name,
         category: validated.data.category || null,
+        sapiensWorld: validated.data.sapiensWorld || null,
         sanitaryInfo: {
           upsert: {
             create: sanitaryData(validated.data, allergens),
@@ -137,20 +141,9 @@ export async function updateObradorProduct(
       },
     });
   } catch (error) {
-    return { message: 'Error al actualizar el producto de obrador.' };
+    return { message: 'Error al actualizar el producto envasado.' };
   }
 
-  revalidatePath('/dashboard/obrador/products');
-  redirect('/dashboard/obrador/products');
-}
-
-export async function deleteObradorProduct(id: string) {
-  const existing = await prisma.masterProduct.findFirst({
-    where: { id, isObrador: true, ...(await locationScope()) },
-    select: { id: true },
-  });
-  if (!existing) return;
-
-  await prisma.masterProduct.delete({ where: { id } });
-  revalidatePath('/dashboard/obrador/products');
+  revalidatePath('/dashboard/products');
+  redirect('/dashboard/products');
 }

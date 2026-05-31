@@ -1,7 +1,6 @@
-import { prisma } from '@/app/lib/prisma';
-import ObradorConfigForm from '@/app/ui/obrador/config-form';
+import { redirect } from 'next/navigation';
 
-export default async function ObradorConfigPage() {
-  const config = await prisma.obradorConfig.findUnique({ where: { id: 'default' } });
-  return <ObradorConfigForm initial={config} />;
+// Los datos del establecimiento se gestionan ahora por local en Administración → Locales.
+export default function ObradorConfigPage() {
+  redirect('/dashboard/settings/locations');
 }

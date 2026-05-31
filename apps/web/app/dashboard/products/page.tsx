@@ -1,6 +1,6 @@
 import { prisma } from '@/app/lib/prisma';
 import Link from 'next/link';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { DeleteProduct } from '@/app/ui/products/buttons';
 import { locationScope } from '@/app/lib/auth/scope';
 
@@ -11,21 +11,31 @@ export default async function Page() {
             supplierProducts: {
                 orderBy: { price: 'asc' }
             },
+            sanitaryInfo: true,
         },
         orderBy: { name: 'asc' },
     });
 
     return (
         <div className="w-full">
-            <div className="flex w-full items-center justify-between mb-8">
+            <div className="flex w-full items-center justify-between mb-8 gap-3 flex-wrap">
                 <h1 className="text-2xl font-bold">Gestión de Productos</h1>
-                <Link
-                    href="/dashboard/products/create"
-                    className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Añadir Producto
-                </Link>
+                <div className="flex items-center gap-2">
+                    <Link
+                        href="/dashboard/products/create"
+                        className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+                    >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Añadir Producto
+                    </Link>
+                    <Link
+                        href="/dashboard/products/packaged/create"
+                        className="flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+                    >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Producto Elaborado
+                    </Link>
+                </div>
             </div>
 
             <div className="mt-6 flow-root">
@@ -38,10 +48,13 @@ export default async function Page() {
                                         Producto
                                     </th>
                                     <th scope="col" className="px-3 py-5 font-medium">
+                                        Tipo
+                                    </th>
+                                    <th scope="col" className="px-3 py-5 font-medium">
                                         Categoría
                                     </th>
                                     <th scope="col" className="px-3 py-5 font-medium">
-                                        Proveedores
+                                        Proveedores / Vida útil
                                     </th>
                                     <th scope="col" className="px-3 py-5 font-medium">
                                         Precio (desde)
@@ -69,15 +82,34 @@ export default async function Page() {
                                                 </div>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-3">
+                                                {product.isObrador ? (
+                                                    <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded uppercase">
+                                                        Elaborado
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase">
+                                                        No elaborado
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="whitespace-nowrap px-3 py-3">
                                                 {product.category || '-'}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-3">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{product.supplierProducts.length} {product.supplierProducts.length === 1 ? 'Proveedor' : 'Proveedores'}</span>
-                                                    <span className="text-xs text-gray-500 truncate max-w-[200px]">
-                                                        {product.supplierProducts.map(sp => sp.supplier).join(', ')}
+                                                {product.isObrador ? (
+                                                    <span className="text-gray-600">
+                                                        {product.sanitaryInfo?.shelfLifeDays != null
+                                                            ? `${product.sanitaryInfo.shelfLifeDays} días`
+                                                            : '—'}
                                                     </span>
-                                                </div>
+                                                ) : (
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{product.supplierProducts.length} {product.supplierProducts.length === 1 ? 'Proveedor' : 'Proveedores'}</span>
+                                                        <span className="text-xs text-gray-500 truncate max-w-[200px]">
+                                                            {product.supplierProducts.map(sp => sp.supplier).join(', ')}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-3">
                                                 {minPrice !== null ? (
@@ -92,12 +124,22 @@ export default async function Page() {
                                             </td>
                                             <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                                 <div className="flex justify-end gap-3">
-                                                    <Link
-                                                        href={`/dashboard/products/${product.id}`}
-                                                        className="rounded-md border p-2 text-sm font-medium hover:bg-gray-100"
-                                                    >
-                                                        Ver Detalle
-                                                    </Link>
+                                                    {product.isObrador ? (
+                                                        <Link
+                                                            href={`/dashboard/obrador/production/create?productId=${product.id}`}
+                                                            className="flex items-center gap-1 rounded-md border p-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                                                        >
+                                                            <BeakerIcon className="w-4 h-4" />
+                                                            Crear Lote
+                                                        </Link>
+                                                    ) : (
+                                                        <Link
+                                                            href={`/dashboard/products/${product.id}`}
+                                                            className="rounded-md border p-2 text-sm font-medium hover:bg-gray-100"
+                                                        >
+                                                            Ver Detalle
+                                                        </Link>
+                                                    )}
                                                     <Link
                                                         href={`/dashboard/products/${product.id}/edit`}
                                                         className="rounded-md border p-2 text-sm font-medium hover:bg-gray-100"

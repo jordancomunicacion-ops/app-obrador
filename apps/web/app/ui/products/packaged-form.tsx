@@ -10,13 +10,14 @@ import {
   CheckIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import { type ObradorProductFormState } from '@/app/lib/actions/obrador-products';
+import { type PackagedProductFormState } from '@/app/lib/actions/packaged-products';
 import { OBRADOR_ALLERGENS } from '@/app/lib/obrador-constants';
 
-export type ObradorProductInitial = {
+export type PackagedProductInitial = {
   id: string;
   name: string;
   category: string | null;
+  sapiensWorld: string | null;
   sanitaryInfo: {
     legalDenomination: string | null;
     conservationType: string | null;
@@ -35,6 +36,8 @@ export type ObradorProductInitial = {
 
 const CATEGORIES = ['Carne fresca', 'Carne picada', 'Embutido', 'Panadería', 'Otro'];
 const CONSERVATION = ['Refrigerado (0-4ºC)', 'Congelado (-18ºC)', 'Ambiente (Fresco y seco)'];
+// Taxonomía Sapiens (Mundo/Reino), igual que en los productos comprados.
+const SAPIENS_WORLDS = ['Reino Animal', 'Reino Vegetal', 'Reino Fungi', 'Mundo Mineral', 'Agua', 'Elaborados / Mixto'];
 
 const NUTRIENTS: { name: string; label: string }[] = [
   { name: 'energyKcal', label: 'Valor Energético (kcal)' },
@@ -46,17 +49,17 @@ const NUTRIENTS: { name: string; label: string }[] = [
   { name: 'salt', label: 'Sal (g)' },
 ];
 
-export default function ObradorProductForm({
+export default function PackagedProductForm({
   action,
   initial,
 }: {
   action: (
-    prevState: ObradorProductFormState,
+    prevState: PackagedProductFormState,
     formData: FormData,
-  ) => Promise<ObradorProductFormState>;
-  initial?: ObradorProductInitial;
+  ) => Promise<PackagedProductFormState>;
+  initial?: PackagedProductInitial;
 }) {
-  const [state, formAction] = useActionState<ObradorProductFormState, FormData>(action, {
+  const [state, formAction] = useActionState<PackagedProductFormState, FormData>(action, {
     message: null,
     errors: {},
   });
@@ -80,7 +83,7 @@ export default function ObradorProductForm({
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard/obrador/products"
+            href="/dashboard/products"
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
             <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -88,7 +91,7 @@ export default function ObradorProductForm({
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
               <ArchiveBoxIcon className="w-8 h-8 text-emerald-600" />
-              {initial ? 'Editar Producto Envasado' : 'Nuevo Producto Envasado'}
+              {initial ? 'Editar Producto Elaborado' : 'Nuevo Producto Elaborado'}
             </h1>
             <p className="text-slate-600 mt-1">Configura la ficha técnica y legal del producto.</p>
           </div>
@@ -125,6 +128,19 @@ export default function ObradorProductForm({
               >
                 {CATEGORIES.map((c) => (
                   <option key={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Mundo (Sapiens)</label>
+              <select
+                name="sapiensWorld"
+                defaultValue={initial?.sapiensWorld ?? ''}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="">-- Seleccionar Mundo --</option>
+                {SAPIENS_WORLDS.map((w) => (
+                  <option key={w} value={w}>{w}</option>
                 ))}
               </select>
             </div>
@@ -238,7 +254,7 @@ export default function ObradorProductForm({
         {/* Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 flex justify-end gap-4 shadow-2xl z-10 md:static md:bg-transparent md:border-0 md:shadow-none md:px-0">
           <Link
-            href="/dashboard/obrador/products"
+            href="/dashboard/products"
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar

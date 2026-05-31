@@ -2,32 +2,32 @@
 
 import { useActionState } from 'react';
 import Link from 'next/link';
-import { TruckIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { type ObradorSupplierFormState } from '@/app/lib/actions/obrador-suppliers';
+import { UserGroupIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { type CustomerFormState } from '@/app/lib/actions/customers';
+import { CUSTOMER_TYPES } from '@/app/lib/obrador-constants';
 
-export type ObradorSupplierInitial = {
+export type CustomerInitial = {
   id: string;
   name: string;
+  customerType: string | null;
   nif: string | null;
-  contactPerson: string | null;
+  address: string | null;
   phone: string | null;
   email: string | null;
-  address: string | null;
-  productType: string | null;
-  healthRegistry: string | null;
+  contactPerson: string | null;
 };
 
-export default function ObradorSupplierForm({
+export default function CustomerForm({
   action,
   initial,
 }: {
   action: (
-    prevState: ObradorSupplierFormState,
+    prevState: CustomerFormState,
     formData: FormData,
-  ) => Promise<ObradorSupplierFormState>;
-  initial?: ObradorSupplierInitial;
+  ) => Promise<CustomerFormState>;
+  initial?: CustomerInitial;
 }) {
-  const [state, formAction] = useActionState<ObradorSupplierFormState, FormData>(action, {
+  const [state, formAction] = useActionState<CustomerFormState, FormData>(action, {
     message: null,
     errors: {},
   });
@@ -39,17 +39,17 @@ export default function ObradorSupplierForm({
     <div className="p-6 max-w-3xl mx-auto pb-20">
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/dashboard/obrador/suppliers"
+          href="/dashboard/settings/customers"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-            <TruckIcon className="w-8 h-8 text-emerald-600" />
-            {initial ? 'Editar Proveedor' : 'Nuevo Proveedor'}
+            <UserGroupIcon className="w-8 h-8 text-emerald-600" />
+            {initial ? 'Editar Cliente' : 'Nuevo Cliente'}
           </h1>
-          <p className="text-slate-600 mt-1">Proveedor homologado y su registro sanitario.</p>
+          <p className="text-slate-600 mt-1">Punto de venta o establecimiento de destino.</p>
         </div>
       </div>
 
@@ -62,25 +62,27 @@ export default function ObradorSupplierForm({
               type="text"
               defaultValue={initial?.name ?? ''}
               className={field}
-              placeholder="Ej. Cárnicas Pepe"
+              placeholder="Ej. Restaurante El Jardín"
             />
             {state.errors?.name && (
               <p className="mt-1 text-sm text-rose-600">{state.errors.name[0]}</p>
             )}
           </div>
           <div>
-            <label className={labelCls}>NIF / CIF</label>
-            <input name="nif" type="text" defaultValue={initial?.nif ?? ''} className={field} />
+            <label className={labelCls}>Tipo de Cliente</label>
+            <select
+              name="customerType"
+              defaultValue={initial?.customerType ?? CUSTOMER_TYPES[0]}
+              className={field}
+            >
+              {CUSTOMER_TYPES.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className={labelCls}>Tipo de Producto</label>
-            <input
-              name="productType"
-              type="text"
-              defaultValue={initial?.productType ?? ''}
-              className={field}
-              placeholder="Ej. Carne fresca, Panadería"
-            />
+            <label className={labelCls}>NIF / CIF</label>
+            <input name="nif" type="text" defaultValue={initial?.nif ?? ''} className={field} />
           </div>
           <div>
             <label className={labelCls}>Persona de Contacto</label>
@@ -100,16 +102,6 @@ export default function ObradorSupplierForm({
             <input name="email" type="email" defaultValue={initial?.email ?? ''} className={field} />
           </div>
           <div>
-            <label className={labelCls}>Nº Registro Sanitario</label>
-            <input
-              name="healthRegistry"
-              type="text"
-              defaultValue={initial?.healthRegistry ?? ''}
-              className={field}
-              placeholder="Ej. 26.00001/M"
-            />
-          </div>
-          <div className="md:col-span-2">
             <label className={labelCls}>Dirección</label>
             <input
               name="address"
@@ -124,7 +116,7 @@ export default function ObradorSupplierForm({
 
         <div className="flex justify-end gap-4">
           <Link
-            href="/dashboard/obrador/suppliers"
+            href="/dashboard/settings/customers"
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar
@@ -134,7 +126,7 @@ export default function ObradorSupplierForm({
             className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center gap-2"
           >
             <CheckIcon className="w-5 h-5" />
-            {initial ? 'Guardar Cambios' : 'Crear Proveedor'}
+            {initial ? 'Guardar Cambios' : 'Crear Cliente'}
           </button>
         </div>
       </form>

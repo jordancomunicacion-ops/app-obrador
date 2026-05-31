@@ -24,7 +24,7 @@ export default async function LabelPreviewPage({
     batchId
       ? prisma.obradorProductionBatch.findFirst({
           where: { id: batchId, ownerId },
-          include: { masterProduct: { include: { sanitaryInfo: true } } },
+          include: { masterProduct: { include: { sanitaryInfo: true, location: true } } },
         })
       : null,
     prisma.obradorConfig.findUnique({ where: { id: 'default' } }),
@@ -36,7 +36,12 @@ export default async function LabelPreviewPage({
     ? sanitary.allergens.split(',').map((a) => a.trim()).filter(Boolean)
     : [];
 
-  const operatorParts = [config?.businessName, config?.address].filter(Boolean);
+  // El operador/registro/origen salen del local del producto; si aún no se han
+  // rellenado en Locales, se usa el antiguo ObradorConfig como respaldo.
+  const loc = product?.location ?? null;
+  const opName = loc?.companyName ?? loc?.name ?? config?.businessName ?? config?.companyName ?? null;
+  const opAddr = loc?.address ?? config?.address ?? null;
+  const operatorParts = [opName, opAddr].filter(Boolean);
 
   const data: LabelData = {
     name: product?.name ?? 'Producto sin asignar',
@@ -49,9 +54,9 @@ export default async function LabelPreviewPage({
     conservation:
       sanitary?.conservationType ??
       (sanitary?.recommendedTemp ? `Conservar a ${sanitary.recommendedTemp}` : ''),
-    operator: operatorParts.length > 0 ? operatorParts.join(' · ') : 'Obrador (configura en Datos del Establecimiento)',
-    registry: config?.registryNumber ?? '',
-    origin: config?.region ?? 'España',
+    operator: operatorParts.length > 0 ? operatorParts.join(' · ') : 'Obrador (configura los datos del local en Locales)',
+    registry: loc?.registryNumber ?? config?.registryNumber ?? '',
+    origin: loc?.region ?? config?.region ?? 'España',
     modeOfUse:
       sanitary?.usageInstructions ??
       (sanitary?.requiresCooking ? 'Cocinar completamente antes de consumir.' : 'Listo para consumo.'),

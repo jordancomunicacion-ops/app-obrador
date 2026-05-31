@@ -4,120 +4,110 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
 const SupplierSchema = z.object({
-    id: z.string(),
-    name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
-    contactInfo: z.string().optional(),
-    email: z.string().email().optional().or(z.literal('')),
+  name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
+  nif: z.string().optional(),
+  contactPerson: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  address: z.string().optional(),
+  productType: z.string().optional(),
+  healthRegistry: z.string().optional(),
 });
 
-const CreateSupplier = SupplierSchema.omit({ id: true });
-const UpdateSupplier = SupplierSchema;
-
 export type SupplierFormState = {
-    errors?: {
-        name?: string[];
-        contactInfo?: string[];
-        email?: string[];
-    };
-    message?: string | null;
+  errors?: { name?: string[] };
+  message: string | null;
 };
 
-export async function createSupplier(prevState: SupplierFormState, formData: FormData) {
-    const validatedFields = CreateSupplier.safeParse({
-        name: formData.get('name'),
-        contactInfo: formData.get('contactInfo'),
-        email: formData.get('email'),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios. Error al crear proveedor.',
-        };
-    }
-
-    const { name, contactInfo, email } = validatedFields.data;
-
-    try {
-        await prisma.supplier.create({
-            data: {
-                locationId: await scopedLocationId(),
-                name,
-                contactInfo,
-                email,
-            },
-        });
-    } catch (error) {
-        return {
-            message: 'Error de base de datos: No se pudo crear el proveedor.',
-        };
-    }
-
-    revalidatePath('/dashboard/settings');
-    return { message: 'Proveedor creado correctamente.' };
+function parseForm(formData: FormData) {
+  return SupplierSchema.safeParse({
+    name: formData.get('name'),
+    nif: formData.get('nif'),
+    contactPerson: formData.get('contactPerson'),
+    phone: formData.get('phone'),
+    email: formData.get('email'),
+    address: formData.get('address'),
+    productType: formData.get('productType'),
+    healthRegistry: formData.get('healthRegistry'),
+  });
 }
 
-export async function updateSupplier(id: string, prevState: SupplierFormState, formData: FormData) {
-    const validatedFields = UpdateSupplier.safeParse({
-        id: id,
-        name: formData.get('name'),
-        contactInfo: formData.get('contactInfo'),
-        email: formData.get('email'),
+function data(d: z.infer<typeof SupplierSchema>) {
+  return {
+    name: d.name,
+    nif: d.nif || null,
+    contactPerson: d.contactPerson || null,
+    phone: d.phone || null,
+    email: d.email || null,
+    address: d.address || null,
+    productType: d.productType || null,
+    healthRegistry: d.healthRegistry || null,
+  };
+}
+
+export async function createSupplier(
+  prevState: SupplierFormState,
+  formData: FormData,
+): Promise<SupplierFormState> {
+  const validated = parseForm(formData);
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors, message: 'Faltan campos obligatorios.' };
+  }
+  const session = await auth();
+
+  try {
+    await prisma.supplier.create({
+      data: {
+        ...data(validated.data),
+        ownerId: session?.user?.id ?? null,
+        locationId: await scopedLocationId(),
+      },
     });
+  } catch (error) {
+    return { message: 'Error al crear el proveedor (¿nombre duplicado?).' };
+  }
 
-    if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios. Error al actualizar proveedor.',
-        };
-    }
+  revalidatePath('/dashboard/settings/suppliers');
+  redirect('/dashboard/settings/suppliers');
+}
 
-    const { name, contactInfo, email } = validatedFields.data;
+export async function updateSupplier(
+  id: string,
+  prevState: SupplierFormState,
+  formData: FormData,
+): Promise<SupplierFormState> {
+  const validated = parseForm(formData);
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors, message: 'Faltan campos obligatorios.' };
+  }
 
-    const inScope = await prisma.supplier.findFirst({
-        where: { ...(await locationScope()), id },
-        select: { id: true },
+  try {
+    const existing = await prisma.supplier.findFirst({
+      where: { id, ...(await locationScope()) },
+      select: { id: true },
     });
-    if (!inScope) {
-        return { message: 'No autorizado: el proveedor no pertenece a tu local.' };
-    }
+    if (!existing) return { message: 'Proveedor no encontrado.' };
 
-    try {
-        await prisma.supplier.update({
-            where: { id },
-            data: {
-                name,
-                contactInfo,
-                email,
-            },
-        });
-    } catch (error) {
-        return {
-            message: 'Error de base de datos: No se pudo actualizar el proveedor.',
-        };
-    }
+    await prisma.supplier.update({ where: { id }, data: data(validated.data) });
+  } catch (error) {
+    return { message: 'Error al actualizar el proveedor (¿nombre duplicado?).' };
+  }
 
-    revalidatePath('/dashboard/settings');
-    return { message: 'Proveedor actualizado correctamente.' };
+  revalidatePath('/dashboard/settings/suppliers');
+  redirect('/dashboard/settings/suppliers');
 }
 
 export async function deleteSupplier(id: string) {
-    try {
-        const scoped = await prisma.supplier.findFirst({
-            where: { ...(await locationScope()), id },
-            select: { id: true },
-        });
-        if (!scoped) {
-            return { message: 'No autorizado: el proveedor no pertenece a tu local.' };
-        }
-        await prisma.supplier.delete({
-            where: { id },
-        });
-        revalidatePath('/dashboard/settings');
-    } catch (error) {
-        return { message: 'Error de base de datos: No se pudo borrar el proveedor.' };
-    }
+  const existing = await prisma.supplier.findFirst({
+    where: { id, ...(await locationScope()) },
+    select: { id: true },
+  });
+  if (!existing) return;
+
+  await prisma.supplier.delete({ where: { id } });
+  revalidatePath('/dashboard/settings/suppliers');
 }
