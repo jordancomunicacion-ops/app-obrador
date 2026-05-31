@@ -48,3 +48,6 @@ next-env.d.ts
 prisma/dev.db
 *.prisma.backup
 schema.prisma.backup
+
+# Build output (cualquier ubicación, incl. apps/web)
+**/.next/

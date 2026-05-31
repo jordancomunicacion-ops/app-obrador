@@ -6,12 +6,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
-// Los 14 alérgenos de declaración obligatoria (Reglamento UE 1169/2011).
-export const OBRADOR_ALLERGENS = [
-  'Gluten', 'Crustáceos', 'Huevos', 'Pescado', 'Cacahuetes', 'Soja', 'Leche',
-  'Frutos de cáscara', 'Apio', 'Mostaza', 'Sésamo', 'Sulfitos', 'Altramuces', 'Moluscos',
-] as const;
-
 const num = z.coerce.number().optional().nullable();
 
 const ObradorProductSchema = z.object({

@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { ClipboardDocumentCheckIcon, ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
 import {
   createObradorDocument,
-  DOCUMENT_CATEGORIES,
   type ObradorDocumentFormState,
 } from '@/app/lib/actions/obrador-documents';
+import { DOCUMENT_CATEGORIES } from '@/app/lib/obrador-constants';
 
 export default function ObradorDocumentForm() {
   const [state, formAction] = useActionState<ObradorDocumentFormState, FormData>(

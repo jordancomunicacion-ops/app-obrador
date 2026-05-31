@@ -10,10 +10,8 @@ import {
   CheckIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import {
-  OBRADOR_ALLERGENS,
-  type ObradorProductFormState,
-} from '@/app/lib/actions/obrador-products';
+import { type ObradorProductFormState } from '@/app/lib/actions/obrador-products';
+import { OBRADOR_ALLERGENS } from '@/app/lib/obrador-constants';
 
 export type ObradorProductInitial = {
   id: string;

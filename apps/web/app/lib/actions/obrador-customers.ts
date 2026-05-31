@@ -6,14 +6,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
 
-export const CUSTOMER_TYPES = [
-  'Consumidor final',
-  'Minorista',
-  'Profesional (HORECA)',
-  'Online',
-  'Venta Directa',
-] as const;
-
 const CustomerSchema = z.object({
   name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
   customerType: z.string().optional(),
