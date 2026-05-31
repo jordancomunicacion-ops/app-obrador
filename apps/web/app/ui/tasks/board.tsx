@@ -23,7 +23,15 @@ export default async function TaskBoard() {
             assignedTo: true,
             recipe: true
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { plannedStart: 'asc' },
+    });
+
+    // Orden por hora programada: primero lo que toca antes. Las tareas sin hora
+    // programada van al final (desempate por fecha de creación, más reciente primero).
+    const ordered = [...tasks].sort((a, b) => {
+        const at = a.plannedStart ? a.plannedStart.getTime() : Infinity;
+        const bt = b.plannedStart ? b.plannedStart.getTime() : Infinity;
+        return at - bt || b.createdAt.getTime() - a.createdAt.getTime();
     });
 
     const users = await prisma.user.findMany({
@@ -44,11 +52,11 @@ export default async function TaskBoard() {
                     <h3 className="font-bold text-gray-700 mb-4 flex justify-between items-center">
                         {col.title}
                         <span className="bg-white px-2 py-0.5 rounded text-sm text-gray-500 border">
-                            {tasks.filter(t => t.status === col.id).length}
+                            {ordered.filter(t => t.status === col.id).length}
                         </span>
                     </h3>
                     <div className="space-y-3 overflow-y-auto flex-1 pr-2">
-                        {tasks.filter(t => t.status === col.id).map(task => (
+                        {ordered.filter(t => t.status === col.id).map(task => (
                             <div key={task.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
                                 <h4 className="font-semibold text-gray-900">{task.title}</h4>
                                 {task.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</p>}
@@ -102,7 +110,7 @@ export default async function TaskBoard() {
                                 </div>
                             </div>
                         ))}
-                        {tasks.filter(t => t.status === col.id).length === 0 && (
+                        {ordered.filter(t => t.status === col.id).length === 0 && (
                             <div className="text-center py-8 text-gray-400 text-sm italic">
                                 Sin tareas
                             </div>
