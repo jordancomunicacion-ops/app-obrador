@@ -21,15 +21,30 @@ Obrador es hoy un vertical paralelo de 14 modelos:
 
 De ellos, unos **duplican** el núcleo y otros son **legítimamente propios** del obrador (cumplimiento sanitario/APPCC).
 
+### A.1.1 Principio: ficha de producto ÚNICA *(decisión del usuario)*
+Existe **una sola ficha de producto** en el catálogo (`MasterProduct`), y **todas las secciones** (cocina, obrador, recetario, compras, etiquetas…) **beben de ella**. Cero duplicación por secciones. La ficha agrupa, como "pestañas" de un mismo producto:
+
+```
+MasterProduct  ← LA ficha única (p.ej. "Solomillo de vaca")  + flag esObrador
+  ├─ SupplierProduct[]            ← cada proveedor = una variante (NO un producto nuevo)
+  │     └─ Transformation         ← "test carnicero": mermas/rendimientos POR proveedor
+  │           └─ outputs → Ingredient   ← lo que se usa en recetas (coste real por proveedor)
+  ├─ ProductSanitaryInfo (1:1)    ← sección sanitaria/nutricional/legal (pestaña, no producto aparte)
+  └─ (recetas, etiquetas, obrador… referencian ESTE producto)
+```
+
+**Cambio de proveedor → no se duplica el producto:** se elige/añade otro `SupplierProduct` con su propio **test carnicero**. La ficha sigue siendo una; el coste y rendimiento se ajustan según el proveedor activo. Esto ya es la arquitectura existente `MasterProduct → SupplierProduct → Transformation`; la convergencia consiste en que **obrador la use también** en vez de su `ObradorProduct` paralelo.
+
 ### A.2 Mapa de convergencia
 
 | Obrador (duplica) | Núcleo destino | Acción |
 |---|---|---|
-| `ObradorProduct` | `MasterProduct` + `ProductSanitaryInfo` (nueva, extensión 1:1) | **Catálogo único con flag** `esObrador` en `MasterProduct`; los datos legales/nutricionales/conservación van a una **tabla de extensión separada** `ProductSanitaryInfo` (no columnas en MasterProduct) |
+| `ObradorProduct` | `MasterProduct` + `ProductSanitaryInfo` (extensión 1:1) | Pasa a ser la **ficha única** con flag `esObrador`; la info legal/nutricional/conservación es la sección `ProductSanitaryInfo` (pestaña de la misma ficha, no producto aparte) |
 | `ObradorRecipe` + `ObradorRecipeIngredient` | `Recipe` + `RecipeItem`/`RecipeStep` | Migrar a receta del núcleo; los % y aditivos pasan a `RecipeItem` (+ campo `esAditivo`) |
 | `ObradorSale` | `SalesRecord` (+ `MenuService`) | Migrar ventas a `SalesRecord` con referencia a lote |
 | `ObradorCustomer` | *(nuevo)* `Customer` del núcleo | Promover a un modelo `Customer` reutilizable (hoy solo existe en obrador) |
 | `ObradorRawMaterialEntry` | Recepción de `Supplier`/`SupplierProduct` (compras) | Unificar con el flujo de pedidos/albaranes (`PurchaseOrder`/`DeliveryNote`) |
+
 
 | Obrador (se CONSERVA — específico APPCC) | Motivo |
 |---|---|
