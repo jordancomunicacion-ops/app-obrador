@@ -10,7 +10,8 @@ import {
     BuildingStorefrontIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
-    TagIcon
+    TagIcon,
+    TableCellsIcon
 } from '@heroicons/react/24/outline';
 
 export type NavItem = {
@@ -39,10 +40,14 @@ export const groups: NavGroup[] = [
         ]
     },
     {
+        // Pipeline del catálogo: Productos (ficha: proveedores + test carnicero +
+        // perfiles aromáticos) → Recetas (combinan productos) → Planificación Menú
+        // (agrega las cantidades totales necesarias).
         name: 'Catálogo',
         items: [
             { name: 'Productos', href: '/dashboard/products', icon: ArchiveBoxIcon },
             { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon },
+            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon },
         ]
     },
     {
