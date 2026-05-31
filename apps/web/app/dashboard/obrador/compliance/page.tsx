@@ -24,7 +24,7 @@ export default async function CompliancePage() {
   const session = await auth();
   const ownerId = session?.user?.id ?? '__none__';
 
-  const [lastTemp, openIncidents, incidents] = await Promise.all([
+  const [lastTemp, openIncidents, incidents, lastCleaning] = await Promise.all([
     prisma.obradorTemperatureLog.findFirst({
       where: { ownerId },
       orderBy: { logDate: 'desc' },
@@ -35,6 +35,7 @@ export default async function CompliancePage() {
       orderBy: { incidentDate: 'desc' },
       take: 5,
     }),
+    prisma.obradorCleaningLog.findFirst({ orderBy: { logDate: 'desc' } }),
   ]);
 
   const cards = [
@@ -57,22 +58,22 @@ export default async function CompliancePage() {
       ready: true,
     },
     {
-      href: null,
+      href: '/dashboard/obrador/compliance/cleaning',
       name: 'Registro de Limpieza',
-      description: 'Checklist de tareas de limpieza y desinfección.',
+      description: 'Plan de tareas de limpieza y desinfección.',
       icon: <SparklesIcon className="w-6 h-6" />,
       color: 'text-teal-600 bg-teal-50',
-      lastEntry: 'Próximamente',
-      ready: false,
+      lastEntry: fmtAgo(lastCleaning?.logDate),
+      ready: true,
     },
     {
-      href: null,
+      href: '/dashboard/obrador/documents',
       name: 'Formación de Manipuladores',
-      description: 'Certificados y registros de formación.',
+      description: 'Certificados y registros de formación (en Documentación).',
       icon: <ClipboardDocumentCheckIcon className="w-6 h-6" />,
       color: 'text-purple-600 bg-purple-50',
-      lastEntry: 'Próximamente',
-      ready: false,
+      lastEntry: 'Ver documentos',
+      ready: true,
     },
   ];
 
