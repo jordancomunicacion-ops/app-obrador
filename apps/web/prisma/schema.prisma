@@ -236,6 +236,7 @@ model ProductSanitaryInfo {
   defaultWeight         Float?
   labelTemplate         String  @default("100x70")
   allergens             String? // lista separada por comas de los 14 alérgenos
+  ingredientsList       String? // composición en orden decreciente (para etiqueta)
 
   // Información nutricional
   energyKj          Float?
