@@ -88,7 +88,7 @@ export default function PackagedProductForm({
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
               <ArchiveBoxIcon className="w-8 h-8 text-emerald-600" />
-              {initial ? 'Editar Producto Envasado' : 'Nuevo Producto Envasado'}
+              {initial ? 'Editar Producto Elaborado' : 'Nuevo Producto Elaborado'}
             </h1>
             <p className="text-slate-600 mt-1">Configura la ficha técnica y legal del producto.</p>
           </div>

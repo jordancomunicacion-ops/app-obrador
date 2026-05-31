@@ -33,7 +33,7 @@ export default async function Page() {
                         className="flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
                     >
                         <PlusIcon className="h-5 w-5 mr-2" />
-                        Producto Envasado
+                        Producto Elaborado
                     </Link>
                 </div>
             </div>
@@ -84,11 +84,11 @@ export default async function Page() {
                                             <td className="whitespace-nowrap px-3 py-3">
                                                 {product.isObrador ? (
                                                     <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded uppercase">
-                                                        Envasado
+                                                        Elaborado
                                                     </span>
                                                 ) : (
                                                     <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded uppercase">
-                                                        Ingrediente
+                                                        No elaborado
                                                     </span>
                                                 )}
                                             </td>
