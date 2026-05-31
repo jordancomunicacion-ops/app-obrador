@@ -8,6 +8,7 @@ import {
     Cog6ToothIcon,
     ShoppingCartIcon,
     BuildingStorefrontIcon,
+    TruckIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
     TagIcon,
@@ -68,6 +69,7 @@ export const groups: NavGroup[] = [
             // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
             { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon },
             { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon },
+            { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
     }

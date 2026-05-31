@@ -3,9 +3,9 @@
 import { useActionState } from 'react';
 import Link from 'next/link';
 import { TruckIcon, CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { type ObradorSupplierFormState } from '@/app/lib/actions/obrador-suppliers';
+import { type SupplierFormState } from '@/app/lib/actions/suppliers';
 
-export type ObradorSupplierInitial = {
+export type SupplierInitial = {
   id: string;
   name: string;
   nif: string | null;
@@ -17,17 +17,17 @@ export type ObradorSupplierInitial = {
   healthRegistry: string | null;
 };
 
-export default function ObradorSupplierForm({
+export default function SupplierForm({
   action,
   initial,
 }: {
   action: (
-    prevState: ObradorSupplierFormState,
+    prevState: SupplierFormState,
     formData: FormData,
-  ) => Promise<ObradorSupplierFormState>;
-  initial?: ObradorSupplierInitial;
+  ) => Promise<SupplierFormState>;
+  initial?: SupplierInitial;
 }) {
-  const [state, formAction] = useActionState<ObradorSupplierFormState, FormData>(action, {
+  const [state, formAction] = useActionState<SupplierFormState, FormData>(action, {
     message: null,
     errors: {},
   });
@@ -39,7 +39,7 @@ export default function ObradorSupplierForm({
     <div className="p-6 max-w-3xl mx-auto pb-20">
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/dashboard/obrador/suppliers"
+          href="/dashboard/settings/suppliers"
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -124,7 +124,7 @@ export default function ObradorSupplierForm({
 
         <div className="flex justify-end gap-4">
           <Link
-            href="/dashboard/obrador/suppliers"
+            href="/dashboard/settings/suppliers"
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar

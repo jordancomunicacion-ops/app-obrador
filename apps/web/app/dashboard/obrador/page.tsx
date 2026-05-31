@@ -4,7 +4,6 @@ import {
   ArchiveBoxIcon,
   BeakerIcon,
   ClipboardDocumentCheckIcon,
-  TruckIcon,
   TagIcon,
   DocumentChartBarIcon,
   ShieldCheckIcon,
@@ -28,13 +27,6 @@ const modules = [
     href: '/dashboard/obrador/products',
     icon: ArchiveBoxIcon,
     color: 'bg-blue-100 text-blue-700',
-  },
-  {
-    name: 'Proveedores',
-    description: 'Gestión de proveedores homologados',
-    href: '/dashboard/obrador/suppliers',
-    icon: TruckIcon,
-    color: 'bg-amber-100 text-amber-700',
   },
   {
     name: 'Entradas de Materia Prima',
