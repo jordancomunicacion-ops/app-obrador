@@ -85,19 +85,6 @@ model User {
   authoredCommComments    CommunicationComment[] @relation("CommunicationCommentAuthor")
   ownedCommunications     Communication[]        @relation("CommunicationOwner")
 
-  // Fichaje
-  ownedClockIns   ClockIn[] @relation("ClockInOwner")
-  workerClockIns  ClockIn[] @relation("ClockInWorker")
-
-  // Solicitudes (vacaciones, ausencias, cambios de turno)
-  ownedRequests    EmployeeRequest[] @relation("EmployeeRequestOwner")
-  workerRequests   EmployeeRequest[] @relation("EmployeeRequestWorker")
-  resolvedRequests EmployeeRequest[] @relation("EmployeeRequestResolver")
-
-  // Turnos
-  ownedShifts  Shift[] @relation("ShiftOwner")
-  workerShifts Shift[] @relation("ShiftWorker")
-
   // Pedidos y albaranes
   ownedPurchaseOrders   PurchaseOrder[] @relation("PurchaseOrderOwner")
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreator")
@@ -106,14 +93,6 @@ model User {
   // Etiquetas
   ownedProductLabels   ProductLabel[] @relation("ProductLabelOwner")
   createdProductLabels ProductLabel[] @relation("ProductLabelCreator")
-
-  // Cierres de caja
-  ownedCashClosings  CashClosing[] @relation("CashClosingOwner")
-  closedCashClosings CashClosing[] @relation("CashClosingCloser")
-
-  // Finanzas (ingresos y gastos)
-  ownedFinancialEntries   FinancialEntry[] @relation("FinancialEntryOwner")
-  createdFinancialEntries FinancialEntry[] @relation("FinancialEntryCreator")
 
   // Push notifications
   pushSubscriptions PushSubscription[]
@@ -1136,11 +1115,7 @@ model Location {
   templates      ChecklistTemplate[] @relation("ChecklistTemplateLocation")
   schedules      ChecklistSchedule[] @relation("ChecklistScheduleLocation")
   communications Communication[]     @relation("CommunicationLocation")
-  clockIns        ClockIn[]           @relation("ClockInLocation")
-  shifts          Shift[]             @relation("ShiftLocation")
   productLabels   ProductLabel[]      @relation("ProductLabelLocation")
-  cashClosings    CashClosing[]       @relation("CashClosingLocation")
-  financialEntries FinancialEntry[]   @relation("FinancialEntryLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1370,118 +1345,6 @@ model ChecklistResponse {
 }
 
 // ============================================================================
-// 12. FICHAJE / CLOCK-IN (patrón yurest)
-// ============================================================================
-
-model ClockIn {
-  id String @id @default(cuid())
-
-  // Multi-tenancy
-  ownerId String
-  owner   User   @relation("ClockInOwner", fields: [ownerId], references: [id])
-
-  // Trabajador que ficha
-  workerId String
-  worker   User   @relation("ClockInWorker", fields: [workerId], references: [id])
-
-  // Local opcional donde se realiza la jornada
-  locationId String?
-  location   Location? @relation("ClockInLocation", fields: [locationId], references: [id])
-
-  // Entrada / salida
-  startAt        DateTime
-  endAt          DateTime?
-  startPhotoUrl  String?
-  endPhotoUrl    String?
-  startSignature String?    // base64 SVG/PNG opcional
-  endSignature   String?
-  note           String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId, workerId, startAt])
-  @@index([ownerId, locationId, startAt])
-}
-
-// ============================================================================
-// 13. SOLICITUDES (vacaciones, ausencias, cambios de turno) — patrón yurest
-// ============================================================================
-
-enum EmployeeRequestType {
-  HOLIDAY      // vacaciones
-  SICK_LEAVE   // baja médica
-  PERSONAL     // asuntos propios
-  SHIFT_SWAP   // cambio de turno
-  OTHER
-}
-
-enum EmployeeRequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-model EmployeeRequest {
-  id String @id @default(cuid())
-
-  ownerId String
-  owner   User   @relation("EmployeeRequestOwner", fields: [ownerId], references: [id])
-
-  workerId String
-  worker   User   @relation("EmployeeRequestWorker", fields: [workerId], references: [id])
-
-  type   EmployeeRequestType
-  status EmployeeRequestStatus @default(PENDING)
-
-  startDate DateTime  // fecha inicio (para vacaciones y bajas; para SHIFT_SWAP solo la fecha del cambio)
-  endDate   DateTime? // null si es un solo día
-
-  reason   String?
-  decision String? // motivo aceptado/rechazado por el admin
-
-  resolverUserId String?
-  resolver       User?   @relation("EmployeeRequestResolver", fields: [resolverUserId], references: [id])
-  resolvedAt     DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId, status, startDate])
-  @@index([ownerId, workerId, startDate])
-}
-
-// ============================================================================
-// 14. TURNOS / HORARIOS (yurest schedule)
-// ============================================================================
-
-model Shift {
-  id String @id @default(cuid())
-
-  ownerId String
-  owner   User   @relation("ShiftOwner", fields: [ownerId], references: [id])
-
-  workerId String
-  worker   User   @relation("ShiftWorker", fields: [workerId], references: [id])
-
-  locationId String?
-  location   Location? @relation("ShiftLocation", fields: [locationId], references: [id])
-
-  date          DateTime  // día del turno (UTC, hora 00:00)
-  startTime     String    // "08:00"
-  endTime       String    // "16:00"
-  breakMinutes  Int       @default(0)
-  note          String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId, date])
-  @@index([ownerId, workerId, date])
-}
-
-// ============================================================================
 // 15. PEDIDOS A PROVEEDORES + ALBARANES (yurest order + delivery-note)
 // ============================================================================
 
@@ -1602,95 +1465,6 @@ model ProductLabel {
 
   @@index([ownerId, productionDate])
   @@index([ownerId, locationId, productionDate])
-}
-
-// ============================================================================
-// 17. CIERRES DE CAJA (yurest cash-closing)
-// ============================================================================
-
-enum CashClosingShift {
-  MORNING   // turno comida
-  EVENING   // turno cena
-  FULL_DAY  // único cierre del día
-}
-
-model CashClosing {
-  id String @id @default(cuid())
-
-  ownerId String
-  owner   User   @relation("CashClosingOwner", fields: [ownerId], references: [id])
-
-  locationId String?
-  location   Location? @relation("CashClosingLocation", fields: [locationId], references: [id])
-
-  closedByUserId String?
-  closedBy       User?   @relation("CashClosingCloser", fields: [closedByUserId], references: [id])
-
-  date  DateTime          // día del cierre (UTC 00:00)
-  shift CashClosingShift  @default(FULL_DAY)
-
-  // Importes en EUR (Float; ya hay convención en el schema actual)
-  cashAmount         Float    @default(0)  // efectivo declarado
-  expectedCashAmount Float    @default(0)  // efectivo esperado (TPV o ventas brutas)
-  cardAmount         Float    @default(0)
-  otherAmount        Float    @default(0)  // bizum, transferencia, etc.
-  tips               Float    @default(0)
-
-  // diferencia se deriva (cash - expectedCash) pero también persistimos por simplicidad
-  diff Float @default(0)
-
-  notes    String?
-  photoUrl String?
-
-  isLocked Boolean  @default(false)  // una vez bloqueado no se edita
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([ownerId, locationId, date, shift])
-  @@index([ownerId, date])
-}
-
-// ============================================================================
-// 18. FINANZAS (yurest income / expenses / payments / EBITDA)
-// ============================================================================
-
-enum FinancialEntryType {
-  INCOME             // ingresos
-  EXPENSE_OPERATING  // gastos operativos (cocina, materia prima ad-hoc, luz, agua, alquiler)
-  EXPENSE_PAYROLL    // nóminas y SS
-  EXPENSE_SUPPLIER   // pago a proveedores (puede venir de PurchaseOrder)
-  EXPENSE_OTHER      // otros gastos (formación, marketing…)
-}
-
-model FinancialEntry {
-  id String @id @default(cuid())
-
-  ownerId String
-  owner   User   @relation("FinancialEntryOwner", fields: [ownerId], references: [id])
-
-  createdByUserId String?
-  createdBy       User?   @relation("FinancialEntryCreator", fields: [createdByUserId], references: [id])
-
-  locationId String?
-  location   Location? @relation("FinancialEntryLocation", fields: [locationId], references: [id])
-
-  type     FinancialEntryType
-  category String   // "Alquiler", "Luz", "Verduras", "Nómina María", etc.
-  date     DateTime // fecha del apunte (UTC 00:00)
-  amount   Float    // siempre positivo; el signo lo da el type
-  description String?
-  receiptUrl  String?  // foto/escan de factura
-
-  // Trazabilidad opcional con otros modelos
-  cashClosingId   String? // si proviene de un cierre de caja
-  purchaseOrderId String? // si proviene de un pedido
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId, type, date])
-  @@index([ownerId, locationId, date])
 }
 
 // ============================================================================

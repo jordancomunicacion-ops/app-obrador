@@ -4,8 +4,6 @@ import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { generateInstancesForDate } from "@/app/lib/actions/checklist-instances";
-import { getCurrentClockIn } from "@/app/lib/actions/clock-in";
-import ClockInCard from "@/app/ui/today/clock-in-card";
 import {
   ClockIcon,
   CameraIcon,
@@ -92,32 +90,9 @@ export default async function TodayPage() {
     orderBy: [{ schedule: { pinned: "desc" } }, { schedule: { executionStartTime: "asc" } }],
   });
 
-  // 4. Fichaje actual (si está abierto)
-  const currentClockIn = await getCurrentClockIn();
-
-  // 4b. Próximo turno (hoy o futuro)
-  const nextShift = await prisma.shift.findFirst({
-    where: {
-      ownerId: orgId,
-      workerId: userId,
-      date: { gte: todayStart },
-    },
-    include: { location: { select: { name: true } } },
-    orderBy: { date: "asc" },
-  });
-
   // 5. Pedidos por recibir
   const pendingDeliveries = await prisma.purchaseOrder.count({
     where: { ownerId: orgId, status: "SENT" },
-  });
-
-  // 6. Solicitudes propias pendientes / resueltas recientemente
-  const myRequestsPending = await prisma.employeeRequest.count({
-    where: {
-      ownerId: orgId,
-      workerId: userId,
-      status: "PENDING",
-    },
   });
 
   // 6. Comunicaciones abiertas asignadas a mí (averías, avisos…)
@@ -150,46 +125,6 @@ export default async function TodayPage() {
           year: "numeric",
         })}
       </p>
-
-      <ClockInCard
-        initial={
-          currentClockIn
-            ? {
-                id: currentClockIn.id,
-                startAt: currentClockIn.startAt.toISOString(),
-                locationName: currentClockIn.location?.name ?? null,
-              }
-            : null
-        }
-      />
-
-      {nextShift && (
-        <Link
-          href="/dashboard/today/schedule"
-          className="flex items-center justify-between bg-sky-50 border-2 border-sky-200 rounded-xl p-3 mb-4 hover:bg-sky-100 transition-colors"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <ClockIcon className="w-5 h-5 text-sky-700 flex-none" />
-            <div className="min-w-0">
-              <p className="text-xs text-sky-600 uppercase tracking-wider">
-                {new Date(nextShift.date).toDateString() === new Date().toDateString()
-                  ? "Tu turno hoy"
-                  : "Próximo turno"}
-              </p>
-              <p className="text-sm font-semibold text-sky-900 truncate">
-                {new Date(nextShift.date).toLocaleDateString("es-ES", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                })}{" "}
-                · {nextShift.startTime}–{nextShift.endTime}
-                {nextShift.location && ` · ${nextShift.location.name}`}
-              </p>
-            </div>
-          </div>
-          <span className="text-xs text-sky-700">Ver semana →</span>
-        </Link>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {openCommunications > 0 && (
@@ -226,31 +161,6 @@ export default async function TodayPage() {
         >
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-medium text-gray-700">🏷️ Etiqueta rápida</span>
-          </div>
-          <span className="text-xs text-gray-500">→</span>
-        </Link>
-        <Link
-          href="/dashboard/today/cash"
-          className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-medium text-gray-700">💶 Cierre de caja</span>
-          </div>
-          <span className="text-xs text-gray-500">→</span>
-        </Link>
-        <Link
-          href="/dashboard/today/requests"
-          className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-medium text-gray-700 truncate">
-              Mis solicitudes
-              {myRequestsPending > 0 && (
-                <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
-                  {myRequestsPending} pend.
-                </span>
-              )}
-            </span>
           </div>
           <span className="text-xs text-gray-500">→</span>
         </Link>
