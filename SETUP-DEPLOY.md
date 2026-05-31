@@ -11,7 +11,24 @@
 
 ---
 
-## Paso único (hazlo tú por SSH, una vez)
+## Paso único — forma fácil: `SETUP-VPS-COCINA.bat`
+
+> ⚠️ No se puede hacer desde Claude (el entorno en la nube no tiene acceso SSH a tu VPS).
+> Lo ejecutas tú desde tu PC, **una sola vez**.
+
+1. Doble clic en **`SETUP-VPS-COCINA.bat`** (está en la raíz del repo, junto a `DESPLEGAR.bat`).
+2. Te pedirá tu **usuario de GitHub** y un **Personal Access Token** (classic, con permiso `repo`).
+   Créalo en https://github.com/settings/tokens si no tienes uno.
+3. El script hace todo solo: respalda el `.env`, renombra la carpeta vieja (sin tocar la BD),
+   clona el repo, restaura el `.env`, arranca con `docker compose` y verifica `/api/health`.
+4. Si al final ves `HTTP 200`, listo. A partir de ahí usas `DESPLEGAR.bat` → opción **1**.
+
+Si el script falla a mitad, no borra nada: tu carpeta anterior queda como
+`/root/SOTOdelPRIOR/apps/cocina_old_*` y la base de datos está intacta.
+
+---
+
+## Paso único — forma manual (alternativa, si prefieres comando a comando)
 
 La carpeta actual del servidor `/root/SOTOdelPRIOR/apps/cocina` **no es un repo git** (recibía el tar).
 Hay que convertirla en un clon del repo, **conservando** los volúmenes de base de datos (que son externos a la carpeta, así que no se tocan).
