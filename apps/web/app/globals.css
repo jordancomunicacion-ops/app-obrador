@@ -3,6 +3,24 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Acento por módulo. Por defecto = Cocina (índigo). */
+  --accent: #4f46e5; /* indigo-600 */
+  --accent-hover: #4338ca; /* indigo-700 */
+  --accent-contrast: #ffffff;
+  --accent-soft: #eef2ff; /* indigo-50 */
+  --accent-soft-contrast: #4338ca; /* indigo-700 */
+
+  --radius: 0.75rem;
+}
+
+/* Obrador = azul. Se aplica envolviendo el subárbol con esta clase. */
+.theme-obrador {
+  --accent: #2563eb; /* blue-600 */
+  --accent-hover: #1d4ed8; /* blue-700 */
+  --accent-contrast: #ffffff;
+  --accent-soft: #eff6ff; /* blue-50 */
+  --accent-soft-contrast: #1d4ed8; /* blue-700 */
 }
 
 @theme inline {
@@ -22,5 +40,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
