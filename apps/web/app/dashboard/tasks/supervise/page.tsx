@@ -63,6 +63,15 @@ export default async function SupervisePage() {
 
   return (
     <div>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h1 className="text-2xl font-semibold text-gray-800">Supervisión</h1>
+        <Link
+          href="/dashboard/tasks/assign"
+          className="text-sm text-indigo-600 hover:underline"
+        >
+          Asignar pendientes →
+        </Link>
+      </div>
       <div className="grid sm:grid-cols-3 gap-3 mb-6">
         <SummaryCard label="Total" value={enriched.length} color="gray" />
         <SummaryCard label="Pendientes de supervisar" value={pending.length} color="amber" />

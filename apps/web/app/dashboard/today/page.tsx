@@ -69,11 +69,14 @@ export default async function TodayPage() {
       schedule: {
         ownerId: orgId,
         ...(locationId ? { locationId } : {}),
-        OR: [
-          { performerUserIds: { has: userId } },
-          { performerRoles: { has: role } },
-        ],
       },
+      // Una instancia asignada aparece solo para su asignado; sin asignar, sigue
+      // visible para el pool de ejecutores de la programación.
+      OR: [
+        { assignedToUserId: userId },
+        { assignedToUserId: null, schedule: { performerUserIds: { has: userId } } },
+        { assignedToUserId: null, schedule: { performerRoles: { has: role } } },
+      ],
     },
     include: {
       schedule: {

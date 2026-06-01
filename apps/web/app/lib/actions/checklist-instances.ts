@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUsers } from "@/app/lib/push/send";
+import { sendPushToUser, sendPushToUsers } from "@/app/lib/push/send";
 import type { Frequency } from "@prisma/client";
 
 // ============================================================================
@@ -136,6 +136,7 @@ async function loadInstanceForUser(instanceId: string) {
 
   // Verificar que el usuario puede actuar sobre esta instancia.
   const isOwner = session.user.id === orgId;
+  const isAssignee = instance.assignedToUserId === session.user.id;
   const isPerformer =
     instance.schedule.performerUserIds.includes(session.user.id) ||
     instance.schedule.performerRoles.includes((session.user as any).role ?? "");
@@ -143,7 +144,7 @@ async function loadInstanceForUser(instanceId: string) {
     instance.schedule.supervisorUserIds.includes(session.user.id) ||
     instance.schedule.supervisorRoles.includes((session.user as any).role ?? "");
 
-  if (!isOwner && !isPerformer && !isSupervisor) {
+  if (!isOwner && !isAssignee && !isPerformer && !isSupervisor) {
     throw new Error("Forbidden");
   }
 
@@ -280,5 +281,72 @@ export async function closeInstance(instanceId: string) {
   }
 
   revalidatePath(`/dashboard/today/checklist/${instance.id}`);
+  revalidatePath("/dashboard/today");
+}
+
+// ============================================================================
+// Asignación de instancias a una persona concreta
+// ============================================================================
+
+/**
+ * Asigna (o desasigna, con assigneeUserId = null) una instancia a un usuario.
+ * Solo el propietario/admin o un supervisor de la programación pueden asignar.
+ * Si se asigna, se envía un push al asignado.
+ */
+export async function assignChecklistInstance(
+  instanceId: string,
+  assigneeUserId: string | null,
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  const orgId = await currentOrgId();
+  if (!orgId) throw new Error("Unauthorized");
+
+  const instance = await prisma.checklistInstance.findFirst({
+    where: { id: instanceId, schedule: { ownerId: orgId } },
+    include: {
+      schedule: {
+        select: {
+          supervisorUserIds: true,
+          supervisorRoles: true,
+          template: { select: { name: true } },
+          location: { select: { name: true } },
+        },
+      },
+    },
+  });
+  if (!instance) throw new Error("Instance not found");
+
+  const role = (session.user as any).role ?? "";
+  const isOwner = session.user.id === orgId;
+  const isSupervisor =
+    instance.schedule.supervisorUserIds.includes(session.user.id) ||
+    instance.schedule.supervisorRoles.includes(role);
+  if (!isOwner && !isSupervisor) throw new Error("Forbidden");
+
+  // Validar que el asignado pertenece a la organización.
+  if (assigneeUserId) {
+    const user = await prisma.user.findFirst({
+      where: { id: assigneeUserId, OR: [{ id: orgId }, { adminId: orgId }] },
+      select: { id: true },
+    });
+    if (!user) throw new Error("Usuario no válido");
+  }
+
+  await prisma.checklistInstance.update({
+    where: { id: instanceId },
+    data: { assignedToUserId: assigneeUserId },
+  });
+
+  if (assigneeUserId && assigneeUserId !== session.user.id) {
+    await sendPushToUser(assigneeUserId, {
+      title: `📋 Tarea asignada: ${instance.schedule.template.name}`,
+      body: instance.schedule.location.name,
+      url: `/dashboard/today/checklist/${instanceId}`,
+      tag: `assign-${instanceId}`,
+    });
+  }
+
+  revalidatePath("/dashboard/tasks/assign");
   revalidatePath("/dashboard/today");
 }

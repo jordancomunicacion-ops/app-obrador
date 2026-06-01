@@ -75,6 +75,7 @@ model User {
   ownedChecklistTemplates      ChecklistTemplate[] @relation("ChecklistTemplateOwner")
   ownedChecklistSchedules      ChecklistSchedule[] @relation("ChecklistScheduleOwner")
   closedChecklistInstances     ChecklistInstance[] @relation("ChecklistInstanceClosedBy")
+  assignedChecklistInstances   ChecklistInstance[] @relation("ChecklistInstanceAssignee")
   answeredChecklistResponses   ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 
@@ -1279,12 +1280,17 @@ model ChecklistInstance {
   closedBy       User?          @relation("ChecklistInstanceClosedBy", fields: [closedByUserId], references: [id])
   scoreAvg       Float?
 
+  // Asignación a una persona concreta (sobre el pool de ejecutores de la programación).
+  assignedToUserId String?
+  assignedTo       User?   @relation("ChecklistInstanceAssignee", fields: [assignedToUserId], references: [id])
+
   responses ChecklistResponse[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([scheduleId, dueDate])
+  @@index([assignedToUserId])
 }
 
 // ============================================================================
