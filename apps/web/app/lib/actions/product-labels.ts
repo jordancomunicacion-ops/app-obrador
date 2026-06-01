@@ -231,3 +231,85 @@ export async function getObradorLabelSource(): Promise<ObradorLabelSource> {
 
   return { products: Array.from(byProduct.values()) };
 }
+
+/**
+ * Crea (o reutiliza) la etiqueta de venta de un lote de producción, congelando
+ * el snapshot legal desde la ficha del producto (MasterProduct + sanitaryInfo)
+ * y los datos del local. Idempotente: si el lote ya tiene una etiqueta de venta,
+ * devuelve esa. Pensada para el flujo de un clic "generar+imprimir" desde Producción.
+ */
+export async function ensureSaleLabelForBatch(batchId: string): Promise<{ id: string }> {
+  const session = await auth();
+  const orgId = await currentOrgId();
+  if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
+
+  const existing = await prisma.productLabel.findFirst({
+    where: { ownerId: orgId, obradorBatchId: batchId, destination: "SALE" },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  if (existing) return existing;
+
+  const batch = await prisma.obradorProductionBatch.findFirst({
+    where: { id: batchId, ownerId: orgId },
+    include: { masterProduct: { include: { sanitaryInfo: true, location: true } } },
+  });
+  if (!batch) throw new Error("Lote no encontrado");
+  if (!batch.masterProduct) {
+    throw new Error("El lote no tiene ficha de producto; no se puede generar la etiqueta de venta.");
+  }
+
+  const p = batch.masterProduct;
+  const s = p.sanitaryInfo;
+  const loc = p.location;
+  const config = await prisma.obradorConfig.findUnique({ where: { id: "default" } });
+
+  const allergens = (s?.allergens || "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  const locationId = await currentLocationId();
+
+  const created = await prisma.productLabel.create({
+    data: {
+      ownerId: orgId,
+      createdByUserId: session.user.id,
+      locationId: locationId ?? p.locationId ?? null,
+      destination: "SALE",
+      productName: p.name,
+      lotNumber: batch.batchCode,
+      productionDate: batch.productionDate,
+      expiryDate: batch.expiryDate,
+      storageMode: CONSERVATION_TO_STORAGE[s?.conservationType ?? ""] ?? "REFRIGERATED",
+      allergens,
+      ingredients: s?.ingredientsList ?? null,
+      weight: s?.defaultWeight != null ? `${s.defaultWeight} g` : null,
+      masterProductId: p.id,
+      obradorBatchId: batch.id,
+      legalDenomination: s?.legalDenomination ?? null,
+      registryNumber: loc?.registryNumber ?? config?.registryNumber ?? null,
+      origin: loc?.region ?? config?.region ?? null,
+      usageInstructions:
+        s?.usageInstructions ??
+        (s?.requiresCooking ? "Cocinar completamente antes de su consumo." : null),
+      requiresCooking: s?.requiresCooking ?? null,
+      labelTemplate: s?.labelTemplate || "100x70",
+      nutritionSnapshot: {
+        energyKj: s?.energyKj ?? null,
+        energyKcal: s?.energyKcal ?? null,
+        fat: s?.fat ?? null,
+        saturatedFat: s?.saturatedFat ?? null,
+        carbs: s?.carbs ?? null,
+        sugars: s?.sugars ?? null,
+        protein: s?.protein ?? null,
+        salt: s?.salt ?? null,
+      } as Prisma.InputJsonValue,
+    },
+    select: { id: true },
+  });
+
+  revalidatePath("/dashboard/labels");
+  revalidatePath("/dashboard/today/labels");
+  return created;
+}

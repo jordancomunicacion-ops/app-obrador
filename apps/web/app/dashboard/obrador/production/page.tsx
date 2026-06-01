@@ -8,6 +8,7 @@ import {
 import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import DeleteObradorBatch from '@/app/ui/obrador/delete-batch';
+import PrintBatchLabelButton from '@/app/ui/labels/print-batch-label-button';
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString('es-ES', {
@@ -156,23 +157,11 @@ export default async function ObradorProductionPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          href={`/dashboard/today/labels?destination=sale${
-                            batch.masterProductId ? `&productId=${batch.masterProductId}` : ''
-                          }&batchId=${batch.id}`}
-                          className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors"
-                          title="Generar etiqueta de venta"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                            />
-                          </svg>
-                        </Link>
+                      <div className="flex justify-end items-center gap-2">
+                        <PrintBatchLabelButton
+                          batchId={batch.id}
+                          disabled={!batch.masterProductId}
+                        />
                         <DeleteObradorBatch id={batch.id} />
                       </div>
                     </td>
