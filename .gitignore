@@ -51,3 +51,6 @@ schema.prisma.backup
 
 # Build output (cualquier ubicación, incl. apps/web)
 **/.next/
+
+# vitest cache
+apps/web/node_modules/.vite/

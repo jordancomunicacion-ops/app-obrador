@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Instala las dependencias de todos los workspaces de forma reproducible.
+      - run: npm ci
+
+      # Tests unitarios (vitest). No requieren base de datos: el acceso a Prisma
+      # está mockeado en los tests, así que no hace falta `prisma generate` ni DB.
+      - run: npm test
