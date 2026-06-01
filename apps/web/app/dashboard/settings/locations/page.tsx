@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { createLocation, updateLocation, deleteLocation } from "@/app/lib/actions/locations";
 import { BuildingStorefrontIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import PageHeader from "@/app/ui/primitives/page-header";
 
 export default async function LocationsSettingsPage() {
   const orgId = await currentOrgId();
@@ -15,10 +16,11 @@ export default async function LocationsSettingsPage() {
 
   return (
     <main className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Locales</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Locales bajo tu organización. Cada plantilla, programación y empleado puede asociarse a un local.
-      </p>
+      <PageHeader
+        icon={<BuildingStorefrontIcon className="w-6 h-6" />}
+        title="Locales"
+        description="Locales bajo tu organización. Cada plantilla, programación y empleado puede asociarse a un local."
+      />
 
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">

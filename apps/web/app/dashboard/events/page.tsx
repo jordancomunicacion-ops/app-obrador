@@ -1,6 +1,8 @@
 import EventsTable from '@/app/ui/events/table';
 import { CreateEvent } from '@/app/ui/events/buttons';
 import { Suspense } from 'react';
+import PageHeader from '@/app/ui/primitives/page-header';
+import { CalendarIcon } from '@heroicons/react/24/outline';
 
 export default async function Page({
     searchParams,
@@ -16,12 +18,11 @@ export default async function Page({
 
     return (
         <div className="w-full">
-            <div className="flex w-full items-center justify-between">
-                <h1 className="text-2xl">Gestión de Eventos</h1>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-                <CreateEvent />
-            </div>
+            <PageHeader
+                icon={<CalendarIcon className="w-6 h-6" />}
+                title="Gestión de eventos"
+                actions={<CreateEvent />}
+            />
             <Suspense fallback={<div>Cargando eventos...</div>}>
                 <EventsTable query={query} currentPage={currentPage} />
             </Suspense>

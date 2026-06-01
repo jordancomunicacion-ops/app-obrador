@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { ScaleIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import CategoryList from '@/app/ui/settings/category-list';
 import PackagingList from '@/app/ui/settings/packaging-list';
+import PageHeader from '@/app/ui/primitives/page-header';
+import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 
 export default function Page() {
     return (
         <main>
-            <h1 className="mb-8 text-2xl font-bold">Configuración</h1>
+            <PageHeader icon={<Cog6ToothIcon className="w-6 h-6" />} title="Configuración" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>

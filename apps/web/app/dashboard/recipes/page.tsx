@@ -3,6 +3,8 @@ import { CreateRecipe } from '@/app/ui/recipes/buttons';
 import { Suspense } from 'react';
 import Search from '@/app/ui/search';
 import CategoryFilter from '@/app/ui/recipes/category-filter';
+import PageHeader from '@/app/ui/primitives/page-header';
+import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 
 export default async function Page({
     searchParams,
@@ -20,10 +22,11 @@ export default async function Page({
 
     return (
         <div className="w-full">
-            <div className="flex w-full items-center justify-between">
-                <h1 className="text-2xl">Recetario (Escandallos)</h1>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+            <PageHeader
+                icon={<DocumentDuplicateIcon className="w-6 h-6" />}
+                title="Recetario (escandallos)"
+            />
+            <div className="flex items-center justify-between gap-2">
                 <div className="flex gap-2 flex-1">
                     <Search placeholder="Buscar recetas..." />
                     <CategoryFilter />
