@@ -4,20 +4,31 @@ import { currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { ArrowLeftIcon, TagIcon } from "@heroicons/react/24/outline";
 import LabelForm from "@/app/ui/labels/label-form";
+import { getObradorLabelSource } from "@/app/lib/actions/product-labels";
 
-export default async function LabelsMobilePage() {
+export default async function LabelsMobilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ destination?: string; productId?: string; batchId?: string }>;
+}) {
   const orgId = await currentOrgId();
   if (!orgId) return null;
   const locationId = await currentLocationId();
+  const sp = await searchParams;
 
-  const recent = await prisma.productLabel.findMany({
-    where: {
-      ownerId: orgId,
-      ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const [recent, source] = await Promise.all([
+    prisma.productLabel.findMany({
+      where: {
+        ownerId: orgId,
+        ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    getObradorLabelSource(),
+  ]);
+
+  const initialDestination = sp.destination === "sale" ? "SALE" : "INTERNAL";
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -34,10 +45,15 @@ export default async function LabelsMobilePage() {
         Nueva etiqueta
       </h1>
       <p className="text-sm text-gray-500 mb-4">
-        Etiqueta de trazabilidad para productos elaborados o envasados
+        Trazabilidad interna o etiqueta de venta según el destino
       </p>
 
-      <LabelForm />
+      <LabelForm
+        source={source}
+        initialDestination={initialDestination}
+        initialProductId={sp.productId ?? ""}
+        initialBatchId={sp.batchId ?? ""}
+      />
 
       {recent.length > 0 && (
         <section className="mt-8">
@@ -62,7 +78,16 @@ export default async function LabelsMobilePage() {
                         ` → Cad ${new Date(l.expiryDate).toLocaleDateString("es-ES")}`}
                     </p>
                   </div>
-                  <span className="text-xs text-indigo-600">Imprimir</span>
+                  <span
+                    className={
+                      (l.destination === "SALE"
+                        ? "bg-emerald-50 text-emerald-700 "
+                        : "bg-gray-100 text-gray-600 ") +
+                      "text-[10px] font-medium px-2 py-0.5 rounded-full"
+                    }
+                  >
+                    {l.destination === "SALE" ? "Venta" : "Producción"}
+                  </span>
                 </div>
               </Link>
             ))}

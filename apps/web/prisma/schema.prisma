@@ -217,6 +217,9 @@ model MasterProduct {
   // Puentes de convergencia obrador → núcleo (aditivos, Frente A).
   obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToMaster")
 
+  // Etiquetas de venta generadas a partir de esta ficha.
+  productLabels ProductLabel[] @relation("MasterProductLabels")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -919,6 +922,7 @@ model ObradorProductionBatch {
   status        String  @default("abierto") // abierto, cerrado, bloqueado, retirado
 
   usedMaterials ObradorBatchIngredient[]
+  productLabels ProductLabel[] @relation("ObradorBatchLabels")
 
   // Puentes convergencia → núcleo (Frente A, aditivo). Los lotes nunca se tocan;
   // solo ganan FK a la receta/ficha del núcleo para trazabilidad unificada.
@@ -1695,6 +1699,12 @@ enum LabelStorageMode {
   FROZEN
 }
 
+// Destino de la etiqueta: trazabilidad de producción (uso interno) o etiqueta legal de venta.
+enum LabelDestination {
+  INTERNAL
+  SALE
+}
+
 model ProductLabel {
   id String @id @default(cuid())
 
@@ -1707,6 +1717,8 @@ model ProductLabel {
   locationId String?
   location   Location? @relation("ProductLabelLocation", fields: [locationId], references: [id])
 
+  destination LabelDestination @default(INTERNAL)
+
   productName    String
   lotNumber      String?
   productionDate DateTime
@@ -1718,11 +1730,29 @@ model ProductLabel {
   note           String?
   photoUrl       String?
 
+  // --- Etiqueta de venta (destination = SALE) ---
+  // Referencia a la ficha del producto y al lote de obrador (trazabilidad ascendente).
+  masterProductId String?
+  masterProduct   MasterProduct? @relation("MasterProductLabels", fields: [masterProductId], references: [id])
+  obradorBatchId  String?
+  obradorBatch    ObradorProductionBatch? @relation("ObradorBatchLabels", fields: [obradorBatchId], references: [id])
+
+  // Snapshot legal: copia congelada al crear la etiqueta, para que una etiqueta ya
+  // impresa no cambie si luego se edita la ficha del producto.
+  legalDenomination String?
+  registryNumber    String?  // nº de registro sanitario (del local o ObradorConfig)
+  origin            String?
+  usageInstructions String?
+  requiresCooking   Boolean?
+  labelTemplate     String?  // 100x70, 100x50, 80x50, 60x40
+  nutritionSnapshot Json?    // { energyKj, energyKcal, fat, saturatedFat, carbs, sugars, protein, salt }
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId, productionDate])
   @@index([ownerId, locationId, productionDate])
+  @@index([ownerId, destination, productionDate])
 }
 
 // ============================================================================
