@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { PlusIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import { DeleteProduct } from '@/app/ui/products/buttons';
 import { locationScope } from '@/app/lib/auth/scope';
+import PageHeader from '@/app/ui/primitives/page-header';
+import Button from '@/app/ui/primitives/button';
+import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
 
 export default async function Page() {
     const products = await prisma.masterProduct.findMany({
@@ -18,25 +21,22 @@ export default async function Page() {
 
     return (
         <div className="w-full">
-            <div className="flex w-full items-center justify-between mb-8 gap-3 flex-wrap">
-                <h1 className="text-2xl font-bold">Gestión de Productos</h1>
-                <div className="flex items-center gap-2">
-                    <Link
-                        href="/dashboard/products/create"
-                        className="flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-                    >
-                        <PlusIcon className="h-5 w-5 mr-2" />
-                        Añadir Producto
-                    </Link>
-                    <Link
-                        href="/dashboard/products/packaged/create"
-                        className="flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
-                    >
-                        <PlusIcon className="h-5 w-5 mr-2" />
-                        Producto Elaborado
-                    </Link>
-                </div>
-            </div>
+            <PageHeader
+                icon={<ArchiveBoxIcon className="w-6 h-6" />}
+                title="Gestión de productos"
+                actions={
+                    <>
+                        <Button href="/dashboard/products/create">
+                            <PlusIcon className="h-4 w-4" />
+                            Añadir producto
+                        </Button>
+                        <Button href="/dashboard/products/packaged/create" variant="secondary">
+                            <PlusIcon className="h-4 w-4" />
+                            Producto elaborado
+                        </Button>
+                    </>
+                }
+            />
 
             <div className="mt-6 flow-root">
                 <div className="inline-block min-w-full align-middle">
@@ -78,7 +78,7 @@ export default async function Page() {
                                         >
                                             <td className="whitespace-nowrap py-3 pl-6 pr-3">
                                                 <div className="flex items-center gap-3">
-                                                    <p className="font-semibold text-blue-700">{product.name}</p>
+                                                    <p className="font-semibold text-[var(--accent-soft-contrast)]">{product.name}</p>
                                                 </div>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-3">

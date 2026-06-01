@@ -6,6 +6,8 @@ import { PlusIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 import { currentOrgId } from '@/auth';
 import { locationScope } from '@/app/lib/auth/scope';
+import PageHeader from '@/app/ui/primitives/page-header';
+import Button from '@/app/ui/primitives/button';
 
 export default async function Page() {
     const orgId = await currentOrgId();
@@ -19,18 +21,16 @@ export default async function Page() {
 
     return (
         <div className="w-full">
-            <div className="flex w-full items-center justify-between">
-                <h1 className="text-2xl">Planificación Menú</h1>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-                <Link
-                    href="/dashboard/menu-planning/create"
-                    className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                    <span className="hidden md:block">Nuevo Servicio</span>
-                    <PlusIcon className="h-5 md:ml-4" />
-                </Link>
-            </div>
+            <PageHeader
+                icon={<CalendarIcon className="w-6 h-6" />}
+                title="Planificación de menú"
+                actions={
+                    <Button href="/dashboard/menu-planning/create">
+                        <PlusIcon className="h-4 w-4" />
+                        Nuevo servicio
+                    </Button>
+                }
+            />
 
             <div className="mt-6 flow-root">
                 <div className="inline-block min-w-full align-middle">
