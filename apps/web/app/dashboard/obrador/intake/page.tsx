@@ -3,6 +3,7 @@ import { PlusIcon, ArchiveBoxIcon, TruckIcon } from '@heroicons/react/24/outline
 import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import DeleteObradorIntake from '@/app/ui/obrador/delete-intake';
+import ObradorTabs from '@/app/ui/obrador/tabs';
 
 function fmtDate(d: Date | null) {
   if (!d) return '—';
@@ -24,6 +25,7 @@ export default async function ObradorIntakePage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <ObradorTabs />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">

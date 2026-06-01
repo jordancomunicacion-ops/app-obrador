@@ -9,6 +9,7 @@ import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import DeleteObradorBatch from '@/app/ui/obrador/delete-batch';
 import PrintBatchLabelButton from '@/app/ui/labels/print-batch-label-button';
+import ObradorTabs from '@/app/ui/obrador/tabs';
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString('es-ES', {
@@ -49,6 +50,7 @@ export default async function ObradorProductionPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <ObradorTabs />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
