@@ -112,7 +112,7 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
 
             {/* PROFILE */}
             <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg uppercase">
+                <div className="w-10 h-10 bg-[var(--accent)] rounded-full flex items-center justify-center text-white font-bold text-lg uppercase">
                     {user?.name?.[0] || 'U'}
                 </div>
                 <div>
@@ -153,7 +153,7 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
                                                 className={clsx(
                                                     'w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                                                     {
-                                                        'bg-indigo-50 text-indigo-700 shadow-sm': isActive,
+                                                        'bg-[var(--accent-soft)] text-[var(--accent-soft-contrast)] shadow-sm': isActive,
                                                         'text-gray-600 hover:bg-gray-50 hover:text-gray-900': !isActive,
                                                     },
                                                 )}
@@ -177,12 +177,12 @@ export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: strin
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                     <UserIcon className="w-5" />
-                    <span>Mi Perfil</span>
+                    <span>Mi perfil</span>
                 </Link>
                 <form action={signOutAction}>
                     <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors">
                         <ArrowRightOnRectangleIcon className="w-5" />
-                        <span>Cerrar Sesión</span>
+                        <span>Cerrar sesión</span>
                     </button>
                 </form>
             </div>
