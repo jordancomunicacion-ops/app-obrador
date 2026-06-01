@@ -5,13 +5,18 @@ import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { generateInstancesForDate } from "@/app/lib/actions/checklist-instances";
 import ProductionList from "@/app/ui/today/production-list";
+import PageHeader from "@/app/ui/primitives/page-header";
+import Badge from "@/app/ui/primitives/badge";
+import EmptyState from "@/app/ui/primitives/empty-state";
 import {
   ClockIcon,
-  CameraIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   PlayCircleIcon,
   ChatBubbleLeftRightIcon,
+  TruckIcon,
+  TagIcon,
+  SunIcon,
 } from "@heroicons/react/24/outline";
 
 function startOfDayUTC(date = new Date()) {
@@ -58,20 +63,14 @@ export default async function TodayPage() {
       unit: true,
       recipe: { select: { name: true, category: true } },
     },
-    // El orden manual del empleado (sortOrder) manda; sin él, manda la hora.
     orderBy: [{ sortOrder: { sort: "asc", nulls: "last" } }, { plannedStart: "asc" }],
   });
 
-  // 3. Checklists del día asignadas a mí (como ejecutor)
+  // 3. Checklists del día (asignadas a mí, o del pool si están sin asignar)
   const checklistInstances = await prisma.checklistInstance.findMany({
     where: {
       dueDate: todayStart,
-      schedule: {
-        ownerId: orgId,
-        ...(locationId ? { locationId } : {}),
-      },
-      // Una instancia asignada aparece solo para su asignado; sin asignar, sigue
-      // visible para el pool de ejecutores de la programación.
+      schedule: { ownerId: orgId, ...(locationId ? { locationId } : {}) },
       OR: [
         { assignedToUserId: userId },
         { assignedToUserId: null, schedule: { performerUserIds: { has: userId } } },
@@ -93,12 +92,10 @@ export default async function TodayPage() {
     orderBy: [{ schedule: { pinned: "desc" } }, { schedule: { executionStartTime: "asc" } }],
   });
 
-  // 5. Pedidos por recibir
   const pendingDeliveries = await prisma.purchaseOrder.count({
     where: { ownerId: orgId, status: "SENT" },
   });
 
-  // 6. Comunicaciones abiertas asignadas a mí (averías, avisos…)
   const openCommunications = await prisma.communication.count({
     where: {
       ownerId: orgId,
@@ -112,70 +109,57 @@ export default async function TodayPage() {
     },
   });
 
-  // 5. Contar campos de cada plantilla para mostrar progreso
-  const templateIds = Array.from(
-    new Set(checklistInstances.map((i) => i.schedule.template.name)),
-  );
+  const fecha = new Date().toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-1">Mis tareas hoy</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        {new Date().toLocaleDateString("es-ES", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
-      </p>
+      <PageHeader
+        icon={<SunIcon className="w-6 h-6" />}
+        title="Mis tareas hoy"
+        description={fecha.charAt(0).toUpperCase() + fecha.slice(1)}
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+      {/* Accesos rápidos / avisos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
         {openCommunications > 0 && (
-          <Link
+          <QuickTile
             href="/dashboard/communications"
-            className="flex items-center justify-between bg-amber-50 border-2 border-amber-200 rounded-xl p-3 hover:bg-amber-100 transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <ChatBubbleLeftRightIcon className="w-5 h-5 text-amber-700 flex-none" />
-              <span className="text-sm font-medium text-amber-800 truncate">
-                {openCommunications}{" "}
-                {openCommunications === 1 ? "comunicación" : "comunicaciones"} para ti
-              </span>
-            </div>
-            <span className="text-xs text-amber-700">→</span>
-          </Link>
+            icon={<ChatBubbleLeftRightIcon className="w-5 h-5" />}
+            tone="amber"
+            label={`${openCommunications} ${
+              openCommunications === 1 ? "comunicación" : "comunicaciones"
+            } para ti`}
+          />
         )}
         {pendingDeliveries > 0 && (
-          <Link
+          <QuickTile
             href="/dashboard/today/deliveries"
-            className="flex items-center justify-between bg-violet-50 border-2 border-violet-200 rounded-xl p-3 hover:bg-violet-100 transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-medium text-violet-800 truncate">
-                📦 {pendingDeliveries} pedido{pendingDeliveries === 1 ? "" : "s"} por recibir
-              </span>
-            </div>
-            <span className="text-xs text-violet-700">→</span>
-          </Link>
+            icon={<TruckIcon className="w-5 h-5" />}
+            tone="violet"
+            label={`${pendingDeliveries} pedido${pendingDeliveries === 1 ? "" : "s"} por recibir`}
+          />
         )}
-        <Link
+        <QuickTile
           href="/dashboard/today/labels"
-          className="flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-3 hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-medium text-gray-700">🏷️ Etiqueta rápida</span>
-          </div>
-          <span className="text-xs text-gray-500">→</span>
-        </Link>
+          icon={<TagIcon className="w-5 h-5" />}
+          tone="accent"
+          label="Etiqueta rápida"
+        />
       </div>
 
       {productionTasks.length === 0 && checklistInstances.length === 0 ? (
-        <div className="text-center p-12 border-2 border-dashed border-gray-200 rounded-lg">
-          <CheckCircleIcon className="w-12 h-12 mx-auto text-gray-300" />
-          <p className="mt-2 text-gray-500">No tienes tareas pendientes hoy.</p>
-        </div>
+        <EmptyState
+          icon={<CheckCircleIcon className="w-12 h-12" />}
+          title="No tienes tareas pendientes hoy."
+          description="Cuando se generen checklists o se te asignen tareas, aparecerán aquí."
+        />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {checklistInstances.length > 0 && (
             <section>
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -191,7 +175,7 @@ export default async function TodayPage() {
 
           {productionTasks.length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-6">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Producción ({productionTasks.length})
               </h2>
               <ProductionList tasks={productionTasks} />
@@ -200,6 +184,40 @@ export default async function TodayPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function QuickTile({
+  href,
+  icon,
+  label,
+  tone,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  tone: "amber" | "violet" | "accent";
+}) {
+  const tones = {
+    amber: "bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100",
+    violet: "bg-violet-50 border-violet-200 text-violet-800 hover:bg-violet-100",
+    accent:
+      "bg-white border-gray-200 text-gray-700 hover:border-[var(--accent)] hover:bg-gray-50",
+  }[tone];
+  return (
+    <Link
+      href={href}
+      className={clsx(
+        "flex items-center justify-between rounded-xl border-2 p-3 transition-colors",
+        tones,
+      )}
+    >
+      <span className="flex items-center gap-2 min-w-0">
+        <span className="flex-none">{icon}</span>
+        <span className="text-sm font-medium truncate">{label}</span>
+      </span>
+      <span className="text-xs opacity-70">→</span>
+    </Link>
   );
 }
 
@@ -217,38 +235,38 @@ type ChecklistInst = {
   };
 };
 
+const STATUS_META: Record<
+  string,
+  { label: string; tone: "neutral" | "warning" | "success" | "danger"; icon: any }
+> = {
+  PENDING: { label: "Pendiente", tone: "neutral", icon: PlayCircleIcon },
+  IN_PROGRESS: { label: "En curso", tone: "warning", icon: PlayCircleIcon },
+  DONE: { label: "Completado", tone: "success", icon: CheckCircleIcon },
+  INCIDENT: { label: "Incidencia", tone: "danger", icon: ExclamationTriangleIcon },
+  CLOSED_AUTO: { label: "Cerrada auto", tone: "neutral", icon: ClockIcon },
+};
+
 function ChecklistCard({ instance }: { instance: ChecklistInst }) {
-  const statusMeta: Record<string, { label: string; cls: string; icon: any }> = {
-    PENDING: { label: "Pendiente", cls: "text-gray-600 bg-gray-100", icon: PlayCircleIcon },
-    IN_PROGRESS: { label: "En curso", cls: "text-amber-700 bg-amber-100", icon: PlayCircleIcon },
-    DONE: { label: "Completado", cls: "text-green-700 bg-green-100", icon: CheckCircleIcon },
-    INCIDENT: {
-      label: "Incidencia",
-      cls: "text-red-700 bg-red-100",
-      icon: ExclamationTriangleIcon,
-    },
-    CLOSED_AUTO: { label: "Cerrada auto", cls: "text-gray-500 bg-gray-100", icon: ClockIcon },
-  };
-  const meta = statusMeta[instance.status] ?? statusMeta.PENDING;
+  const meta = STATUS_META[instance.status] ?? STATUS_META.PENDING;
   const Icon = meta.icon;
 
   return (
     <Link
       href={`/dashboard/today/checklist/${instance.id}`}
       className={clsx(
-        "block bg-white border-2 rounded-xl p-4 hover:shadow-md transition-all active:scale-[0.99]",
+        "block bg-white border rounded-xl p-4 transition-all hover:shadow-md active:scale-[0.99]",
         instance.status === "DONE"
           ? "border-green-200 bg-green-50/30"
           : instance.status === "INCIDENT"
             ? "border-red-200"
-            : "border-gray-200",
+            : "border-gray-200 hover:border-[var(--accent)]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {instance.schedule.pinned && (
-              <span className="text-xs text-indigo-600 font-semibold">📌</span>
+              <span className="text-xs text-[var(--accent-soft-contrast)] font-semibold">📌</span>
             )}
             <h3 className="font-semibold text-gray-800 truncate">
               {instance.schedule.template.name}
@@ -263,23 +281,18 @@ function ChecklistCard({ instance }: { instance: ChecklistInst }) {
             </span>
           </p>
         </div>
-        <span
-          className={clsx(
-            "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-none",
-            meta.cls,
-          )}
-        >
+        <Badge tone={meta.tone}>
           <Icon className="w-3.5 h-3.5" />
           {meta.label}
-        </span>
+        </Badge>
       </div>
       {instance._count.responses > 0 && (
         <p className="mt-2 text-xs text-gray-500">
-          {instance._count.responses} {instance._count.responses === 1 ? "respuesta" : "respuestas"}
+          {instance._count.responses}{" "}
+          {instance._count.responses === 1 ? "respuesta" : "respuestas"}
           {instance.scoreAvg !== null && ` · valoración media ${instance.scoreAvg.toFixed(1)}/10`}
         </p>
       )}
     </Link>
   );
 }
-
