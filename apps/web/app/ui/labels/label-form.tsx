@@ -8,6 +8,7 @@ import type {
   ObradorLabelSource,
   ObradorProductOption,
 } from "@/app/lib/actions/product-labels";
+import LabelCardPreview from "@/app/ui/labels/label-card-preview";
 
 const ALLERGENS = [
   "Gluten",
@@ -597,6 +598,34 @@ export default function LabelForm({
             </>
           )}
         </div>
+      </div>
+
+      {/* Vista previa en vivo (refleja lo que se imprimirá) */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          Vista previa
+        </p>
+        <LabelCardPreview
+          data={{
+            destination,
+            productName,
+            legalDenomination,
+            ingredients,
+            allergens,
+            weight,
+            lotNumber,
+            productionDate,
+            expiryDate,
+            storageMode,
+            note,
+            registryNumber,
+            origin,
+            usageInstructions,
+            requiresCooking,
+            operator: selectedProduct?.operator ?? null,
+            nutrition: isSale ? selectedProduct?.nutrition ?? null : null,
+          }}
+        />
       </div>
 
       <div className="flex gap-2">
