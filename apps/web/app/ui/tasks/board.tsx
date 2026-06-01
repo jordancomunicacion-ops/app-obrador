@@ -4,6 +4,7 @@ import { prisma } from '@/app/lib/prisma';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
 import { locationScope } from '@/app/lib/auth/scope';
+import { startOfDayUTC } from '@/app/lib/recurrence';
 
 type TaskWithRelations = {
     id: string;
@@ -16,9 +17,23 @@ type TaskWithRelations = {
     plannedEnd: Date | null;
 };
 
-export default async function TaskBoard() {
+export default async function TaskBoard({ range = 'today' }: { range?: string }) {
+    // Filtro temporal: por defecto "hoy" (incluye tareas sin hora planificada, que
+    // siguen activas). Evita que el tablero se sature con las tareas recurrentes
+    // de días pasados. "all" muestra todo.
+    let dateWhere: Record<string, unknown> = {};
+    if (range !== 'all') {
+        const start = startOfDayUTC();
+        const end = startOfDayUTC();
+        end.setUTCDate(end.getUTCDate() + (range === 'week' ? 6 : 0));
+        end.setUTCHours(23, 59, 59, 999);
+        dateWhere = {
+            OR: [{ plannedStart: { gte: start, lte: end } }, { plannedStart: null }],
+        };
+    }
+
     const tasks = await prisma.task.findMany({
-        where: { ...(await locationScope()) },
+        where: { ...(await locationScope()), ...dateWhere },
         include: {
             assignedTo: true,
             recipe: true
