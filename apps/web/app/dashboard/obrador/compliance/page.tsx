@@ -9,6 +9,7 @@ import {
 import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import ThermometerIcon from '@/app/ui/obrador/thermometer-icon';
+import ComplianceTabs from '@/app/ui/obrador/compliance-tabs';
 
 function fmtAgo(d: Date | null | undefined) {
   if (!d) return 'Sin registros';
@@ -79,6 +80,7 @@ export default async function CompliancePage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+      <ComplianceTabs />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
           <ShieldCheckIcon className="w-8 h-8 text-emerald-600" />

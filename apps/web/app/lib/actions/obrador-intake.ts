@@ -9,6 +9,7 @@ import { auth } from '@/auth';
 const IntakeSchema = z.object({
   supplierId: z.string().optional(),
   supplierName: z.string().min(1, { message: 'El proveedor es obligatorio.' }),
+  masterProductId: z.string().optional(),
   productName: z.string().min(1, { message: 'El producto es obligatorio.' }),
   supplierBatch: z.string().optional(),
   receptionDate: z.string().optional(),
@@ -37,6 +38,7 @@ export async function createObradorIntake(
   const validated = IntakeSchema.safeParse({
     supplierId: formData.get('supplierId'),
     supplierName: formData.get('supplierName'),
+    masterProductId: formData.get('masterProductId'),
     productName: formData.get('productName'),
     supplierBatch: formData.get('supplierBatch'),
     receptionDate: formData.get('receptionDate'),
@@ -60,6 +62,7 @@ export async function createObradorIntake(
       data: {
         supplierId: d.supplierId || null,
         supplierName: d.supplierName,
+        masterProductId: d.masterProductId || null,
         productName: d.productName,
         supplierBatch: d.supplierBatch || null,
         receptionDate: d.receptionDate ? new Date(d.receptionDate) : new Date(),

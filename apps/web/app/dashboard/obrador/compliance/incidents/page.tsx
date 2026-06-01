@@ -1,9 +1,9 @@
-import Link from 'next/link';
-import { ArrowLeftIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import IncidentForm from '@/app/ui/obrador/incident-form';
 import { CloseIncident, DeleteIncident } from '@/app/ui/obrador/incident-actions';
+import ComplianceTabs from '@/app/ui/obrador/compliance-tabs';
 
 function fmt(d: Date) {
   return new Date(d).toLocaleString('es-ES', {
@@ -27,13 +27,7 @@ export default async function IncidentsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <Link
-        href="/dashboard/obrador/compliance"
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-4"
-      >
-        <ArrowLeftIcon className="w-4 h-4" />
-        Volver a Compliance
-      </Link>
+      <ComplianceTabs />
 
       <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3 mb-6">
         <ExclamationTriangleIcon className="w-8 h-8 text-rose-600" />
