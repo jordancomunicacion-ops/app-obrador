@@ -83,7 +83,7 @@ MasterProduct  ← LA ficha única (p.ej. "Solomillo de vaca")  + flag esObrador
 ### A.6 Decisiones (resueltas)
 1. ✅ Info sanitaria/nutricional → **tabla de extensión `ProductSanitaryInfo`** (disjunta de `MasterProduct`).
 2. ✅ Catálogo → **único con flag `esObrador`** (un producto es el mismo para cocina y obrador; puede ser ambos).
-3. ⏳ `ObradorRawMaterialEntry`: pendiente — ¿se unifica con `DeliveryNote`/compras o se conserva como recepción específica con FK a `Supplier`? *(no bloquea el arranque; se decide al llegar a recepción)*
+3. ✅ `ObradorRawMaterialEntry`: **se CONSERVA como recepción sanitaria específica (APPCC)** — registra Tª de recepción, estado visual, aptitud y lote del proveedor: controles sanitarios, no un albarán contable. **No** se unifica con `DeliveryNote`/compras (perdería/ensuciaría esa semántica). Ya tenía FK opcional a `Supplier`; se le añade un **puente aditivo al catálogo** (`masterProductId → MasterProduct`, ficha única) conservando `productName` como respaldo. Selector de producto opcional en la forma de entrada. (Sin migración: aditivo, `db push`.)
 
 ---
 
@@ -196,8 +196,9 @@ Resueltas con el usuario:
 - ✅ Limpieza obrador: **en el motor de tareas, generada desde APPCC** (fuentes de tareas, B.2.1).
 - ✅ Orden: **Obrador → núcleo primero**, luego motor de tareas, luego taxonomías.
 
-Pendiente (no bloquea el arranque):
-- ⏳ `ObradorRawMaterialEntry`: ¿unificar con compras/albaranes o conservar como recepción específica? Se decide al llegar a ese punto del Frente A.
+Resueltas (cierre de cabos del Frente A):
+- ✅ `ObradorRawMaterialEntry`: **se conserva** como recepción sanitaria específica (APPCC); **no** se unifica con compras/albaranes. Se le añade puente aditivo al catálogo (`masterProductId`).
+- ✅ `ObradorConfig`: **deprecado formalmente** (solo lectura). Datos de establecimiento ya viven por local en `Location`; el modelo se conserva únicamente como *fallback* del generador de etiquetas durante la transición (marcado `@deprecated` en el schema; sin escrituras ni UI — la página redirige a Locales).
 
 ---
 

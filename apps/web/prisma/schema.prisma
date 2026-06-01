@@ -221,6 +221,7 @@ model MasterProduct {
 
   // Puentes de convergencia obrador → núcleo (aditivos, Frente A).
   obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToMaster")
+  obradorIntakes ObradorRawMaterialEntry[] @relation("ObradorIntakeToMaster")
 
   // Etiquetas de venta generadas a partir de esta ficha.
   productLabels ProductLabel[] @relation("MasterProductLabels")
@@ -912,6 +913,12 @@ model SalesRecord {
 
 // 12. OBRADOR MODULE
 
+/// @deprecated Frente A — Los datos del establecimiento se gestionan ahora por
+/// local en `Location` (Administración → Locales). Este modelo se conserva como
+/// respaldo de SOLO LECTURA: ya no tiene escrituras ni UI propia (la página
+/// /dashboard/obrador/config redirige a Locales) y solo lo lee el generador de
+/// etiquetas como fallback cuando el local del producto no tiene los campos
+/// sanitarios. Eliminar cuando todos los locales tengan sus datos rellenos.
 model ObradorConfig {
   id             String    @id @default("default")
   businessName   String? // Nombre comercial
@@ -941,6 +948,12 @@ model ObradorRawMaterialEntry {
   supplier     Supplier? @relation(fields: [supplierId], references: [id])
   supplierName String // Fallback or manually entered
 
+  // Puente al catálogo (ficha única, Frente A): la recepción puede referenciar
+  // el MasterProduct recibido. `productName` se conserva como texto de respaldo
+  // (entradas manuales o productos aún no catalogados). Aditivo/opcional.
+  masterProductId String?
+  masterProduct   MasterProduct? @relation("ObradorIntakeToMaster", fields: [masterProductId], references: [id])
+
   productName      String
   supplierBatch    String?
   receptionDate    DateTime  @default(now())
@@ -959,6 +972,8 @@ model ObradorRawMaterialEntry {
   owner   User?   @relation("ObradorIntakeOwner", fields: [ownerId], references: [id])
 
   createdAt DateTime @default(now())
+
+  @@index([masterProductId])
 }
 
 model ObradorProductionBatch {
