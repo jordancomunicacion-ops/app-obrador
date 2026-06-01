@@ -6,6 +6,10 @@ import { currentLocationId } from "@/app/lib/auth/location";
 import { parseDateRange } from "@/app/lib/reports/kpi";
 import DateRangeFilter from "@/app/ui/tasks/date-range-filter";
 import { PrinterIcon, TagIcon } from "@heroicons/react/24/outline";
+import PageHeader from "@/app/ui/primitives/page-header";
+import Button from "@/app/ui/primitives/button";
+import Badge from "@/app/ui/primitives/badge";
+import EmptyState from "@/app/ui/primitives/empty-state";
 
 const STORAGE_LABEL: Record<string, string> = {
   AMBIENT: "Ambiente",
@@ -48,18 +52,12 @@ export default async function LabelsAdminPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-          <TagIcon className="w-6 h-6" />
-          Etiquetas
-        </h1>
-        <Link
-          href="/dashboard/today/labels"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
-        >
-          Crear etiqueta
-        </Link>
-      </div>
+      <PageHeader
+        icon={<TagIcon className="w-6 h-6" />}
+        title="Etiquetas"
+        description="Trazabilidad de producción y etiquetas de venta."
+        actions={<Button href="/dashboard/today/labels">Crear etiqueta</Button>}
+      />
 
       <DateRangeFilter defaultFrom={defaultFrom} defaultTo={defaultTo} />
 
@@ -93,11 +91,14 @@ export default async function LabelsAdminPage({
       </div>
 
       {labels.length === 0 ? (
-        <p className="text-center text-gray-500 italic p-12 border-2 border-dashed border-gray-200 rounded-lg">
-          No hay etiquetas en este rango.
-        </p>
+        <EmptyState
+          icon={<TagIcon className="w-12 h-12" />}
+          title="No hay etiquetas en este rango."
+          description="Crea una etiqueta de producción o de venta para empezar."
+          action={<Button href="/dashboard/today/labels">Crear etiqueta</Button>}
+        />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-x-auto">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase">
               <tr>
@@ -118,16 +119,9 @@ export default async function LabelsAdminPage({
                 return (
                   <tr key={l.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2">
-                      <span
-                        className={clsx(
-                          "text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
-                          l.destination === "SALE"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-gray-100 text-gray-600",
-                        )}
-                      >
+                      <Badge tone={l.destination === "SALE" ? "accent" : "neutral"}>
                         {l.destination === "SALE" ? "Venta" : "Producción"}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-3 py-2 font-medium text-gray-800">{l.productName}</td>
                     <td className="px-3 py-2 text-xs text-gray-600">{l.lotNumber ?? "—"}</td>
@@ -147,7 +141,7 @@ export default async function LabelsAdminPage({
                       <Link
                         href={`/dashboard/labels/${l.id}/print`}
                         target="_blank"
-                        className="inline-flex items-center gap-1 text-indigo-600 hover:underline text-xs"
+                        className="inline-flex items-center gap-1 text-[var(--accent-soft-contrast)] hover:underline text-xs"
                       >
                         <PrinterIcon className="w-3.5 h-3.5" />
                         Imprimir
