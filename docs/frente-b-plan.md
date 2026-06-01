@@ -4,11 +4,20 @@
 >
 > **Decisión tomada: Opción B (convergencia pragmática)** — vista de seguimiento
 > unificada primero, sin migración de datos.
-> **Hecho (1ª entrega):** `/dashboard/tasks/all` ("Todo") — tablero de solo
-> lectura que junta PRODUCCIÓN (`Task`) y OPERATIVA (`ChecklistInstance`) del día,
-> acotado por local, con navegación por día y enlaces a las pantallas de gestión.
-> **Siguiente (B):** reporting unificado de cumplimiento; reconciliar la
-> recurrencia de `ProductionRoutine` y `ChecklistSchedule` en una capa común.
+>
+> **Estado: Opción B COMPLETA.**
+> - ✅ `/dashboard/tasks/all` ("Todo") — tablero de solo lectura que junta
+>   PRODUCCIÓN (`Task`) y OPERATIVA (`ChecklistInstance`) del día, acotado por
+>   local, con navegación por día y enlaces a gestión.
+> - ✅ `/dashboard/tasks/reports/summary` ("Resumen") — informe único que combina
+>   los KPIs de ambas familias (producción + operativa) en el mismo rango/local.
+> - ✅ Recurrencia común: `app/lib/recurrence.ts` (`scheduleAppliesOn`) ya la
+>   usan tanto `checklist-instances.ts` como `production-routines.ts` (no había
+>   nada que reconciliar; ya estaba compartida).
+>
+> **Pendiente futuro (solo si se decide la Opción A):** fusionar los modelos bajo
+> `TaskDefinition/TaskInstance`. Hoy NO es necesario: el valor de usuario (verlo y
+> reportarlo todo junto) ya está cubierto sin migración.
 
 ## 1. Qué pasó en el intento previo (#22 → #23)
 

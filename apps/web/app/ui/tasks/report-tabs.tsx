@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const TABS = [
+  { href: "/dashboard/tasks/reports/summary", label: "Resumen" },
   { href: "/dashboard/tasks/reports/operations", label: "Operaciones" },
   { href: "/dashboard/tasks/reports/compliance", label: "Cumplimiento" },
   { href: "/dashboard/tasks/reports/incidents", label: "Incidencias" },
