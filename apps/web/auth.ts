@@ -90,28 +90,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 });
 
 export async function currentOrgId() {
-    const session = await auth();
-    if (!session?.user?.id) return null;
-
-    // If I am ADMIN, I am the Org.
-    // If I am USER, my admin is the Org.
-    // Note: session.user.id is string.
-    // We need to fetch the user to get adminId if it's not in session.
-    // Actually, let's fetch it to be safe.
-
+    // Delega en currentAccountId(): para ADMIN/USER resuelve su organización igual
+    // que antes; para el propietario de plataforma (SUPERADMIN) resuelve la CUENTA
+    // ACTIVA seleccionada en la barra (o null = "Todas las cuentas"). Así los ~41
+    // consumidores de currentOrgId() honran el selector de cuenta sin cambios.
+    //
+    // Import dinámico para romper el ciclo de módulos: account.ts importa `auth`
+    // de este fichero.
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true, adminId: true, id: true }
-        });
-
-        if (!user) return null;
-
-        if (user.role === 'ADMIN') {
-            return user.id;
-        } else {
-            return user.adminId || null; // Should have adminId if USER
-        }
+        const { currentAccountId } = await import('@/app/lib/auth/account');
+        return await currentAccountId();
     } catch (e) {
         console.error("Error getting Org ID", e);
         return null;
