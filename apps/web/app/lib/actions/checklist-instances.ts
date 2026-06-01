@@ -4,70 +4,11 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { sendPushToUser, sendPushToUsers } from "@/app/lib/push/send";
-import type { Frequency } from "@prisma/client";
+import { scheduleAppliesOn, startOfDayUTC } from "@/app/lib/recurrence";
 
 // ============================================================================
 // Generación de instancias del día
 // ============================================================================
-
-function startOfDayUTC(date = new Date()) {
-  const d = new Date(date);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
-
-/**
- * Devuelve true si la programación debe generar una instancia para la fecha dada
- * según su frecuencia, fecha de inicio, fecha de fin y días excluidos.
- */
-function scheduleAppliesOn(
-  schedule: {
-    frequency: Frequency;
-    startDate: Date;
-    endDate: Date | null;
-    excludeWeekdays: number[];
-  },
-  date: Date,
-): boolean {
-  const day = startOfDayUTC(date);
-  const start = startOfDayUTC(schedule.startDate);
-  if (day < start) return false;
-  if (schedule.endDate && day > startOfDayUTC(schedule.endDate)) return false;
-
-  // 0=domingo … 6=sábado (UTC)
-  const weekday = day.getUTCDay();
-  if (schedule.excludeWeekdays.includes(weekday)) return false;
-
-  const msInDay = 24 * 60 * 60 * 1000;
-  const daysSinceStart = Math.floor((day.getTime() - start.getTime()) / msInDay);
-
-  switch (schedule.frequency) {
-    case "DAILY":
-      return true;
-    case "WEEKLY":
-      return daysSinceStart % 7 === 0;
-    case "BIWEEKLY":
-      return daysSinceStart % 14 === 0;
-    case "MONTHLY":
-      return day.getUTCDate() === start.getUTCDate();
-    case "QUARTERLY":
-      return (
-        day.getUTCDate() === start.getUTCDate() &&
-        (day.getUTCMonth() - start.getUTCMonth() + 12) % 3 === 0
-      );
-    case "SEMIANNUAL":
-      return (
-        day.getUTCDate() === start.getUTCDate() &&
-        (day.getUTCMonth() - start.getUTCMonth() + 12) % 6 === 0
-      );
-    case "ANNUAL":
-      return (
-        day.getUTCDate() === start.getUTCDate() && day.getUTCMonth() === start.getUTCMonth()
-      );
-    default:
-      return false;
-  }
-}
 
 /**
  * Crea ChecklistInstance para la fecha dada para todas las programaciones del cliente

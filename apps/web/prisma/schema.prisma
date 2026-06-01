@@ -38,6 +38,10 @@ model User {
   tasks     Task[]     @relation("AssignedTasks")
   auditLogs AuditLog[]
 
+  // Ciclos de producción recurrentes (propios y asignados por defecto)
+  ownedProductionRoutines    ProductionRoutine[] @relation("ProductionRoutineOwner")
+  assignedProductionRoutines ProductionRoutine[] @relation("ProductionRoutineAssignee")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -459,6 +463,9 @@ model Recipe {
   // For Tasks (Production tasks)
   tasks Task[]
 
+  // Ciclos de producción recurrentes que usan esta receta
+  productionRoutines ProductionRoutine[] @relation("ProductionRoutineRecipe")
+
   // Motor de tareas único (Fase 3, Frente B)
   taskDefinitions TaskDefinition[] @relation("TaskDefinitionRecipe")
   taskInstances   TaskInstance[]   @relation("TaskInstanceRecipe")
@@ -634,6 +641,10 @@ model Task {
   // Many-to-Many Relationship with Events (for aggregation)
   events Event[] @relation("EventTasks")
 
+  // Ciclo de producción recurrente que generó esta tarea (si aplica).
+  productionRoutineId String?
+  productionRoutine   ProductionRoutine? @relation(fields: [productionRoutineId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -644,6 +655,50 @@ model Task {
   locationId String?
   location   Location? @relation("TaskLocation", fields: [locationId], references: [id])
 
+  @@index([locationId])
+  @@index([productionRoutineId])
+}
+
+// Ciclo de producción recurrente: plantilla que genera Task de producción/cocina/
+// limpieza según su frecuencia (reutiliza la lógica de recurrencia de los checklists).
+model ProductionRoutine {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  // Datos que se copian a cada Task generada.
+  recipeId       String?
+  recipe         Recipe? @relation("ProductionRoutineRecipe", fields: [recipeId], references: [id])
+  action         String? // CORTAR, DESPIEZAR, COCCION, LIMPIEZA, etc.
+  technique      String?
+  targetQuantity Float?
+  unit           String?
+
+  // Recurrencia (mismo patrón que ChecklistSchedule).
+  frequency       Frequency
+  startDate       DateTime
+  endDate         DateTime?
+  excludeWeekdays Int[]     @default([]) // 0=domingo … 6=sábado
+  executionTime   String? // "HH:MM" hora planificada de la tarea generada
+
+  // Asignación por defecto de las tareas generadas (reasignable luego).
+  defaultAssigneeUserId String?
+  defaultAssignee       User?   @relation("ProductionRoutineAssignee", fields: [defaultAssigneeUserId], references: [id])
+
+  isActive Boolean @default(true)
+
+  tasks Task[]
+
+  ownerId String?
+  owner   User?   @relation("ProductionRoutineOwner", fields: [ownerId], references: [id])
+
+  locationId String?
+  location   Location? @relation("ProductionRoutineLocation", fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
   @@index([locationId])
 }
 
@@ -1149,6 +1204,7 @@ model Location {
   suppliers         Supplier[]          @relation("SupplierLocation")
   events            Event[]             @relation("EventLocation")
   tasks             Task[]              @relation("TaskLocation")
+  productionRoutines ProductionRoutine[] @relation("ProductionRoutineLocation")
   taskDefinitions   TaskDefinition[]    @relation("TaskDefinitionLocation")
   taskSchedules     TaskSchedule[]      @relation("TaskScheduleLocation")
   taskInstances     TaskInstance[]      @relation("TaskInstanceLocation")
