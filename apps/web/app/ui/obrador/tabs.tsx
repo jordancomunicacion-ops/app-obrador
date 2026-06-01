@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const TABS = [
-  { href: "/dashboard/obrador", label: "Resumen", exact: true },
   { href: "/dashboard/obrador/intake", label: "Entradas MP" },
   { href: "/dashboard/obrador/production", label: "Producción y Lotes" },
   { href: "/dashboard/today/labels?destination=sale", label: "Etiquetado" },
@@ -17,7 +16,7 @@ export default function ObradorTabs() {
     <nav className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
       {TABS.map((t) => {
         const base = t.href.split("?")[0];
-        const active = t.exact ? pathname === base : pathname?.startsWith(base);
+        const active = pathname?.startsWith(base);
         return (
           <Link
             key={t.href}
