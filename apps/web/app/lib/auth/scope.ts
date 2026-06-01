@@ -1,6 +1,7 @@
 import { auth, currentOrgId } from "@/auth";
 import { isPlatformOwner } from "@/app/lib/auth/platform";
 import { currentLocationId } from "@/app/lib/auth/location";
+import { currentAccountId } from "@/app/lib/auth/account";
 
 /**
  * Ámbito (scope) resuelto para la petición actual, base del aislamiento por local.
@@ -23,7 +24,16 @@ export type Scope =
 export async function currentScope(): Promise<Scope> {
   const session = await auth();
   if (!session?.user?.id) return { kind: "none" };
-  if (isPlatformOwner(session)) return { kind: "platform" };
+
+  if (isPlatformOwner(session)) {
+    // Sin cuenta activa ("Todas las cuentas") → ámbito global.
+    const accountId = await currentAccountId();
+    if (!accountId) return { kind: "platform" };
+    // Con cuenta activa → opera como esa cuenta, acotado a su local activo.
+    const locationId = await currentLocationId();
+    if (!locationId) return { kind: "none" }; // cuenta sin local → fail-closed
+    return { kind: "location", locationId, orgId: accountId };
+  }
 
   const orgId = await currentOrgId();
   const locationId = await currentLocationId();

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
 import { isPlatformOwner } from "@/app/lib/auth/platform";
+import { currentAccountId } from "@/app/lib/auth/account";
 
 export const LOCATION_COOKIE = "active_location_id";
 
@@ -28,7 +29,10 @@ async function locationScopeWhere(): Promise<Record<string, unknown> | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
   if (isPlatformOwner(session)) {
-    // Sin filtro por owner: todos los locales activos de todas las cuentas.
+    // Con cuenta activa: solo los locales de esa cuenta cliente.
+    // Sin cuenta activa ("Todas"): todos los locales activos (ámbito global).
+    const accountId = await currentAccountId();
+    if (accountId) return { ownerId: accountId, isActive: true };
     return { isActive: true };
   }
 
