@@ -1,15 +1,18 @@
 import Link from "next/link";
-import clsx from "clsx";
 import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { PlusIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
+import PageHeader from "@/app/ui/primitives/page-header";
+import Button from "@/app/ui/primitives/button";
+import Badge from "@/app/ui/primitives/badge";
+import EmptyState from "@/app/ui/primitives/empty-state";
 
-const STATUS_CLS: Record<string, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  SENT: "bg-blue-100 text-blue-700",
-  RECEIVED: "bg-amber-100 text-amber-700",
-  CLOSED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
+const STATUS_TONE: Record<string, "neutral" | "accent" | "warning" | "success" | "danger"> = {
+  DRAFT: "neutral",
+  SENT: "accent",
+  RECEIVED: "warning",
+  CLOSED: "success",
+  CANCELLED: "danger",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -36,26 +39,31 @@ export default async function OrdersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-          <ShoppingCartIcon className="w-6 h-6" />
-          Pedidos a proveedores
-        </h1>
-        <Link
-          href="/dashboard/purchasing/orders/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg"
-        >
-          <PlusIcon className="w-4 h-4" />
-          Nuevo pedido
-        </Link>
-      </div>
+      <PageHeader
+        icon={<ShoppingCartIcon className="w-6 h-6" />}
+        title="Pedidos a proveedores"
+        actions={
+          <Button href="/dashboard/purchasing/orders/new">
+            <PlusIcon className="w-4 h-4" />
+            Nuevo pedido
+          </Button>
+        }
+      />
 
       {orders.length === 0 ? (
-        <p className="text-center text-gray-500 italic p-12 border-2 border-dashed border-gray-200 rounded-lg">
-          No hay pedidos. Crea el primero.
-        </p>
+        <EmptyState
+          icon={<ShoppingCartIcon className="w-12 h-12" />}
+          title="No hay pedidos."
+          description="Crea el primer pedido a un proveedor."
+          action={
+            <Button href="/dashboard/purchasing/orders/new">
+              <PlusIcon className="w-4 h-4" />
+              Nuevo pedido
+            </Button>
+          }
+        />
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase">
               <tr>
@@ -73,26 +81,19 @@ export default async function OrdersPage() {
                   <td className="px-4 py-2">
                     <Link
                       href={`/dashboard/purchasing/orders/${o.id}`}
-                      className="font-medium text-gray-800 hover:text-indigo-600"
+                      className="font-medium text-gray-800 hover:text-[var(--accent-soft-contrast)]"
                     >
                       {o.reference ?? `#${o.id.slice(-6)}`}
                     </Link>
                   </td>
                   <td className="px-4 py-2 text-gray-700">{o.supplier.name}</td>
                   <td className="px-4 py-2 text-center">
-                    <span
-                      className={clsx(
-                        "text-xs font-medium px-2 py-0.5 rounded-full",
-                        STATUS_CLS[o.status],
-                      )}
-                    >
-                      {STATUS_LABEL[o.status]}
-                    </span>
+                    <Badge tone={STATUS_TONE[o.status] ?? "neutral"}>
+                      {STATUS_LABEL[o.status] ?? o.status}
+                    </Badge>
                   </td>
                   <td className="px-4 py-2 text-center text-gray-700">{o._count.lines}</td>
-                  <td className="px-4 py-2 text-center text-gray-700">
-                    {o._count.deliveryNotes}
-                  </td>
+                  <td className="px-4 py-2 text-center text-gray-700">{o._count.deliveryNotes}</td>
                   <td className="px-4 py-2 text-xs text-gray-600">
                     {o.expectedDate
                       ? new Date(o.expectedDate).toLocaleDateString("es-ES")
