@@ -129,3 +129,43 @@ export async function computeOperationsKPIs(
     lineasRealizadas,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Frente B (Opción B): KPIs de la familia PRODUCCIÓN (modelo `Task`), para el
+// reporting unificado. Sin migración: lee los modelos existentes.
+// ---------------------------------------------------------------------------
+
+export type ProductionKPIs = {
+  tareas: number; // Task con hora planificada en el rango
+  realizadas: number; // % DONE
+  enCurso: number; // % IN_PROGRESS
+  incidencias: number; // nº ISSUE
+};
+
+export async function computeProductionKPIs(
+  orgId: string,
+  range: DateRange,
+  locationId?: string,
+): Promise<ProductionKPIs> {
+  const tasks = await prisma.task.findMany({
+    where: {
+      ownerId: orgId,
+      ...(locationId ? { locationId } : {}),
+      plannedStart: { gte: range.from, lte: range.to },
+    },
+    select: { status: true },
+  });
+
+  const total = tasks.length;
+  const norm = (s: string | null) => (s ?? "").toUpperCase();
+  const done = tasks.filter((t) => norm(t.status) === "DONE").length;
+  const inProgress = tasks.filter((t) => norm(t.status) === "IN_PROGRESS").length;
+  const issues = tasks.filter((t) => norm(t.status) === "ISSUE").length;
+
+  return {
+    tareas: total,
+    realizadas: total === 0 ? 0 : (done / total) * 100,
+    enCurso: total === 0 ? 0 : (inProgress / total) * 100,
+    incidencias: issues,
+  };
+}
