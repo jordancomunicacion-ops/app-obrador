@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const TABS = [
-  { href: "/dashboard/tasks/all", label: "Todo" },
   { href: "/dashboard/tasks/board", label: "Tablero" },
   { href: "/dashboard/tasks/templates", label: "Plantillas" },
   { href: "/dashboard/tasks/schedules", label: "Programaciones" },

@@ -7,7 +7,6 @@ import clsx from "clsx";
 // Navegación por pestañas de la sección "Controles sanitarios" (compliance),
 // mismo patrón/color (emerald) que las pestañas de Obrador.
 const TABS = [
-  { href: "/dashboard/obrador/compliance", label: "Resumen", exact: true },
   { href: "/dashboard/obrador/compliance/temperatures", label: "Temperaturas" },
   { href: "/dashboard/obrador/compliance/incidents", label: "Incidencias" },
   { href: "/dashboard/obrador/compliance/cleaning", label: "Limpieza" },
@@ -18,7 +17,7 @@ export default function ComplianceTabs() {
   return (
     <nav className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
       {TABS.map((t) => {
-        const active = t.exact ? pathname === t.href : pathname?.startsWith(t.href);
+        const active = pathname?.startsWith(t.href);
         return (
           <Link
             key={t.href}
