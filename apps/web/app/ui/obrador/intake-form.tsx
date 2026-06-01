@@ -9,12 +9,19 @@ import {
 } from '@/app/lib/actions/obrador-intake';
 
 type SupplierOption = { id: string; name: string };
+type ProductOption = { id: string; name: string };
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function ObradorIntakeForm({ suppliers }: { suppliers: SupplierOption[] }) {
+export default function ObradorIntakeForm({
+  suppliers,
+  products = [],
+}: {
+  suppliers: SupplierOption[];
+  products?: ProductOption[];
+}) {
   const [state, formAction] = useActionState<ObradorIntakeFormState, FormData>(createObradorIntake, {
     message: null,
     errors: {},
@@ -22,6 +29,10 @@ export default function ObradorIntakeForm({ suppliers }: { suppliers: SupplierOp
 
   // Sincroniza el nombre del proveedor con el seleccionado (permite también texto manual).
   const [supplierName, setSupplierName] = useState('');
+  // Producto del catálogo (ficha única): al elegirlo se fija el FK y se rellena
+  // el nombre; queda editable a mano para entradas no catalogadas.
+  const [masterProductId, setMasterProductId] = useState('');
+  const [productName, setProductName] = useState('');
 
   const fieldCls = 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500';
   const labelCls = 'block text-sm font-medium text-slate-700 mb-1';
@@ -83,11 +94,35 @@ export default function ObradorIntakeForm({ suppliers }: { suppliers: SupplierOp
               <p className="mt-1 text-sm text-rose-600">{state.errors.supplierName[0]}</p>
             )}
           </div>
+          {products.length > 0 && (
+            <div>
+              <label className={labelCls}>Producto del catálogo</label>
+              <select
+                className={fieldCls}
+                value={masterProductId}
+                onChange={(e) => {
+                  const opt = products.find((p) => p.id === e.target.value);
+                  setMasterProductId(e.target.value);
+                  if (opt) setProductName(opt.name);
+                }}
+              >
+                <option value="">— Manual / no catalogado —</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className={labelCls}>Producto Recibido</label>
+            <input type="hidden" name="masterProductId" value={masterProductId} />
             <input
               name="productName"
               type="text"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
               className={fieldCls}
               placeholder="Ej. Solomillo Ternera"
             />
