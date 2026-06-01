@@ -1,5 +1,4 @@
 import Link from "next/link";
-import clsx from "clsx";
 import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
@@ -15,6 +14,10 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import type { CommunicationType } from "@prisma/client";
+import PageHeader from "@/app/ui/primitives/page-header";
+import Button from "@/app/ui/primitives/button";
+import Badge from "@/app/ui/primitives/badge";
+import EmptyState from "@/app/ui/primitives/empty-state";
 
 const TYPE_META: Record<CommunicationType, { label: string; icon: any; color: string }> = {
   BREAKDOWN: { label: "Avería", icon: WrenchScrewdriverIcon, color: "text-red-600 bg-red-50" },
@@ -25,10 +28,15 @@ const TYPE_META: Record<CommunicationType, { label: string; icon: any; color: st
   LIST: { label: "Lista", icon: ListBulletIcon, color: "text-emerald-600 bg-emerald-50" },
 };
 
-const STATUS_CLS = {
-  OPEN: "bg-blue-100 text-blue-700",
-  IN_PROGRESS: "bg-amber-100 text-amber-700",
-  CLOSED: "bg-gray-100 text-gray-600",
+const STATUS_TONE: Record<string, "accent" | "warning" | "neutral"> = {
+  OPEN: "accent",
+  IN_PROGRESS: "warning",
+  CLOSED: "neutral",
+};
+const STATUS_LABEL: Record<string, string> = {
+  OPEN: "Abierta",
+  IN_PROGRESS: "En curso",
+  CLOSED: "Cerrada",
 };
 
 export default async function CommunicationsPage({
@@ -60,24 +68,24 @@ export default async function CommunicationsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-semibold text-gray-800">Comunicaciones</h1>
-        <Link
-          href="/dashboard/communications/new"
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          <PlusIcon className="w-4 h-4" />
-          Nueva
-        </Link>
-      </div>
+      <PageHeader
+        icon={<ChatBubbleLeftRightIcon className="w-6 h-6" />}
+        title="Comunicaciones"
+        actions={
+          <Button href="/dashboard/communications/new">
+            <PlusIcon className="w-4 h-4" />
+            Nueva
+          </Button>
+        }
+      />
 
       <CommunicationTypeTabs />
 
       {items.length === 0 ? (
-        <div className="text-center p-12 border-2 border-dashed border-gray-200 rounded-lg">
-          <ChatBubbleLeftRightIcon className="w-12 h-12 mx-auto text-gray-300" />
-          <p className="mt-2 text-gray-500">No hay comunicaciones en esta vista.</p>
-        </div>
+        <EmptyState
+          icon={<ChatBubbleLeftRightIcon className="w-12 h-12" />}
+          title="No hay comunicaciones en esta vista."
+        />
       ) : (
         <div className="space-y-2">
           {items.map((c) => {
@@ -87,7 +95,7 @@ export default async function CommunicationsPage({
               <Link
                 key={c.id}
                 href={`/dashboard/communications/${c.id}`}
-                className="block bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+                className="block bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-[var(--accent)] transition-all"
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg flex-none ${meta.color}`}>
@@ -95,17 +103,10 @@ export default async function CommunicationsPage({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-xs text-gray-500 uppercase tracking-wider">
-                        {meta.label}
-                      </p>
-                      <span
-                        className={clsx(
-                          "text-xs font-medium px-2 py-0.5 rounded-full",
-                          STATUS_CLS[c.status],
-                        )}
-                      >
-                        {c.status === "OPEN" ? "Abierta" : c.status === "IN_PROGRESS" ? "En curso" : "Cerrada"}
-                      </span>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider">{meta.label}</p>
+                      <Badge tone={STATUS_TONE[c.status] ?? "neutral"}>
+                        {STATUS_LABEL[c.status] ?? c.status}
+                      </Badge>
                       {c.photoUrls.length > 0 && (
                         <span className="text-xs text-gray-400">📷 {c.photoUrls.length}</span>
                       )}
