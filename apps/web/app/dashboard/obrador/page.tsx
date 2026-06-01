@@ -28,8 +28,8 @@ const modules = [
   },
   {
     name: 'Etiquetado Alimentario',
-    description: 'Generación de etiquetas y plantillas',
-    href: '/dashboard/obrador/labeling/preview',
+    description: 'Etiquetas de venta (sección Etiquetas)',
+    href: '/dashboard/today/labels?destination=sale',
     icon: TagIcon,
     color: 'bg-rose-100 text-rose-700',
   },

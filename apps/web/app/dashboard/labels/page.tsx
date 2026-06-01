@@ -16,19 +16,21 @@ const STORAGE_LABEL: Record<string, string> = {
 export default async function LabelsAdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; dest?: string }>;
 }) {
   const sp = await searchParams;
   const orgId = await currentOrgId();
   if (!orgId) return null;
   const locationId = await currentLocationId();
   const range = parseDateRange(sp);
+  const dest = sp.dest === "INTERNAL" || sp.dest === "SALE" ? sp.dest : undefined;
 
   const labels = await prisma.productLabel.findMany({
     where: {
       ownerId: orgId,
       ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
       productionDate: { gte: range.from, lte: range.to },
+      ...(dest ? { destination: dest } : {}),
     },
     include: {
       createdBy: { select: { name: true } },
@@ -61,6 +63,35 @@ export default async function LabelsAdminPage({
 
       <DateRangeFilter defaultFrom={defaultFrom} defaultTo={defaultTo} />
 
+      <div className="flex gap-1.5 mb-3">
+        {[
+          { key: undefined, label: "Todas" },
+          { key: "INTERNAL", label: "Producción" },
+          { key: "SALE", label: "Venta" },
+        ].map((f) => {
+          const params = new URLSearchParams();
+          if (sp.from) params.set("from", sp.from);
+          if (sp.to) params.set("to", sp.to);
+          if (f.key) params.set("dest", f.key);
+          const active = dest === f.key || (!dest && !f.key);
+          const qs = params.toString();
+          return (
+            <Link
+              key={f.label}
+              href={`/dashboard/labels${qs ? `?${qs}` : ""}`}
+              className={clsx(
+                "text-xs font-medium px-3 py-1 rounded-full border",
+                active
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50",
+              )}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+      </div>
+
       {labels.length === 0 ? (
         <p className="text-center text-gray-500 italic p-12 border-2 border-dashed border-gray-200 rounded-lg">
           No hay etiquetas en este rango.
@@ -70,6 +101,7 @@ export default async function LabelsAdminPage({
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase">
               <tr>
+                <th className="px-3 py-2">Destino</th>
                 <th className="px-3 py-2">Producto</th>
                 <th className="px-3 py-2">Lote</th>
                 <th className="px-3 py-2">Elaboración</th>
@@ -85,6 +117,18 @@ export default async function LabelsAdminPage({
                 const expired = l.expiryDate && new Date(l.expiryDate) < today;
                 return (
                   <tr key={l.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2">
+                      <span
+                        className={clsx(
+                          "text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
+                          l.destination === "SALE"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-gray-100 text-gray-600",
+                        )}
+                      >
+                        {l.destination === "SALE" ? "Venta" : "Producción"}
+                      </span>
+                    </td>
                     <td className="px-3 py-2 font-medium text-gray-800">{l.productName}</td>
                     <td className="px-3 py-2 text-xs text-gray-600">{l.lotNumber ?? "—"}</td>
                     <td className="px-3 py-2 text-xs text-gray-600">

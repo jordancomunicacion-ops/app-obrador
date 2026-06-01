@@ -158,9 +158,11 @@ export default async function ObradorProductionPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Link
-                          href={`/dashboard/obrador/labeling/preview?batchId=${batch.id}`}
+                          href={`/dashboard/today/labels?destination=sale${
+                            batch.masterProductId ? `&productId=${batch.masterProductId}` : ''
+                          }&batchId=${batch.id}`}
                           className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors"
-                          title="Imprimir etiqueta"
+                          title="Generar etiqueta de venta"
                         >
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
