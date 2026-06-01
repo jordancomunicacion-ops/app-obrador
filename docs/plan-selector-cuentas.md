@@ -1,10 +1,20 @@
 # Plan — Selector de cuentas/empresas (multi-tenant, estilo CRM)
 
-> Estado: **propuesta para revisión**. No implementado todavía.
 > Objetivo: que el **propietario de plataforma** (`SUPERADMIN`) pueda **cambiar de
 > cuenta cliente activa** desde un selector en la barra superior — igual que el
 > selector del CRM — y que **toda la app quede acotada a esa cuenta** mientras
 > esté seleccionada.
+>
+> **Estado de implementación:**
+> - ✅ **Fases 0-2** (PR #29, mergeado): cookie `active_account_id`, helpers
+>   (`account.ts`/`accounts.ts`), scope acotado a la cuenta activa y selector en
+>   la barra. Por defecto **"Todas las cuentas"**; visible solo al `SUPERADMIN`.
+> - ✅ **Fase 3** (este PR): `currentOrgId()` delega en `currentAccountId()`, de
+>   modo que **los ~41 consumidores honran la cuenta activa sin tocarlos**.
+> - ✅ **Fase 4 (núcleo)**: fail-closed ya cubierto — con "Todas" el propietario
+>   obtiene `orgId = null` y las creaciones/acciones que hacen `if (!orgId) throw`
+>   se bloquean solos. Falta solo **QA manual** (matriz al final) y, opcional, un
+>   test anti-fuga cross-tenant.
 
 ## 1. Contexto: qué hay hoy
 
