@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateInstancesForDate } from "@/app/lib/actions/checklist-instances";
+import { generateProductionTasksForDate } from "@/app/lib/actions/production-routines";
 
 /**
  * Generación automática (cron) de las instancias de checklist del ciclo, para
@@ -33,17 +34,27 @@ async function handle(req: NextRequest) {
   const tomorrow = new Date(today);
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
-  const [t, tm] = await Promise.all([
+  const [t, tm, pt, ptm] = await Promise.all([
     generateInstancesForDate(today),
     generateInstancesForDate(tomorrow),
+    generateProductionTasksForDate(today),
+    generateProductionTasksForDate(tomorrow),
   ]);
 
   return NextResponse.json({
     ok: true,
-    today: t,
-    tomorrow: tm,
-    created: t.created + tm.created,
-    skipped: t.skipped + tm.skipped,
+    checklists: {
+      today: t,
+      tomorrow: tm,
+      created: t.created + tm.created,
+      skipped: t.skipped + tm.skipped,
+    },
+    production: {
+      today: pt,
+      tomorrow: ptm,
+      created: pt.created + ptm.created,
+      skipped: pt.skipped + ptm.skipped,
+    },
   });
 }
 
