@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import { checkIntegrationKey } from "@/app/lib/integration-auth";
+import { resolveIntegrationAuth } from "@/app/lib/integration-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,7 +29,7 @@ function diffMin(a: Date | null, b: Date | null): number | null {
  * Auth: cabecera `x-api-key` (INTEGRATION_API_KEY).
  */
 export async function GET(req: NextRequest) {
-  const auth = checkIntegrationKey(req);
+  const auth = await resolveIntegrationAuth(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   const periodEnd = new Date(to.getTime() + MS_DAY - 1);
 
   const tasks = await prisma.task.findMany({
-    where: { realStart: { gte: from, lte: periodEnd } },
+    where: { ownerId: auth.ownerId, realStart: { gte: from, lte: periodEnd } },
     orderBy: { realStart: "asc" },
     select: {
       id: true,

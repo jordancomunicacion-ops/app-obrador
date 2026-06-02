@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import { checkIntegrationKey } from "@/app/lib/integration-auth";
+import { resolveIntegrationAuth } from "@/app/lib/integration-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -8,20 +8,25 @@ export const runtime = "nodejs";
 /**
  * GET /api/integrations/employees
  *
- * Plantilla operativa para consumo del CRM: usuarios que ejecutan tareas en el
- * obrador. El CRM los vincula a Contabilidad por DNI. No incluye SUPERADMIN
- * (propietario de plataforma) ni contraseñas.
+ * Plantilla operativa de UNA cuenta de obrador (el ADMIN dueño de la API key y
+ * sus workers). El CRM la vincula con Contabilidad por DNI.
  *
- * Auth: cabecera `x-api-key` (INTEGRATION_API_KEY).
+ * Auth: cabecera `x-api-key` resuelta a un ownerId (User ADMIN).
  */
 export async function GET(req: NextRequest) {
-  const auth = checkIntegrationKey(req);
+  const auth = await resolveIntegrationAuth(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
+  // Datos sólo de la cuenta del owner: él mismo + sus workers (adminId = ownerId).
+  // Nunca SUPERADMIN ni cuentas de otros tenants.
   const users = await prisma.user.findMany({
-    where: { approved: true, role: { not: "SUPERADMIN" } },
+    where: {
+      approved: true,
+      role: { not: "SUPERADMIN" },
+      OR: [{ id: auth.ownerId }, { adminId: auth.ownerId }],
+    },
     orderBy: [{ lastName: "asc" }, { name: "asc" }],
     select: {
       id: true,

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ScaleIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { ScaleIcon, BuildingStorefrontIcon, KeyIcon } from '@heroicons/react/24/outline';
 import CategoryList from '@/app/ui/settings/category-list';
 import PackagingList from '@/app/ui/settings/packaging-list';
 import PageHeader from '@/app/ui/primitives/page-header';
@@ -38,6 +38,16 @@ export default function Page() {
                     <div>
                         <p className="font-semibold text-slate-900">Aviso legal</p>
                         <p className="text-sm text-slate-500">Aviso legal y sanitario de la aplicación</p>
+                    </div>
+                </Link>
+                <Link
+                    href="/dashboard/settings/integration"
+                    className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                    <KeyIcon className="h-6 w-6 text-slate-500" />
+                    <div>
+                        <p className="font-semibold text-slate-900">Integración CRM</p>
+                        <p className="text-sm text-slate-500">Genera la API key para conectar esta cuenta al CRM</p>
                     </div>
                 </Link>
             </div>

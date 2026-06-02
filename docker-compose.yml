@@ -69,8 +69,6 @@ services:
       VAPID_SUBJECT: "${VAPID_SUBJECT:-mailto:admin@example.com}"
       # Secreto del cron de generación de tareas (/api/cron/generate-tasks)
       CRON_SECRET: "${CRON_SECRET:-}"
-      # Clave de la API de integración de lectura para el CRM (/api/integrations/*)
-      INTEGRATION_API_KEY: "${INTEGRATION_API_KEY:-}"
     networks:
       - proxy-net
       - obrador-internal-net
@@ -79,7 +77,14 @@ services:
         condition: service_healthy
     expose:
       - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     labels:
+      - "autoheal=true"
       - "traefik.enable=true"
       - "traefik.http.routers.sotoobrador-web.rule=Host(`obrador.sotodelprior.com`)"
       - "traefik.http.routers.sotoobrador-web.entrypoints=websecure"

@@ -55,6 +55,7 @@ model User {
   ownedAppConfigs   AppConfig[]       @relation("AppConfigOwner")
   ownedStorage      StorageLocation[] @relation("StorageOwner")
   ownedMiseEnPlace  MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
+  integrationApiKeys IntegrationApiKey[] @relation("IntegrationApiKeyOwner")
 
   // Obrador Relations
   ownedObradorConfigs   ObradorConfig[]           @relation("ObradorConfigOwner")
@@ -1851,4 +1852,18 @@ model PushSubscription {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// Clave de la API de integración (lectura) por CUENTA. La consume el CRM para
+// tirar de operarios y tiempos de tareas. Cada cuenta de obrador (User ADMIN)
+// genera y rota su propia clave desde Ajustes; el CRM resuelve el ownerId por
+// la clave y la API devuelve sólo los datos de esa cuenta.
+model IntegrationApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  ownerId   String
+  owner     User     @relation("IntegrationApiKeyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
 }
