@@ -1,50 +1,52 @@
-name: "sotococina"
+name: "sotoobrador"
 
 networks:
   proxy-net:
     external: true
-  cocina-internal-net:
+  obrador-internal-net:
     driver: bridge
 
 volumes:
-  cocina_db_data:
+  obrador_db_data:
     external: true
+    # Nombre físico del volumen existente con los datos. NO se renombra (es interno
+    # e invisible; renombrarlo exigiría copiar todos los datos sin beneficio real).
     name: cocina_cocina_db_data
 
 services:
-  sotococina-db:
+  sotoobrador-db:
     image: postgres:15-alpine
-    container_name: sotococina-db
+    container_name: sotoobrador-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-cocina}
-      POSTGRES_USER: ${DB_USER:-cocina_user}
-      POSTGRES_PASSWORD: ${DB_PASS:-cocina_pass}
+      POSTGRES_DB: ${DB_NAME:-obrador}
+      POSTGRES_USER: ${DB_USER:-obrador_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-obrador_pass}
     volumes:
-      - cocina_db_data:/var/lib/postgresql/data
+      - obrador_db_data:/var/lib/postgresql/data
     networks:
-      - cocina-internal-net
+      - obrador-internal-net
     ports:
       - "5440:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-cocina_user} -d ${DB_NAME:-cocina}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-obrador_user} -d ${DB_NAME:-obrador}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  sotococina-web:
-    image: cocina-web:latest
+  sotoobrador-web:
+    image: obrador-web:latest
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-    container_name: sotococina-web
+    container_name: sotoobrador-web
     restart: unless-stopped
     environment:
       AUTH_TRUST_HOST: "true"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      AUTH_URL: "${AUTH_URL:-https://cocina.sotodelprior.com}"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://cocina.sotodelprior.com}"
-      DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@sotococina-db:5432/${DB_NAME:-cocina}
+      AUTH_URL: "${AUTH_URL:-https://obrador.sotodelprior.com}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://obrador.sotodelprior.com}"
+      DATABASE_URL: postgresql://${DB_USER:-obrador_user}:${DB_PASS:-obrador_pass}@sotoobrador-db:5432/${DB_NAME:-obrador}
       AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}"
       NEXTAUTH_SKIP_ENV_VALIDATION: "true"
       NEXTAUTH_URL_INTERNAL: "http://localhost:3000"
@@ -57,7 +59,7 @@ services:
       DO_SPACES_KEY: "${DO_SPACES_KEY:-}"
       DO_SPACES_SECRET: "${DO_SPACES_SECRET:-}"
       DO_SPACES_PUBLIC_URL: "${DO_SPACES_PUBLIC_URL:-https://media-sotodelprior.fra1.cdn.digitaloceanspaces.com}"
-      DO_SPACES_APP_PREFIX: "${DO_SPACES_APP_PREFIX:-cocina}"
+      DO_SPACES_APP_PREFIX: "${DO_SPACES_APP_PREFIX:-obrador}"
       # Web Push (VAPID)
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: "${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}"
       VAPID_PRIVATE_KEY: "${VAPID_PRIVATE_KEY:-}"
@@ -66,23 +68,23 @@ services:
       CRON_SECRET: "${CRON_SECRET:-}"
     networks:
       - proxy-net
-      - cocina-internal-net
+      - obrador-internal-net
     depends_on:
-      sotococina-db:
+      sotoobrador-db:
         condition: service_healthy
     expose:
       - "3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sotococina-web.rule=Host(`cocina.sotodelprior.com`)"
-      - "traefik.http.routers.sotococina-web.entrypoints=websecure"
-      - "traefik.http.routers.sotococina-web.tls=true"
-      - "traefik.http.routers.sotococina-web.tls.certresolver=le"
-      - "traefik.http.routers.sotococina-web.middlewares=sotococina-web-headers"
-      - "traefik.http.middlewares.sotococina-web-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.sotococina-web-headers.headers.customrequestheaders.X-Forwarded-Scheme=https"
+      - "traefik.http.routers.sotoobrador-web.rule=Host(`obrador.sotodelprior.com`)"
+      - "traefik.http.routers.sotoobrador-web.entrypoints=websecure"
+      - "traefik.http.routers.sotoobrador-web.tls=true"
+      - "traefik.http.routers.sotoobrador-web.tls.certresolver=le"
+      - "traefik.http.routers.sotoobrador-web.middlewares=sotoobrador-web-headers"
+      - "traefik.http.middlewares.sotoobrador-web-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.sotoobrador-web-headers.headers.customrequestheaders.X-Forwarded-Scheme=https"
       - "traefik.docker.network=proxy-net"
-      - "traefik.http.services.sotococina-web.loadbalancer.server.port=3000"
+      - "traefik.http.services.sotoobrador-web.loadbalancer.server.port=3000"
 
     extra_hosts:
-      - "cocina.sotodelprior.com:host-gateway"
+      - "obrador.sotodelprior.com:host-gateway"

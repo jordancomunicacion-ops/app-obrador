@@ -1,7 +1,7 @@
 # MVP: Mejora del módulo de tareas con el patrón yurest
 
 **Fecha:** 2026-05-30
-**Alcance:** integrar el modelo de checklists de yurest **dentro de la app actual** (`cocina.sotodelprior.com`), sin reemplazar nada de lo que ya funciona. Solo mejoramos el módulo de tareas.
+**Alcance:** integrar el modelo de checklists de yurest **dentro de la app actual** (`obrador.sotodelprior.com`), sin reemplazar nada de lo que ya funciona. Solo mejoramos el módulo de tareas.
 
 **Referencias:**
 - [yurest-analysis.md](yurest-analysis.md) — qué hace yurest y cómo
@@ -11,13 +11,13 @@
 
 ## Decisiones tomadas con el usuario
 
-- **No es una app nueva.** Todo integrado en `cocina.sotodelprior.com`. No `/m/*` separada, no codebase paralela.
+- **No es una app nueva.** Todo integrado en `obrador.sotodelprior.com`. No `/m/*` separada, no codebase paralela.
 - **No tocamos lo que ya funciona:** recetas, eventos, inventario, mise-en-place, obrador, productos, empleados, etc.
 - **Tareas de producción + Checklists rutinarios conviven.** Las Task actuales (ligadas a recetas, con `action`/`technique`/`targetQuantity`) siguen existiendo. Se añade el sistema de checklists yurest encima.
 - **Vista unificada para el empleado:** las dos cosas se le presentan como "Mis tareas hoy" en una sola lista móvil-friendly. El detalle cambia según el tipo (producción / checklist rutinario), pero la entrada es única.
 - **Ubicación en el menú admin:** todo bajo `dashboard/tasks/` con tabs (Tablero actual + Plantillas + Programaciones + Calendario + Informes). No se crea sección nueva.
 - **Móvil:** misma app + **PWA instalable** (manifest + service worker).
-- **Storage de fotos:** DigitalOcean Spaces (S3-compatible). **Bucket compartido `media-sotodelprior`** entre todas las apps Soto del Prior. Cada app sube bajo su propio prefijo (`cocina/`, `crm/`, `reservas/`). 1 sola suscripción de $5/mes (250 GiB + 1 TB compartidos). Cuando conectes CRM o reservas: crea una Access Key nueva con scope al bucket, configura su `.env.local` con el mismo `DO_SPACES_BUCKET=media-sotodelprior` y un `DO_SPACES_APP_PREFIX` distinto (ej. `crm`).
+- **Storage de fotos:** DigitalOcean Spaces (S3-compatible). **Bucket compartido `media-sotodelprior`** entre todas las apps Soto del Prior. Cada app sube bajo su propio prefijo (`obrador/`, `crm/`, `reservas/`). 1 sola suscripción de $5/mes (250 GiB + 1 TB compartidos). Cuando conectes CRM o reservas: crea una Access Key nueva con scope al bucket, configura su `.env.local` con el mismo `DO_SPACES_BUCKET=media-sotodelprior` y un `DO_SPACES_APP_PREFIX` distinto (ej. `crm`).
 - **Notificaciones:** in-app únicamente (badge "tienes X tareas pendientes").
 - **Multi-tenancy:** la actual (admin `gerencia@sotodelprior.com` = el cliente; locales bajo él). [[deployment-model]].
 
@@ -206,7 +206,7 @@ model ChecklistResponse {
 - [ ] Botón "Instalar app" en el dashboard cuando sea instalable
 
 **Criterios de done Sprint 2**
-- María abre `cocina.sotodelprior.com` en su móvil, hace login
+- María abre `obrador.sotodelprior.com` en su móvil, hace login
 - Ve "Mis tareas hoy" con 1 producción + 2 checklists
 - Ejecuta "Apertura SOTO" paso a paso, hace 3 fotos, envía
 - Instala la app en su pantalla de inicio

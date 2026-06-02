@@ -8,7 +8,7 @@ import { generateProductionTasksForDate } from "@/app/lib/actions/production-rou
  *
  * No usa sesión: se protege con un secreto (CRON_SECRET) por header `x-cron-secret`
  * o query `?secret=`. Pensado para un cron del VPS, p. ej.:
- *   5 0 * * * curl -fsS -H "x-cron-secret: <SECRET>" https://cocina.sotodelprior.com/api/cron/generate-tasks
+ *   5 0 * * * curl -fsS -H "x-cron-secret: <SECRET>" https://obrador.sotodelprior.com/api/cron/generate-tasks
  *
  * Genera hoy y mañana (para poder asignar la víspera). La generación lazy al abrir
  * "Hoy" se mantiene como respaldo.

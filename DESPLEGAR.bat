@@ -1,25 +1,25 @@
 @echo off
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
-title SOTOdelPRIOR - Despliegue App Cocina
+title SOTOdelPRIOR - Despliegue App Obrador
 cd /d "%~dp0"
 
-set APP_NAME=App Cocina
+set APP_NAME=App Obrador
 set REMOTE_USER=root
 set REMOTE_HOST=164.92.167.42
-set REMOTE_PATH=/root/SOTOdelPRIOR/apps/cocina
+set REMOTE_PATH=/root/SOTOdelPRIOR/apps/obrador
 set COMPOSE=docker compose -f docker-compose.yml
-set DBNAME=cocina
-set DBUSER=cocina_user
-set WEB=sotococina-web
-set DB=sotococina-db
+set DBNAME=obrador
+set DBUSER=obrador_user
+set WEB=sotoobrador-web
+set DB=sotoobrador-db
 
 :menu
 cls
 echo ============================================================
 echo   DESPLIEGUE %APP_NAME% (SOTO DEL PRIOR)
 echo   Servidor: %REMOTE_USER%@%REMOTE_HOST%
-echo   Web:      https://cocina.sotodelprior.com
+echo   Web:      https://obrador.sotodelprior.com
 echo ============================================================
 echo.
 echo   1.  Deploy completo (git pull + rebuild + logs)
@@ -60,7 +60,7 @@ echo    Ultimo commit desplegado:
 ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && git log --oneline -1"
 echo.
 echo [2/3] docker compose up -d --build...
-ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && export AUTH_URL=https://cocina.sotodelprior.com && %COMPOSE% up -d --build --remove-orphans"
+ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && export AUTH_URL=https://obrador.sotodelprior.com && %COMPOSE% up -d --build --remove-orphans"
 if errorlevel 1 goto error
 echo.
 echo [3/3] Sincronizando schema (prisma db push)...
@@ -132,14 +132,14 @@ echo Health check interno...
 ssh %REMOTE_USER%@%REMOTE_HOST% "cd %REMOTE_PATH% && %COMPOSE% exec -T %WEB% wget -qO- http://localhost:3000/api/health"
 echo.
 echo Health check externo (HTTPS publico)...
-ssh %REMOTE_USER%@%REMOTE_HOST% "curl -s -o /dev/null -w 'HTTP %%{http_code} - tiempo %%{time_total}s' https://cocina.sotodelprior.com/api/health"
+ssh %REMOTE_USER%@%REMOTE_HOST% "curl -s -o /dev/null -w 'HTTP %%{http_code} - tiempo %%{time_total}s' https://obrador.sotodelprior.com/api/health"
 echo.
 goto end
 
 :backup
 echo.
-echo Generando backup en /backups/cocina/...
-ssh %REMOTE_USER%@%REMOTE_HOST% "mkdir -p /backups/cocina && docker exec %DB% pg_dump -U %DBUSER% %DBNAME% | gzip > /backups/cocina/db-manual-$(date +%%Y%%m%%d-%%H%%M%%S).sql.gz && ls -lh /backups/cocina/ | tail -5"
+echo Generando backup en /backups/obrador/...
+ssh %REMOTE_USER%@%REMOTE_HOST% "mkdir -p /backups/obrador && docker exec %DB% pg_dump -U %DBUSER% %DBNAME% | gzip > /backups/obrador/db-manual-$(date +%%Y%%m%%d-%%H%%M%%S).sql.gz && ls -lh /backups/obrador/ | tail -5"
 if errorlevel 1 goto error
 echo [OK] Backup creado.
 goto end
