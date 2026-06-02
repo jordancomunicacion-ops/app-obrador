@@ -19,9 +19,12 @@ services:
     container_name: sotoobrador-db
     restart: unless-stopped
     environment:
+      # El rol de BD sigue llamándose cocina_user (renombrar un rol superuser en
+      # prod requería crear otro superuser; no se hizo). Solo la base de datos pasó
+      # a llamarse "obrador". El usuario real se fija siempre vía .env (DB_USER).
       POSTGRES_DB: ${DB_NAME:-obrador}
-      POSTGRES_USER: ${DB_USER:-obrador_user}
-      POSTGRES_PASSWORD: ${DB_PASS:-obrador_pass}
+      POSTGRES_USER: ${DB_USER:-cocina_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-cocina_pass}
     volumes:
       - obrador_db_data:/var/lib/postgresql/data
     networks:
@@ -29,7 +32,7 @@ services:
     ports:
       - "5440:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-obrador_user} -d ${DB_NAME:-obrador}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-cocina_user} -d ${DB_NAME:-obrador}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,7 +49,7 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       AUTH_URL: "${AUTH_URL:-https://obrador.sotodelprior.com}"
       NEXTAUTH_URL: "${NEXTAUTH_URL:-https://obrador.sotodelprior.com}"
-      DATABASE_URL: postgresql://${DB_USER:-obrador_user}:${DB_PASS:-obrador_pass}@sotoobrador-db:5432/${DB_NAME:-obrador}
+      DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@sotoobrador-db:5432/${DB_NAME:-obrador}
       AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}"
       NEXTAUTH_SKIP_ENV_VALIDATION: "true"
       NEXTAUTH_URL_INTERNAL: "http://localhost:3000"
