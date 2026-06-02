@@ -3,7 +3,7 @@
 **Fecha:** 2026-05-29
 **Punto de partida:** [docs/yurest-analysis.md](yurest-analysis.md) (mapa de yurest) + auditoría de `apps/web/` (Next.js 16 + React 19 + Prisma 5 + NextAuth 5 + PostgreSQL + Tailwind 4)
 **Decisiones tomadas con el usuario:**
-- **Modelo de despliegue:** 1 instancia por cliente (igual que `crm.sotodelprior.com` y `reservas.sotodelprior.com`). Esta instancia (`cocina.sotodelprior.com`) sirve a Soto del Prior. Si en el futuro vendemos la app a otro cliente, se despliega otra instancia + subdominio + base de datos propia.
+- **Modelo de despliegue:** 1 instancia por cliente (igual que `crm.sotodelprior.com` y `reservas.sotodelprior.com`). Esta instancia (`obrador.sotodelprior.com`) sirve a Soto del Prior. Si en el futuro vendemos la app a otro cliente, se despliega otra instancia + subdominio + base de datos propia.
 - **Multi-tenancy:** NO necesaria. El "admin" del schema actual = el cliente. Solo añadimos modelo `Location` por debajo para separar los locales del cliente (SOTO del PRIOR + Montagu)
 - **Infraestructura:** Digital Ocean (droplet + managed Postgres + Spaces)
 - **Almacenamiento de fotos:** **DigitalOcean Spaces** (API S3-compatible, mismo proveedor que el resto)
