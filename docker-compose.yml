@@ -69,6 +69,8 @@ services:
       VAPID_SUBJECT: "${VAPID_SUBJECT:-mailto:admin@example.com}"
       # Secreto del cron de generación de tareas (/api/cron/generate-tasks)
       CRON_SECRET: "${CRON_SECRET:-}"
+      # Clave de la API de integración de lectura para el CRM (/api/integrations/*)
+      INTEGRATION_API_KEY: "${INTEGRATION_API_KEY:-}"
     networks:
       - proxy-net
       - obrador-internal-net
