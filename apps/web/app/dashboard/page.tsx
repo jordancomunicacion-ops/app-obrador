@@ -9,10 +9,12 @@ import {
   BeakerIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { locationScope } from "@/app/lib/auth/scope";
 import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
+import { computeOperationsKPIs, computeProductionKPIs } from "@/app/lib/reports/kpi";
 import PageHeader from "@/app/ui/primitives/page-header";
 import Card from "@/app/ui/primitives/card";
 import StatCard from "@/app/ui/primitives/stat-card";
@@ -107,6 +109,15 @@ export default async function Page() {
     }),
   );
 
+  // Informe de tareas (últimos 30 días): reaprovecha los KPIs de los informes
+  const reportRange = { from: startOfDay(addDays(today, -30)), to: endOfDay(today) };
+  const [prodKpis, operKpis] = orgId
+    ? await Promise.all([
+        computeProductionKPIs(orgId, reportRange, locationId ?? undefined),
+        computeOperationsKPIs(orgId, reportRange, locationId ?? undefined),
+      ])
+    : [null, null];
+
   // Resumen de trabajo de hoy (producción + operativa)
   const prodCount = todayTasks.length;
   const operCount = todayInstances.length;
@@ -124,8 +135,10 @@ export default async function Page() {
     return { label: s, tone: "neutral" };
   };
 
+  const pct = (n: number) => `${n.toFixed(1)}%`;
+
   return (
-    <main className="space-y-8">
+    <main className="space-y-10">
       <PageHeader icon={<HomeIcon className="w-6 h-6" />} title="Dashboard" />
 
       {/* Indicadores principales */}
@@ -160,6 +173,46 @@ export default async function Page() {
           <StatCard label="Incidencias" value={issuesToday} tone={issuesToday > 0 ? "danger" : "success"} />
         </div>
       </Summary>
+
+      {/* Informe de tareas: KPIs de los últimos 30 días (producción + operativa) */}
+      {prodKpis && operKpis && (
+        <Summary
+          icon={<ChartBarIcon className="w-5 h-5" />}
+          title="Informe de tareas · últimos 30 días"
+          href="/dashboard/tasks/reports/summary"
+        >
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                Producción
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <StatCard label="Tareas" value={prodKpis.tareas} tone="accent" />
+                <StatCard label="Realizadas" value={pct(prodKpis.realizadas)} tone="success" />
+                <StatCard label="En curso" value={pct(prodKpis.enCurso)} tone="warning" />
+                <StatCard
+                  label="Incidencias"
+                  value={prodKpis.incidencias}
+                  tone={prodKpis.incidencias > 0 ? "danger" : "success"}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                Operativa (checklists)
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <StatCard label="Programados" value={operKpis.programados} tone="accent" />
+                <StatCard label="Realizados" value={pct(operKpis.checklistsRealizados)} tone="success" />
+                <StatCard label="Líneas realizadas" value={pct(operKpis.lineasRealizadas)} tone="success" />
+                <StatCard label="Supervisados" value={pct(operKpis.lineasSupervisadas)} tone="accent" />
+                <StatCard label="Superv. totalmente" value={pct(operKpis.supervisadosTotalmente)} tone="accent" />
+                <StatCard label="Valoración media" value={pct(operKpis.valoracionMedia)} tone="accent" />
+              </div>
+            </div>
+          </div>
+        </Summary>
+      )}
 
       {/* Resumen: Obrador */}
       <Summary
