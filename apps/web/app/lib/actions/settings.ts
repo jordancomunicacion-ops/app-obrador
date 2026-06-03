@@ -141,6 +141,7 @@ export async function fetchPackaging() {
 // --- Image Upload Actions ---
 
 import { auth } from '@/auth';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
@@ -206,7 +207,7 @@ export async function updateProfileImage(formData: FormData): Promise<{ success?
 export async function updateAppLogo(formData: FormData): Promise<{ success?: boolean; imageUrl?: string; error?: string }> {
     try {
         const session = await auth();
-        if (!session?.user?.role || session.user.role !== 'ADMIN') {
+        if (session?.user?.role !== 'ADMIN' && !isPlatformOwner(session)) {
             return { error: 'Solo administradores pueden cambiar el logo' };
         }
 

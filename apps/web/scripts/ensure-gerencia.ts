@@ -25,19 +25,21 @@ async function main() {
         'mise-en-place', 'employees', 'settings'
     ];
 
-    // Update to ensure it's a proper Admin/Tenant
+    // Gerencia es el PROPIETARIO DE PLATAFORMA: rol SUPERADMIN (cross-tenant), NO
+    // un tenant más. Así deja de aparecer como cuenta cliente en el selector y ve
+    // todo a nivel plataforma (igual que en CRM/reservas).
     await prisma.user.update({
         where: { id: user.id },
         data: {
-            role: 'ADMIN',
+            role: 'SUPERADMIN',
             approved: true,
             permissions: defaultPermissions,
-            // adminId should be null for the Master
+            // adminId null: la plataforma no cuelga de ninguna cuenta.
             adminId: null
         }
     });
 
-    console.log("SUCCESS: Gerencia is confirmed as an Independent ADMIN with full permissions.");
+    console.log("SUCCESS: Gerencia is confirmed as SUPERADMIN (platform owner, cross-tenant).");
 }
 
 main()

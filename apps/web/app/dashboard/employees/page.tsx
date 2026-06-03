@@ -3,7 +3,7 @@ import EmployeesTable from '@/app/ui/employees/table';
 import { CreateEmployee } from '@/app/ui/employees/buttons';
 import { Suspense } from 'react';
 import Search from '@/app/ui/search';
-import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { ShieldCheckIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { auth } from '@/auth';
@@ -109,6 +109,15 @@ export default async function Page({
                         )}
                     </div>
                     {tab === 'team' && <CreateEmployee />}
+                    {tab === 'requests' && isMasterAdmin && (
+                        <Link
+                            href="/dashboard/accounts/new"
+                            className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-bold text-white transition-all hover:bg-indigo-700 shadow-sm hover:shadow-md active:scale-95"
+                        >
+                            <PlusIcon className="h-5 w-5 stroke-[3px]" />
+                            <span>Crear negocio</span>
+                        </Link>
+                    )}
                 </div>
             </div>
 

@@ -39,66 +39,16 @@ export async function signOutAction() {
 }
 
 // --- REGISTRATION ---
-import { CreateUserSchema, UserFormState } from './definitions';
-import bcrypt from 'bcryptjs';
-import { redirect } from 'next/navigation';
-import { isPlatformOwnerEmail } from '@/app/lib/auth/platform';
+import { UserFormState } from './definitions';
 
 export async function registerUser(prevState: UserFormState | undefined, formData: FormData): Promise<UserFormState> {
-    const validatedFields = CreateUserSchema.safeParse({
-        name: formData.get('name'),
-        email: formData.get('email'),
-        password: formData.get('password'),
-        role: 'ADMIN', // New registrations are Tenants (Admins)
-    });
-
-    if (!validatedFields.success) {
-        return {
-            errors: validatedFields.error.flatten().fieldErrors,
-            message: 'Faltan campos obligatorios. Error al registrar usuario.',
-        };
-    }
-
-    const { name, email, password } = validatedFields.data;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const isMasterAdmin = isPlatformOwnerEmail(email);
-
-    // Default permissions for a new Tenant (Everything)
-    const defaultPermissions = [
-        'dashboard', 'events', 'tasks', 'menu-planning',
-        'products', 'recipes', 'purchasing', 'storage',
-        'mise-en-place', 'employees', 'settings'
-    ];
-
-    try {
-        await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                role: 'ADMIN',
-                approved: isMasterAdmin, // Require manual approval for new Tenants
-                permissions: defaultPermissions,
-                // adminId is null for Tenants (they are the root)
-            },
-        });
-    } catch (error) {
-        console.error('Prisma Register Error:', error);
-
-        // Check for unique constraint violation (P2002)
-        // @ts-ignore
-        if (error.code === 'P2002') {
-            return {
-                message: 'El email ya está uso.',
-            };
-        }
-
-        // Return technical message if available for debugging
-        return {
-            message: `Error de base de datos: ${(error as any).message || 'Error al registrar usuario.'}`,
-        };
-    }
-
-    redirect('/login');
+    // Auto-registro deshabilitado: las cuentas de negocio las crea el propietario
+    // de plataforma (SUPERADMIN) desde "Crear negocio" (ver `createBusinessAccount`
+    // en app/lib/actions/accounts.ts). Esta acción se mantiene como no-op por si
+    // algún cliente antiguo aún la invoca.
+    void prevState;
+    void formData;
+    return {
+        message: 'El registro está deshabilitado. Las cuentas las crea la administración de la plataforma.',
+    };
 }

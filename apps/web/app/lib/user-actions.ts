@@ -3,14 +3,15 @@
 import { prisma } from '@/app/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { isPlatformOwner } from '@/app/lib/auth/platform';
 
 /**
- * Lists all users. Only allowed for ADMINs.
+ * Lists all users. Allowed for ADMINs and the platform owner (SUPERADMIN).
  */
 export async function getUsers() {
     const session = await auth();
 
-    if (session?.user?.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN' && !isPlatformOwner(session)) {
         throw new Error('Unauthorized: Only administrators can list users.');
     }
 
@@ -31,7 +32,7 @@ export async function getUsers() {
 export async function updateUserStatus(userId: string, approved: boolean) {
     const session = await auth();
 
-    if (session?.user?.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN' && !isPlatformOwner(session)) {
         throw new Error('Unauthorized: Only administrators can approve users.');
     }
 
