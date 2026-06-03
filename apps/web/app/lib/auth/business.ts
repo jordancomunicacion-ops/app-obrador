@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { auth } from "@/auth";
 import { isPlatformOwner } from "@/app/lib/auth/platform";
@@ -154,4 +155,22 @@ export async function getBusinessPermissions(
     canEditSettings: access.canEditSettings,
     isPlatformOwner: false,
   };
+}
+
+/**
+ * Guard server-side: si el usuario no tiene el permiso indicado sobre la
+ * empresa activa, redirige a `/dashboard`. El super admin pasa siempre.
+ *
+ * Pensado para llamarse desde un `layout.tsx` o `page.tsx` server-side al
+ * inicio del render. Idempotente y barato (cachea por request gracias a
+ * Next.js).
+ */
+export async function requirePermission(
+  key: keyof Omit<BusinessPermissions, "isPlatformOwner">,
+): Promise<BusinessPermissions> {
+  const perms = await getBusinessPermissions();
+  if (!perms.isPlatformOwner && !perms[key]) {
+    redirect("/dashboard");
+  }
+  return perms;
 }

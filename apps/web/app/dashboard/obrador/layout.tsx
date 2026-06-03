@@ -1,4 +1,7 @@
-// Tema de sección: todo el subárbol de Obrador usa el acento azul.
-export default function ObradorLayout({ children }: { children: React.ReactNode }) {
+import { requirePermission } from "@/app/lib/auth/business";
+
+// Tema de sección + guard: requiere `canViewObrador`.
+export default async function ObradorLayout({ children }: { children: React.ReactNode }) {
+  await requirePermission("canViewObrador");
   return <div className="theme-obrador">{children}</div>;
 }

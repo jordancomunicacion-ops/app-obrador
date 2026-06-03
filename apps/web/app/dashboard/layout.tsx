@@ -2,6 +2,7 @@ import SideNav from '@/app/ui/dashboard/sidenav';
 import TopBar from '@/app/ui/dashboard/topbar';
 import { auth } from '@/auth';
 import { prisma } from '@/app/lib/prisma';
+import { getBusinessPermissions } from '@/app/lib/auth/business';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
     const session = await auth();
@@ -14,10 +15,18 @@ export default async function Layout({ children }: { children: React.ReactNode }
         console.error("Database connection failed in layout:", e);
     }
 
+    // Permisos granulares del usuario sobre la empresa activa (modelo CRM).
+    // El super admin obtiene ALL_PERMISSIONS; el resto, lo que diga su BusinessAccess.
+    const permissions = await getBusinessPermissions();
+
     return (
         <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
             <div className="w-full flex-none md:w-64">
-                <SideNav user={session?.user} logoUrl={appConfig?.logoUrl} />
+                <SideNav
+                    user={session?.user}
+                    logoUrl={appConfig?.logoUrl}
+                    permissions={permissions}
+                />
             </div>
             <div className="flex-grow flex flex-col md:overflow-y-auto">
                 <TopBar />

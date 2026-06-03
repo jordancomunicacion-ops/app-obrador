@@ -12,7 +12,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { groups } from './nav-links';
+import { groups, type BusinessPermissionKey } from './nav-links';
 import {
     PowerIcon,
     UserIcon,
@@ -23,58 +23,46 @@ import {
 import { signOutAction } from '@/app/lib/actions';
 import { useState, useEffect } from 'react';
 
-export default function SideNav({ user, logoUrl }: { user?: any, logoUrl?: string | null }) {
+/**
+ * Permisos granulares del usuario sobre la empresa activa (mirror del modelo
+ * `BusinessAccess` del CRM). Se inyectan desde el layout server-side.
+ */
+export type SideNavPermissions = Partial<Record<BusinessPermissionKey, boolean>> & {
+    isPlatformOwner?: boolean;
+};
+
+export default function SideNav({
+    user,
+    logoUrl,
+    permissions,
+}: {
+    user?: any;
+    logoUrl?: string | null;
+    /** Si no se pasa, se trata como usuario sin permisos (fail-closed) salvo el super admin. */
+    permissions?: SideNavPermissions;
+}) {
     const pathname = usePathname();
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
-    // Map Link Names/Hrefs to Permission IDs (debe coincidir con PERMISSIONS de create/edit-form)
-    // Permission IDs: 'dashboard', 'events', 'tasks', 'communications', 'menu-planning', 'products',
-    // 'recipes', 'purchasing', 'storage', 'mise-en-place', 'labels', 'obrador', 'employees', 'settings'
-    const getPermissionId = (name: string, href: string): string => {
-        if (href.includes('/dashboard/events')) return 'events';
-        if (href.includes('/dashboard/tasks')) return 'tasks';
-        if (href.includes('/dashboard/communications')) return 'communications';
-        if (href.includes('/dashboard/menu-planning')) return 'menu-planning';
-        if (href.includes('/dashboard/products')) return 'products';
-        if (href.includes('/dashboard/recipes')) return 'recipes';
-        if (href.includes('/dashboard/purchasing')) return 'purchasing';
-        if (href.includes('/dashboard/storage')) return 'storage';
-        if (href.includes('/dashboard/mise-en-place')) return 'mise-en-place';
-        if (href.includes('/dashboard/labels')) return 'labels';
-        if (href.includes('/dashboard/obrador')) return 'obrador';
-        if (href.includes('/dashboard/employees')) return 'employees';
-        if (href.includes('/dashboard/settings')) return 'settings';
-        if (name === 'Dashboard' || href === '/dashboard') return 'dashboard';
-        return '';
-    };
+    const isPlatformOwner = permissions?.isPlatformOwner || user?.role === 'SUPERADMIN';
 
-    // Filter groups and items based on role AND permissions
+    // Filter groups and items based on role AND business permissions.
     const filteredGroups = groups.map(group => ({
         ...group,
         items: group.items.filter(item => {
-            // 0. Restricción por rol del item (p.ej. Hoy=empleado, Dashboard=admin)
+            // 0. Restricción por rol del item (p.ej. Hoy=empleado, Dashboard=admin, Empresas=SUPERADMIN).
             if (item.roles && !item.roles.includes(user?.role)) {
                 return false;
             }
 
-            // 1. Role Check
-            if (item.name === 'Gestión de Usuarios') {
-                return user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
-            }
+            // 1. Super admin lo ve todo (mirror del CRM).
+            if (isPlatformOwner) return true;
 
-            // 2. Permission Check (If not Admin)
-            if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
-                const requiredPermission = getPermissionId(item.name, item.href);
-                // If it maps to a permission, check if user has it.
-                // If user.permissions is undefined/empty, block everything except maybe basics?
-                // Assuming empty permissions = no access.
-                const userPermissions = (user as any)?.permissions || [];
-                if (requiredPermission && !userPermissions.includes(requiredPermission)) {
-                    return false;
-                }
-            }
+            // 2. Item sin `permission` definido: visible para todo el mundo autenticado.
+            if (!item.permission) return true;
 
-            return true;
+            // 3. Permiso concreto: leer del objeto `permissions` (defensa: si no llega, fail-closed).
+            return Boolean(permissions?.[item.permission]);
         })
     })).filter(group => group.items.length > 0);
 
