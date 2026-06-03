@@ -10,7 +10,7 @@ export default async function LocationsSettingsPage() {
   if (!orgId) return null;
 
   const locations = await prisma.location.findMany({
-    where: { ownerId: orgId },
+    where: { businessId: orgId },
     orderBy: { name: "asc" },
   });
 

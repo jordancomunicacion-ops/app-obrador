@@ -28,10 +28,10 @@ const STATUS_CLS: Record<string, string> = {
 
 export default async function ObradorProductionPage() {
   const session = await auth();
-  const ownerId = session?.user?.id ?? '__none__';
+  const businessId = session?.user?.id ?? '__none__';
 
   const batches = await prisma.obradorProductionBatch.findMany({
-    where: { ownerId },
+    where: { businessId },
     include: {
       masterProduct: { select: { name: true } },
       customer: { select: { name: true } },

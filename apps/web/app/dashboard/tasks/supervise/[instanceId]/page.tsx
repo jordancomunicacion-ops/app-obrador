@@ -15,7 +15,7 @@ export default async function SuperviseInstancePage({
   if (!orgId) notFound();
 
   const instance = await prisma.checklistInstance.findFirst({
-    where: { id: instanceId, schedule: { ownerId: orgId } },
+    where: { id: instanceId, schedule: { businessId: orgId } },
     include: {
       schedule: {
         include: {

@@ -21,7 +21,7 @@ export async function generateInstancesForDate(
 ) {
   const dueDate = startOfDayUTC(date);
   const schedules = await prisma.checklistSchedule.findMany({
-    where: scopedOrgId ? { ownerId: scopedOrgId } : {},
+    where: scopedOrgId ? { businessId: scopedOrgId } : {},
     select: {
       id: true,
       frequency: true,
@@ -61,7 +61,7 @@ async function loadInstanceForUser(instanceId: string) {
   if (!orgId) throw new Error("Unauthorized");
 
   const instance = await prisma.checklistInstance.findFirst({
-    where: { id: instanceId, schedule: { ownerId: orgId } },
+    where: { id: instanceId, schedule: { businessId: orgId } },
     include: {
       schedule: {
         select: {
@@ -244,7 +244,7 @@ export async function assignChecklistInstance(
   if (!orgId) throw new Error("Unauthorized");
 
   const instance = await prisma.checklistInstance.findFirst({
-    where: { id: instanceId, schedule: { ownerId: orgId } },
+    where: { id: instanceId, schedule: { businessId: orgId } },
     include: {
       schedule: {
         select: {

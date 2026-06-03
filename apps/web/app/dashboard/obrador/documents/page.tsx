@@ -18,10 +18,10 @@ function fmtDate(d: Date) {
 
 export default async function ObradorDocumentsPage() {
   const session = await auth();
-  const ownerId = session?.user?.id ?? '__none__';
+  const businessId = session?.user?.id ?? '__none__';
 
   const docs = await prisma.obradorSanitaryDocument.findMany({
-    where: { ownerId },
+    where: { businessId },
     orderBy: { createdAt: 'desc' },
   });
 

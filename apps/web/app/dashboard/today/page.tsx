@@ -48,7 +48,7 @@ export default async function TodayPage() {
   // 2. Tareas de producción asignadas a mí, para hoy
   const productionTasks = await prisma.task.findMany({
     where: {
-      ownerId: orgId,
+      businessId: orgId,
       assignedToUserId: userId,
       OR: [
         { plannedStart: { gte: todayStart, lte: todayEnd } },
@@ -70,7 +70,7 @@ export default async function TodayPage() {
   const checklistInstances = await prisma.checklistInstance.findMany({
     where: {
       dueDate: todayStart,
-      schedule: { ownerId: orgId, ...(locationId ? { locationId } : {}) },
+      schedule: { businessId: orgId, ...(locationId ? { locationId } : {}) },
       OR: [
         { assignedToUserId: userId },
         { assignedToUserId: null, schedule: { performerUserIds: { has: userId } } },
@@ -93,12 +93,12 @@ export default async function TodayPage() {
   });
 
   const pendingDeliveries = await prisma.purchaseOrder.count({
-    where: { ownerId: orgId, status: "SENT" },
+    where: { businessId: orgId, status: "SENT" },
   });
 
   const openCommunications = await prisma.communication.count({
     where: {
-      ownerId: orgId,
+      businessId: orgId,
       status: { in: ["OPEN", "IN_PROGRESS"] },
       OR: [
         { assigneeIds: { has: userId } },

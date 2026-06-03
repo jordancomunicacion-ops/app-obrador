@@ -7,7 +7,7 @@ export default async function NewTemplatePage() {
   const orgId = await currentOrgId();
   if (!orgId) return null;
   const locations = await prisma.location.findMany({
-    where: { ownerId: orgId, isActive: true },
+    where: { businessId: orgId, isActive: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });

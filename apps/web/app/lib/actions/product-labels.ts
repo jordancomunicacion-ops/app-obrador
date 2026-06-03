@@ -56,7 +56,7 @@ export async function createLabel(data: CreateLabelInput) {
 
   const created = await prisma.productLabel.create({
     data: {
-      ownerId: orgId,
+      businessId: orgId,
       createdByUserId: session.user.id,
       locationId: locationId ?? null,
       destination: data.destination ?? "INTERNAL",
@@ -93,7 +93,7 @@ export async function deleteLabel(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const label = await prisma.productLabel.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!label) throw new Error("Label not found");
@@ -142,7 +142,7 @@ export type ObradorLabelSource = {
 
 /**
  * Construye las opciones para la etiqueta de venta a partir de los LOTES de
- * producción del obrador (aislados por ownerId), agrupados por su ficha
+ * producción del obrador (aislados por businessId), agrupados por su ficha
  * MasterProduct + ProductSanitaryInfo. Los datos legales (registro, operador,
  * origen) salen del local de la ficha, con ObradorConfig como respaldo.
  */
@@ -153,7 +153,7 @@ export async function getObradorLabelSource(): Promise<ObradorLabelSource> {
   const [batches, config] = await Promise.all([
     prisma.obradorProductionBatch.findMany({
       where: {
-        ownerId: orgId,
+        businessId: orgId,
         masterProductId: { not: null },
         status: { not: "retirado" },
       },
@@ -244,14 +244,14 @@ export async function ensureSaleLabelForBatch(batchId: string): Promise<{ id: st
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
 
   const existing = await prisma.productLabel.findFirst({
-    where: { ownerId: orgId, obradorBatchId: batchId, destination: "SALE" },
+    where: { businessId: orgId, obradorBatchId: batchId, destination: "SALE" },
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
   if (existing) return existing;
 
   const batch = await prisma.obradorProductionBatch.findFirst({
-    where: { id: batchId, ownerId: orgId },
+    where: { id: batchId, businessId: orgId },
     include: { masterProduct: { include: { sanitaryInfo: true, location: true } } },
   });
   if (!batch) throw new Error("Lote no encontrado");
@@ -273,7 +273,7 @@ export async function ensureSaleLabelForBatch(batchId: string): Promise<{ id: st
 
   const created = await prisma.productLabel.create({
     data: {
-      ownerId: orgId,
+      businessId: orgId,
       createdByUserId: session.user.id,
       locationId: locationId ?? p.locationId ?? null,
       destination: "SALE",

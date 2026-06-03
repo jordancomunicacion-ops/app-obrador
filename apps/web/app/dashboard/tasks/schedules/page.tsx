@@ -18,7 +18,7 @@ export default async function SchedulesPage() {
   if (!orgId) return null;
 
   const schedules = await prisma.checklistSchedule.findMany({
-    where: { ownerId: orgId },
+    where: { businessId: orgId },
     include: {
       template: { select: { name: true } },
       location: { select: { name: true } },

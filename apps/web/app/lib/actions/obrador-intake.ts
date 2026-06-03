@@ -73,7 +73,7 @@ export async function createObradorIntake(
         visualStatus: d.visualStatus || null,
         isApto: d.isApto !== 'no',
         observations: d.observations || null,
-        ownerId: session?.user?.id ?? null,
+        businessId: session?.user?.id ?? null,
       },
     });
   } catch (error) {
@@ -87,7 +87,7 @@ export async function createObradorIntake(
 export async function deleteObradorIntake(id: string) {
   const session = await auth();
   const existing = await prisma.obradorRawMaterialEntry.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;

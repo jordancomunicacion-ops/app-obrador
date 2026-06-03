@@ -17,10 +17,10 @@ function fmt(d: Date) {
 
 export default async function IncidentsPage() {
   const session = await auth();
-  const ownerId = session?.user?.id ?? '__none__';
+  const businessId = session?.user?.id ?? '__none__';
 
   const incidents = await prisma.obradorIncident.findMany({
-    where: { ownerId },
+    where: { businessId },
     orderBy: [{ status: 'asc' }, { incidentDate: 'desc' }],
     take: 100,
   });

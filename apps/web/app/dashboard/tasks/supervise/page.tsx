@@ -24,7 +24,7 @@ export default async function SupervisePage() {
   // El admin ve todo; un supervisor ve solo las instancias que supervisa
   const baseWhere: any = {
     schedule: {
-      ownerId: orgId,
+      businessId: orgId,
       ...(locationId ? { locationId } : {}),
     },
     status: { in: ["IN_PROGRESS", "DONE", "INCIDENT"] },

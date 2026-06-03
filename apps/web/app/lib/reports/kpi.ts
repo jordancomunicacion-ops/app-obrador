@@ -38,7 +38,7 @@ export async function computeOperationsKPIs(
 ): Promise<OperationsKPIs> {
   const baseWhere = {
     schedule: {
-      ownerId: orgId,
+      businessId: orgId,
       ...(locationId ? { locationId } : {}),
     },
     dueDate: { gte: range.from, lte: range.to },
@@ -149,7 +149,7 @@ export async function computeProductionKPIs(
 ): Promise<ProductionKPIs> {
   const tasks = await prisma.task.findMany({
     where: {
-      ownerId: orgId,
+      businessId: orgId,
       ...(locationId ? { locationId } : {}),
       plannedStart: { gte: range.from, lte: range.to },
     },

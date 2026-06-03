@@ -49,7 +49,7 @@ export async function createProductionRoutine(input: ProductionRoutineInput) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const created = await prisma.productionRoutine.create({
-    data: { ...toData(input), ownerId: orgId },
+    data: { ...toData(input), businessId: orgId },
   });
   revalidatePath("/dashboard/tasks/routines");
   return created;
@@ -59,7 +59,7 @@ export async function updateProductionRoutine(id: string, input: ProductionRouti
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const existing = await prisma.productionRoutine.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!existing) throw new Error("Ciclo no encontrado");
@@ -71,7 +71,7 @@ export async function deleteProductionRoutine(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const existing = await prisma.productionRoutine.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!existing) throw new Error("Ciclo no encontrado");
@@ -94,7 +94,7 @@ export async function generateProductionTasksForDate(
   const ymd = day.toISOString().slice(0, 10).replace(/-/g, "");
 
   const routines = await prisma.productionRoutine.findMany({
-    where: { isActive: true, ...(scopedOrgId ? { ownerId: scopedOrgId } : {}) },
+    where: { isActive: true, ...(scopedOrgId ? { businessId: scopedOrgId } : {}) },
     select: {
       id: true,
       title: true,
@@ -109,7 +109,7 @@ export async function generateProductionTasksForDate(
       excludeWeekdays: true,
       executionTime: true,
       defaultAssigneeUserId: true,
-      ownerId: true,
+      businessId: true,
       locationId: true,
     },
   });
@@ -140,7 +140,7 @@ export async function generateProductionTasksForDate(
           unit: r.unit,
           plannedStart,
           assignedToUserId: r.defaultAssigneeUserId,
-          ownerId: r.ownerId,
+          businessId: r.businessId,
           locationId: r.locationId,
           productionRoutineId: r.id,
         },

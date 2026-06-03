@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * Plantilla operativa de UNA cuenta de obrador (el ADMIN dueño de la API key y
  * sus workers). El CRM la vincula con Contabilidad por DNI.
  *
- * Auth: cabecera `x-api-key` resuelta a un ownerId (User ADMIN).
+ * Auth: cabecera `x-api-key` resuelta a un businessId (User ADMIN).
  */
 export async function GET(req: NextRequest) {
   const auth = await resolveIntegrationAuth(req);
@@ -19,13 +19,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  // Datos sólo de la cuenta del owner: él mismo + sus workers (adminId = ownerId).
+  // Datos sólo de la cuenta del owner: él mismo + sus workers (adminId = businessId).
   // Nunca SUPERADMIN ni cuentas de otros tenants.
   const users = await prisma.user.findMany({
     where: {
       approved: true,
       role: { not: "SUPERADMIN" },
-      OR: [{ id: auth.ownerId }, { adminId: auth.ownerId }],
+      OR: [{ id: auth.businessId }, { adminId: auth.businessId }],
     },
     orderBy: [{ lastName: "asc" }, { name: "asc" }],
     select: {

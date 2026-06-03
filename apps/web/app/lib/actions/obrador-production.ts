@@ -58,7 +58,7 @@ export async function createObradorBatch(
   }
   const d = validated.data;
   const session = await auth();
-  const ownerId = session?.user?.id ?? null;
+  const businessId = session?.user?.id ?? null;
 
   // El producto debe ser de obrador y del local actual.
   const product = await prisma.masterProduct.findFirst({
@@ -91,11 +91,11 @@ export async function createObradorBatch(
         quantityProduced: d.quantityProduced,
         unit: d.unit,
         operatorName: d.operatorName || null,
-        operatorId: ownerId,
+        operatorId: businessId,
         wasteQuantity: d.wasteQuantity ?? null,
         observations: d.observations || null,
         status: d.status || 'abierto',
-        ownerId,
+        businessId,
       },
     });
   } catch (error) {
@@ -109,7 +109,7 @@ export async function createObradorBatch(
 export async function deleteObradorBatch(id: string) {
   const session = await auth();
   const existing = await prisma.obradorProductionBatch.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;

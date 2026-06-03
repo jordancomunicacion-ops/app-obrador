@@ -29,7 +29,7 @@ async function assertOwnerOfSchedule(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const s = await prisma.checklistSchedule.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!s) throw new Error("Schedule not found");
@@ -44,8 +44,8 @@ function parseDate(s: string) {
 
 async function validateOrgScope(orgId: string, templateId: string, locationId: string) {
   const [tpl, loc] = await Promise.all([
-    prisma.checklistTemplate.findFirst({ where: { id: templateId, ownerId: orgId } }),
-    prisma.location.findFirst({ where: { id: locationId, ownerId: orgId } }),
+    prisma.checklistTemplate.findFirst({ where: { id: templateId, businessId: orgId } }),
+    prisma.location.findFirst({ where: { id: locationId, businessId: orgId } }),
   ]);
   if (!tpl) throw new Error("Template not found");
   if (!loc) throw new Error("Location not found");
@@ -74,7 +74,7 @@ export async function createSchedule(data: ScheduleInput) {
       performerRoles: data.performerRoles,
       supervisorRoles: data.supervisorRoles,
       followerRoles: data.followerRoles,
-      ownerId: orgId,
+      businessId: orgId,
     },
   });
   revalidatePath("/dashboard/tasks/schedules");

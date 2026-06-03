@@ -63,7 +63,7 @@ export async function createSupplier(
     await prisma.supplier.create({
       data: {
         ...data(validated.data),
-        ownerId: session?.user?.id ?? null,
+        businessId: session?.user?.id ?? null,
         locationId: await scopedLocationId(),
       },
     });

@@ -33,7 +33,7 @@ function fmtAgo(d: Date | null | undefined) {
 export default async function Page() {
   const scope = await locationScope();
   const session = await auth();
-  const ownerId = session?.user?.id ?? "__none__";
+  const businessId = session?.user?.id ?? "__none__";
   const orgId = await currentOrgId();
   const locationId = await currentLocationId();
 
@@ -46,7 +46,7 @@ export default async function Page() {
   dayEndUTC.setUTCDate(dayEndUTC.getUTCDate() + 1);
   const in3days = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-  const taskScope = orgId ? { ownerId: orgId, ...(locationId ? { locationId } : {}) } : null;
+  const taskScope = orgId ? { businessId: orgId, ...(locationId ? { locationId } : {}) } : null;
 
   const [
     upcomingEventsCount,
@@ -68,15 +68,15 @@ export default async function Page() {
       orderBy: { date: "asc" },
       include: { _count: { select: { menuItems: true } } },
     }),
-    prisma.obradorProductionBatch.count({ where: { ownerId, status: "abierto" } }),
+    prisma.obradorProductionBatch.count({ where: { businessId, status: "abierto" } }),
     prisma.obradorProductionBatch.count({
-      where: { ownerId, status: { not: "retirado" }, expiryDate: { gte: today, lte: in3days } },
+      where: { businessId, status: { not: "retirado" }, expiryDate: { gte: today, lte: in3days } },
     }),
     prisma.obradorTemperatureLog.count({
-      where: { ownerId, hasIncidence: true, logDate: { gte: dayStartUTC } },
+      where: { businessId, hasIncidence: true, logDate: { gte: dayStartUTC } },
     }),
-    prisma.obradorIncident.count({ where: { ownerId, status: "abierto" } }),
-    prisma.obradorTemperatureLog.findFirst({ where: { ownerId }, orderBy: { logDate: "desc" } }),
+    prisma.obradorIncident.count({ where: { businessId, status: "abierto" } }),
+    prisma.obradorTemperatureLog.findFirst({ where: { businessId }, orderBy: { logDate: "desc" } }),
     prisma.obradorCleaningLog.findFirst({ orderBy: { logDate: "desc" } }),
     taskScope
       ? prisma.task.findMany({

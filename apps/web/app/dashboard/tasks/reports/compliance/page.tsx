@@ -19,7 +19,7 @@ export default async function CompliancePage({
   const instances = await prisma.checklistInstance.findMany({
     where: {
       schedule: {
-        ownerId: orgId,
+        businessId: orgId,
         ...(locationId ? { locationId } : {}),
       },
       dueDate: { gte: range.from, lte: range.to },

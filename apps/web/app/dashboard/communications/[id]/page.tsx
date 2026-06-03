@@ -25,7 +25,7 @@ export default async function CommunicationDetailPage({
   if (!orgId) notFound();
 
   const c = await prisma.communication.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     include: {
       author: { select: { name: true } },
       location: { select: { name: true } },

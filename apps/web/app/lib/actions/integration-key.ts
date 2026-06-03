@@ -14,10 +14,10 @@ import { currentAccountId } from "@/app/lib/auth/account";
 export type CurrentKey = { key: string; createdAt: Date } | null;
 
 export async function getCurrentIntegrationKey(): Promise<CurrentKey> {
-  const ownerId = await currentAccountId();
-  if (!ownerId) return null;
+  const businessId = await currentAccountId();
+  if (!businessId) return null;
   const row = await prisma.integrationApiKey.findFirst({
-    where: { ownerId },
+    where: { businessId },
     orderBy: { createdAt: "desc" },
     select: { key: true, createdAt: true },
   });
@@ -27,8 +27,8 @@ export async function getCurrentIntegrationKey(): Promise<CurrentKey> {
 export async function rotateIntegrationKey(): Promise<
   { ok: true; key: string } | { ok: false; error: string }
 > {
-  const ownerId = await currentAccountId();
-  if (!ownerId) {
+  const businessId = await currentAccountId();
+  if (!businessId) {
     return { ok: false, error: "No hay cuenta activa." };
   }
   const key = crypto.randomBytes(24).toString("base64url");
@@ -36,8 +36,8 @@ export async function rotateIntegrationKey(): Promise<
   // rotar invalida automáticamente la previa (el CRM deja de poder leer hasta
   // pegar la nueva clave).
   await prisma.$transaction([
-    prisma.integrationApiKey.deleteMany({ where: { ownerId } }),
-    prisma.integrationApiKey.create({ data: { ownerId, key } }),
+    prisma.integrationApiKey.deleteMany({ where: { businessId } }),
+    prisma.integrationApiKey.create({ data: { businessId, key } }),
   ]);
   revalidatePath("/dashboard/settings/integration");
   return { ok: true, key };

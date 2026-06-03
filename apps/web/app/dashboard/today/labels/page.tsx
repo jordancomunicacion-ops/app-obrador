@@ -19,7 +19,7 @@ export default async function LabelsMobilePage({
   const [recent, source] = await Promise.all([
     prisma.productLabel.findMany({
       where: {
-        ownerId: orgId,
+        businessId: orgId,
         ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
       },
       orderBy: { createdAt: "desc" },

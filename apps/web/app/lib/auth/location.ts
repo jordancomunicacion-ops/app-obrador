@@ -17,7 +17,7 @@ export type ActiveLocation = {
  * según la jerarquía Plataforma → Cliente → Empresa → Local:
  *
  * - Propietario de plataforma (SUPERADMIN): ve TODOS los locales (cross-tenant).
- * - Cliente/tenant (ADMIN): ve todos los locales de su cuenta (ownerId == su id).
+ * - Cliente/tenant (ADMIN): ve todos los locales de su cuenta (businessId == su id).
  * - Empleado (USER): ve SOLO los locales a los que su contrato (Employment) le
  *   asigna. Sin contrato/asignación → ningún local (fail-closed). Se incluye la
  *   pertenencia directa legada (`User.locationId`) como respaldo.
@@ -32,7 +32,7 @@ async function locationScopeWhere(): Promise<Record<string, unknown> | null> {
     // Con cuenta activa: solo los locales de esa cuenta cliente.
     // Sin cuenta activa ("Todas"): todos los locales activos (ámbito global).
     const accountId = await currentAccountId();
-    if (accountId) return { ownerId: accountId, isActive: true };
+    if (accountId) return { businessId: accountId, isActive: true };
     return { isActive: true };
   }
 
@@ -53,7 +53,7 @@ async function locationScopeWhere(): Promise<Record<string, unknown> | null> {
 
   // Cliente/tenant: todos los locales de su cuenta.
   if (user.role === "ADMIN") {
-    return { ownerId: user.id, isActive: true };
+    return { businessId: user.id, isActive: true };
   }
 
   // Empleado: solo los locales asignados por su(s) contrato(s), + pertenencia legada.

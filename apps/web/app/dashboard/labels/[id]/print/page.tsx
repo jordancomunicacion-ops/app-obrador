@@ -57,7 +57,7 @@ export default async function LabelPrintPage({
   if (!orgId) notFound();
 
   const l = await prisma.productLabel.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     include: {
       location: { select: { name: true } },
       createdBy: { select: { name: true } },

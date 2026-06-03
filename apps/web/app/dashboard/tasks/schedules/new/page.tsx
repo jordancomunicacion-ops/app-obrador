@@ -7,12 +7,12 @@ import ScheduleForm from "@/app/ui/tasks/schedule-form";
 async function loadFormData(orgId: string) {
   const [templates, locations, users] = await Promise.all([
     prisma.checklistTemplate.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true, locationId: true },
       orderBy: { name: "asc" },
     }),
     prisma.location.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

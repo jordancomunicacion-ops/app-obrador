@@ -20,7 +20,7 @@ export default async function ProductionRoutinesPage() {
   if (!orgId) return null;
 
   const routines = await prisma.productionRoutine.findMany({
-    where: { ownerId: orgId },
+    where: { businessId: orgId },
     include: {
       recipe: { select: { name: true } },
       location: { select: { name: true } },

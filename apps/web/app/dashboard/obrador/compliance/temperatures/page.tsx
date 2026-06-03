@@ -16,10 +16,10 @@ function fmt(d: Date) {
 
 export default async function TemperaturesPage() {
   const session = await auth();
-  const ownerId = session?.user?.id ?? '__none__';
+  const businessId = session?.user?.id ?? '__none__';
 
   const logs = await prisma.obradorTemperatureLog.findMany({
-    where: { ownerId },
+    where: { businessId },
     orderBy: { logDate: 'desc' },
     take: 100,
   });

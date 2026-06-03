@@ -11,7 +11,7 @@ export default async function PendingDeliveriesPage() {
   if (!orgId) return null;
 
   const pending = await prisma.purchaseOrder.findMany({
-    where: { ownerId: orgId, status: "SENT" },
+    where: { businessId: orgId, status: "SENT" },
     include: {
       supplier: { select: { name: true } },
       _count: { select: { lines: true } },

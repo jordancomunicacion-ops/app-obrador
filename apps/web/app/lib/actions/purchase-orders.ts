@@ -10,7 +10,7 @@ async function assertOwner(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const o = await prisma.purchaseOrder.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true, status: true },
   });
   if (!o) throw new Error("Order not found");
@@ -34,7 +34,7 @@ export async function createOrder(data: {
 
   const order = await prisma.purchaseOrder.create({
     data: {
-      ownerId: orgId,
+      businessId: orgId,
       createdByUserId: session.user.id,
       supplierId: data.supplierId,
       reference: data.reference?.trim() || null,
@@ -121,7 +121,7 @@ export async function updateLine(
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const line = await prisma.purchaseOrderLine.findFirst({
-    where: { id: lineId, order: { ownerId: orgId } },
+    where: { id: lineId, order: { businessId: orgId } },
     include: { order: { select: { id: true, status: true } } },
   });
   if (!line) throw new Error("Line not found");
@@ -142,7 +142,7 @@ export async function removeLine(lineId: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const line = await prisma.purchaseOrderLine.findFirst({
-    where: { id: lineId, order: { ownerId: orgId } },
+    where: { id: lineId, order: { businessId: orgId } },
     include: { order: { select: { id: true, status: true } } },
   });
   if (!line) throw new Error("Line not found");
@@ -191,7 +191,7 @@ export async function receiveOrder(
   const orgId = await currentOrgId();
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
   const order = await prisma.purchaseOrder.findFirst({
-    where: { id: orderId, ownerId: orgId },
+    where: { id: orderId, businessId: orgId },
     include: { lines: true },
   });
   if (!order) throw new Error("Order not found");

@@ -13,7 +13,7 @@ async function assertCanSupervise(responseId: string) {
   const response = await prisma.checklistResponse.findFirst({
     where: {
       id: responseId,
-      instance: { schedule: { ownerId: orgId } },
+      instance: { schedule: { businessId: orgId } },
     },
     include: {
       instance: {
@@ -56,7 +56,7 @@ export async function markInstanceSupervised(instanceId: string) {
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
 
   const instance = await prisma.checklistInstance.findFirst({
-    where: { id: instanceId, schedule: { ownerId: orgId } },
+    where: { id: instanceId, schedule: { businessId: orgId } },
     include: {
       schedule: { select: { supervisorUserIds: true, supervisorRoles: true } },
       responses: { select: { id: true, supervisedAt: true } },

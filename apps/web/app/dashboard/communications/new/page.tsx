@@ -10,7 +10,7 @@ export default async function NewCommunicationPage() {
 
   const [locations, users] = await Promise.all([
     prisma.location.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

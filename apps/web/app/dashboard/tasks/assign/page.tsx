@@ -29,7 +29,7 @@ export default async function AssignTasksPage() {
   tomorrowEnd.setUTCHours(23, 59, 59, 999);
 
   // Solo el propietario/admin o un supervisor pueden asignar.
-  const scheduleWhere: any = { ownerId: orgId, ...(locationId ? { locationId } : {}) };
+  const scheduleWhere: any = { businessId: orgId, ...(locationId ? { locationId } : {}) };
   if (!isOwner) {
     scheduleWhere.OR = [
       { supervisorUserIds: { has: userId } },

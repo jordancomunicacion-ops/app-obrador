@@ -10,7 +10,7 @@ async function assertOwnerOfTemplate(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const tpl = await prisma.checklistTemplate.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!tpl) throw new Error("Template not found");
@@ -28,13 +28,13 @@ export async function createTemplate(formData: FormData) {
   if (!name) throw new Error("Name required");
   if (locationId) {
     const loc = await prisma.location.findFirst({
-      where: { id: locationId, ownerId: orgId },
+      where: { id: locationId, businessId: orgId },
     });
     if (!loc) throw new Error("Invalid location");
   }
 
   const tpl = await prisma.checklistTemplate.create({
-    data: { name, description, locationId, ownerId: orgId },
+    data: { name, description, locationId, businessId: orgId },
   });
   revalidatePath("/dashboard/tasks/templates");
   redirect(`/dashboard/tasks/templates/${tpl.id}`);
@@ -49,7 +49,7 @@ export async function updateTemplate(id: string, formData: FormData) {
 
   if (locationId) {
     const loc = await prisma.location.findFirst({
-      where: { id: locationId, ownerId: orgId },
+      where: { id: locationId, businessId: orgId },
     });
     if (!loc) throw new Error("Invalid location");
   }

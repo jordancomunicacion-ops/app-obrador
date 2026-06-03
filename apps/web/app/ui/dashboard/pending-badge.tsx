@@ -25,7 +25,7 @@ export default async function PendingBadge() {
       dueDate: today,
       status: { in: ["PENDING", "IN_PROGRESS"] },
       schedule: {
-        ownerId: orgId,
+        businessId: orgId,
         ...(locationId ? { locationId } : {}),
         OR: [
           { performerUserIds: { has: userId } },

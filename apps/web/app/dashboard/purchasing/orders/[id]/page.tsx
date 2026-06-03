@@ -35,7 +35,7 @@ export default async function OrderDetailPage({
   if (!orgId) notFound();
 
   const order = await prisma.purchaseOrder.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     include: {
       supplier: { select: { id: true, name: true, email: true } },
       lines: { orderBy: { id: "asc" } },

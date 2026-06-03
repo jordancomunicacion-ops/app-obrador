@@ -17,7 +17,7 @@ export default async function ReceiveDeliveryPage({
   const order = await prisma.purchaseOrder.findFirst({
     where: {
       id: orderId,
-      ownerId: orgId,
+      businessId: orgId,
       status: { in: ["SENT", "RECEIVED"] },
     },
     include: {

@@ -28,9 +28,9 @@ const H = vi.hoisted(() => {
 
   // Locales: L1/L2 pertenecen a A; L9 pertenece a B. C no tiene locales.
   const locations = [
-    { id: 'L1', ownerId: 'A', isActive: true, name: 'A-1', shortCode: null },
-    { id: 'L2', ownerId: 'A', isActive: true, name: 'A-2', shortCode: null },
-    { id: 'L9', ownerId: 'B', isActive: true, name: 'B-1', shortCode: null },
+    { id: 'L1', businessId: 'A', isActive: true, name: 'A-1', shortCode: null },
+    { id: 'L2', businessId: 'A', isActive: true, name: 'A-2', shortCode: null },
+    { id: 'L9', businessId: 'B', isActive: true, name: 'B-1', shortCode: null },
   ];
 
   // Matcher mínimo de `where` Prisma: igualdad por campo + soporte `{ in: [...] }`.

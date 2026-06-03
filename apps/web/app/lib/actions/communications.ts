@@ -20,7 +20,7 @@ async function assertOwnership(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
   const c = await prisma.communication.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     select: { id: true },
   });
   if (!c) throw new Error("Communication not found");
@@ -45,7 +45,7 @@ export async function createCommunication(data: {
 
   if (data.locationId) {
     const loc = await prisma.location.findFirst({
-      where: { id: data.locationId, ownerId: orgId },
+      where: { id: data.locationId, businessId: orgId },
     });
     if (!loc) throw new Error("Invalid location");
   }
@@ -55,7 +55,7 @@ export async function createCommunication(data: {
       type: data.type,
       title: data.title.trim(),
       description: data.description?.trim() || null,
-      ownerId: orgId,
+      businessId: orgId,
       authorId: session.user.id,
       locationId: data.locationId ?? null,
       assigneeIds: data.assigneeIds ?? [],
@@ -98,7 +98,7 @@ export async function updateCommunication(
   const orgId = await assertOwnership(id);
   if (data.locationId) {
     const loc = await prisma.location.findFirst({
-      where: { id: data.locationId, ownerId: orgId },
+      where: { id: data.locationId, businessId: orgId },
     });
     if (!loc) throw new Error("Invalid location");
   }
@@ -145,7 +145,7 @@ export async function addComment(communicationId: string, body: string, photos: 
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
 
   const c = await prisma.communication.findFirst({
-    where: { id: communicationId, ownerId: orgId },
+    where: { id: communicationId, businessId: orgId },
     select: { id: true },
   });
   if (!c) throw new Error("Communication not found");

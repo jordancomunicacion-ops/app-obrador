@@ -53,7 +53,7 @@ export default async function CommunicationsPage({
 
   const items = await prisma.communication.findMany({
     where: {
-      ownerId: orgId,
+      businessId: orgId,
       ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
       ...(typeFilter && TYPE_META[typeFilter] ? { type: typeFilter } : {}),
     },

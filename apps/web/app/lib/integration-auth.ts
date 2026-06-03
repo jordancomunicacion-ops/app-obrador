@@ -6,13 +6,13 @@ import { prisma } from "@/app/lib/prisma";
  * cuenta de obrador (User ADMIN) genera su propia clave desde Ajustes →
  * "API key integración (CRM)" y la pega en el CRM. Cuando llega una petición a
  * `/api/integrations/*`, resolvemos a qué cuenta pertenece la clave y devolvemos
- * su `ownerId`: los endpoints lo usan para filtrar y devolver sólo los datos de
+ * su `businessId`: los endpoints lo usan para filtrar y devolver sólo los datos de
  * esa cuenta (operarios, tareas).
  *
  * La cabecera admite `x-api-key: <clave>` o `Authorization: Bearer <clave>`.
  */
 export type IntegrationAuth =
-  | { ok: true; ownerId: string }
+  | { ok: true; businessId: string }
   | { ok: false; status: number; error: string };
 
 function extractKey(req: NextRequest): string {
@@ -30,10 +30,12 @@ export async function resolveIntegrationAuth(req: NextRequest): Promise<Integrat
   }
   const row = await prisma.integrationApiKey.findUnique({
     where: { key: provided },
-    select: { ownerId: true },
+    select: { businessId: true },
   });
-  if (!row) {
+  if (!row || !row.businessId) {
+    // businessId puede ser null mientras coexisten ownerId/businessId; sin él
+    // no podemos acotar la respuesta, así que rechazamos.
     return { ok: false, status: 401, error: "API key no válida" };
   }
-  return { ok: true, ownerId: row.ownerId };
+  return { ok: true, businessId: row.businessId };
 }

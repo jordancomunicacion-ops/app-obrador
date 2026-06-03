@@ -39,7 +39,7 @@ export async function setActiveLocation(locationId: string) {
 
   // Verificar pertenencia: el local tiene que ser del cliente actual
   const loc = await prisma.location.findFirst({
-    where: { id: locationId, ownerId: orgId },
+    where: { id: locationId, businessId: orgId },
     select: { id: true },
   });
   if (!loc) throw new Error("Location not found");
@@ -66,7 +66,7 @@ export async function createLocation(formData: FormData) {
   if (!name) throw new Error("Name required");
 
   await prisma.location.create({
-    data: { name, shortCode, address, ownerId: orgId, ...establishmentData(formData) },
+    data: { name, shortCode, address, businessId: orgId, ...establishmentData(formData) },
   });
   revalidatePath("/dashboard/settings/locations");
 }
@@ -75,7 +75,7 @@ export async function updateLocation(id: string, formData: FormData) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
 
-  const loc = await prisma.location.findFirst({ where: { id, ownerId: orgId } });
+  const loc = await prisma.location.findFirst({ where: { id, businessId: orgId } });
   if (!loc) throw new Error("Location not found");
 
   const name = (formData.get("name") as string)?.trim();
@@ -94,7 +94,7 @@ export async function deleteLocation(id: string) {
   const orgId = await currentOrgId();
   if (!orgId) throw new Error("Unauthorized");
 
-  const loc = await prisma.location.findFirst({ where: { id, ownerId: orgId } });
+  const loc = await prisma.location.findFirst({ where: { id, businessId: orgId } });
   if (!loc) throw new Error("Location not found");
 
   await prisma.location.delete({ where: { id } });

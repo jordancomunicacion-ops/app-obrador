@@ -15,13 +15,13 @@ export default async function EditCommunicationPage({
   if (!orgId) notFound();
 
   const c = await prisma.communication.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
   });
   if (!c) notFound();
 
   const [locations, users] = await Promise.all([
     prisma.location.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

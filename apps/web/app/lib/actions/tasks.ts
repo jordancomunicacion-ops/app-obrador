@@ -126,7 +126,7 @@ export async function reorderMyTasks(orderedIds: string[]) {
         await prisma.$transaction(
             orderedIds.map((id, idx) =>
                 prisma.task.updateMany({
-                    where: { id, assignedToUserId: userId, ownerId: orgId },
+                    where: { id, assignedToUserId: userId, businessId: orgId },
                     data: { sortOrder: idx },
                 }),
             ),

@@ -16,18 +16,18 @@ export default async function ScheduleDetailPage({
   if (!orgId) notFound();
 
   const schedule = await prisma.checklistSchedule.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
   });
   if (!schedule) notFound();
 
   const [templates, locations, users] = await Promise.all([
     prisma.checklistTemplate.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true, locationId: true },
       orderBy: { name: "asc" },
     }),
     prisma.location.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

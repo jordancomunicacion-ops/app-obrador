@@ -19,7 +19,7 @@ export default async function TemplateDetailPage({
   if (!orgId) notFound();
 
   const tpl = await prisma.checklistTemplate.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
     include: {
       fields: { orderBy: { order: "asc" } },
       location: true,
@@ -28,7 +28,7 @@ export default async function TemplateDetailPage({
   if (!tpl) notFound();
 
   const locations = await prisma.location.findMany({
-    where: { ownerId: orgId, isActive: true },
+    where: { businessId: orgId, isActive: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });

@@ -28,7 +28,7 @@ export default async function OrdersPage() {
   if (!orgId) return null;
 
   const orders = await prisma.purchaseOrder.findMany({
-    where: { ownerId: orgId },
+    where: { businessId: orgId },
     include: {
       supplier: { select: { name: true } },
       _count: { select: { lines: true, deliveryNotes: true } },

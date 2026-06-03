@@ -16,10 +16,10 @@ function fmtDate(d: Date | null) {
 
 export default async function ObradorIntakePage() {
   const session = await auth();
-  const ownerId = session?.user?.id ?? '__none__';
+  const businessId = session?.user?.id ?? '__none__';
 
   const intakes = await prisma.obradorRawMaterialEntry.findMany({
-    where: { ownerId },
+    where: { businessId },
     orderBy: { receptionDate: 'desc' },
   });
 

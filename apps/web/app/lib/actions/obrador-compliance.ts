@@ -44,7 +44,7 @@ export async function createTemperatureLog(
         operatorName: d.operatorName?.trim() || 'N/D',
         hasIncidence: !!corrective,
         correctiveAction: corrective,
-        ownerId: session?.user?.id ?? null,
+        businessId: session?.user?.id ?? null,
       },
     });
   } catch (error) {
@@ -59,7 +59,7 @@ export async function createTemperatureLog(
 export async function deleteTemperatureLog(id: string) {
   const session = await auth();
   const existing = await prisma.obradorTemperatureLog.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;
@@ -105,7 +105,7 @@ export async function createIncident(
         correctiveAction: d.correctiveAction?.trim() || null,
         operatorName: d.operatorName?.trim() || 'N/D',
         status: 'abierto',
-        ownerId: session?.user?.id ?? null,
+        businessId: session?.user?.id ?? null,
       },
     });
   } catch (error) {
@@ -120,7 +120,7 @@ export async function createIncident(
 export async function closeIncident(id: string) {
   const session = await auth();
   const existing = await prisma.obradorIncident.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;
@@ -132,7 +132,7 @@ export async function closeIncident(id: string) {
 export async function deleteIncident(id: string) {
   const session = await auth();
   const existing = await prisma.obradorIncident.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;

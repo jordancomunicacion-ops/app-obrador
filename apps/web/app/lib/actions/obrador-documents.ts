@@ -42,7 +42,7 @@ export async function createObradorDocument(
         category: d.category,
         fileUrl: d.fileUrl,
         expiryDate: d.expiryDate ? new Date(d.expiryDate) : null,
-        ownerId: session?.user?.id ?? null,
+        businessId: session?.user?.id ?? null,
       },
     });
   } catch (error) {
@@ -56,7 +56,7 @@ export async function createObradorDocument(
 export async function deleteObradorDocument(id: string) {
   const session = await auth();
   const existing = await prisma.obradorSanitaryDocument.findFirst({
-    where: { id, ownerId: session?.user?.id ?? '__none__' },
+    where: { id, businessId: session?.user?.id ?? '__none__' },
     select: { id: true },
   });
   if (!existing) return;

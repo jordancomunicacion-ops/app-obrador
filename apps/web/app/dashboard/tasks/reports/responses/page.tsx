@@ -35,7 +35,7 @@ export default async function ResponsesPage({
     where: {
       instance: {
         schedule: {
-          ownerId: orgId,
+          businessId: orgId,
           ...(locationId ? { locationId } : {}),
         },
         dueDate: { gte: range.from, lte: range.to },

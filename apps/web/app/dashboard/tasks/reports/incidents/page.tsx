@@ -22,7 +22,7 @@ export default async function IncidentsPage({
       isIncident: true,
       instance: {
         schedule: {
-          ownerId: orgId,
+          businessId: orgId,
           ...(locationId ? { locationId } : {}),
         },
         dueDate: { gte: range.from, lte: range.to },

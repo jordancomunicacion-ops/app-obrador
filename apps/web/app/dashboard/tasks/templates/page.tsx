@@ -9,7 +9,7 @@ export default async function TemplatesPage() {
   if (!orgId) return null;
 
   const templates = await prisma.checklistTemplate.findMany({
-    where: { ownerId: orgId },
+    where: { businessId: orgId },
     include: {
       location: { select: { name: true, shortCode: true } },
       _count: { select: { fields: true, schedules: true } },

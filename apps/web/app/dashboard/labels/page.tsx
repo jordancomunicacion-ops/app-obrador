@@ -31,7 +31,7 @@ export default async function LabelsAdminPage({
 
   const labels = await prisma.productLabel.findMany({
     where: {
-      ownerId: orgId,
+      businessId: orgId,
       ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
       productionDate: { gte: range.from, lte: range.to },
       ...(dest ? { destination: dest } : {}),

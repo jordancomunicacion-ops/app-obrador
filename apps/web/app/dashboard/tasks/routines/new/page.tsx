@@ -7,12 +7,12 @@ import ProductionRoutineForm from "@/app/ui/tasks/production-routine-form";
 export async function loadRoutineOptions(orgId: string) {
   const [recipes, locations, users] = await Promise.all([
     prisma.recipe.findMany({
-      where: { ownerId: orgId },
+      where: { businessId: orgId },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     prisma.location.findMany({
-      where: { ownerId: orgId, isActive: true },
+      where: { businessId: orgId, isActive: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),

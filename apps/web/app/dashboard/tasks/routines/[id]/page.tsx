@@ -16,7 +16,7 @@ export default async function EditProductionRoutinePage({
   if (!orgId) return null;
 
   const routine = await prisma.productionRoutine.findFirst({
-    where: { id, ownerId: orgId },
+    where: { id, businessId: orgId },
   });
   if (!routine) notFound();
 
