@@ -145,7 +145,6 @@ model Business {
   taskInstances TaskInstance[] @relation("TaskInstanceBusiness")
   purchaseOrders PurchaseOrder[] @relation("PurchaseOrderBusiness")
   productLabels ProductLabel[] @relation("ProductLabelBusiness")
-  integrationApiKeys IntegrationApiKey[] @relation("IntegrationApiKeyBusiness")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1274,6 +1273,7 @@ model Location {
   employments Employment[] @relation("EmploymentLocations")
 
   members           User[]              @relation("LocationMembers")
+  apiKeys           IntegrationApiKey[] @relation("IntegrationApiKeyLocation")
   recipes           Recipe[]            @relation("RecipeLocation")
   ingredients       Ingredient[]        @relation("IngredientLocation")
   masterProducts    MasterProduct[]     @relation("MasterProductLocation")
@@ -1915,15 +1915,17 @@ model PushSubscription {
   @@index([userId])
 }
 
-// Clave de la API de integración (lectura) por CUENTA. La consume el CRM para
-// tirar de operarios y tiempos de tareas. Cada cuenta de obrador (User ADMIN)
-// genera y rota su propia clave desde Ajustes; el CRM resuelve el ownerId por
-// la clave y la API devuelve sólo los datos de esa cuenta.
+// Clave de la API de integración (lectura) por LOCAL. La consume el CRM para
+// tirar de operarios y tiempos de tareas de un local concreto. Cada local
+// genera y rota su propia clave desde Ajustes; el CRM resuelve el `locationId`
+// por la clave y la API devuelve sólo las tareas/empleados de ese local. Así
+// un CRM no ve datos cruzados con otros locales de la misma empresa.
 model IntegrationApiKey {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  businessId String?
-  business   Business? @relation("IntegrationApiKeyBusiness", fields: [businessId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  key        String   @unique
+  locationId String
+  location   Location @relation("IntegrationApiKeyLocation", fields: [locationId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
 
+  @@index([locationId])
 }

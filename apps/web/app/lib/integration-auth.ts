@@ -3,16 +3,16 @@ import { prisma } from "@/app/lib/prisma";
 
 /**
  * Autenticación de la API de integración (lectura) que consume el CRM. Cada
- * cuenta de obrador (User ADMIN) genera su propia clave desde Ajustes →
- * "API key integración (CRM)" y la pega en el CRM. Cuando llega una petición a
- * `/api/integrations/*`, resolvemos a qué cuenta pertenece la clave y devolvemos
- * su `businessId`: los endpoints lo usan para filtrar y devolver sólo los datos de
- * esa cuenta (operarios, tareas).
+ * **local** (Location) genera su propia clave desde Ajustes → "Integración CRM"
+ * y la pega en el CRM. Cuando llega una petición a `/api/integrations/*`,
+ * resolvemos a qué local pertenece la clave y devolvemos sólo los datos de ese
+ * local (operarios asignados, tareas ocurridas allí). De este modo el CRM
+ * no ve datos cruzados con otros locales del mismo negocio.
  *
  * La cabecera admite `x-api-key: <clave>` o `Authorization: Bearer <clave>`.
  */
 export type IntegrationAuth =
-  | { ok: true; businessId: string }
+  | { ok: true; locationId: string; businessId: string | null }
   | { ok: false; status: number; error: string };
 
 function extractKey(req: NextRequest): string {
@@ -30,12 +30,13 @@ export async function resolveIntegrationAuth(req: NextRequest): Promise<Integrat
   }
   const row = await prisma.integrationApiKey.findUnique({
     where: { key: provided },
-    select: { businessId: true },
+    select: {
+      locationId: true,
+      location: { select: { businessId: true, isActive: true } },
+    },
   });
-  if (!row || !row.businessId) {
-    // businessId puede ser null mientras coexisten ownerId/businessId; sin él
-    // no podemos acotar la respuesta, así que rechazamos.
+  if (!row || !row.location?.isActive) {
     return { ok: false, status: 401, error: "API key no válida" };
   }
-  return { ok: true, businessId: row.businessId };
+  return { ok: true, locationId: row.locationId, businessId: row.location.businessId };
 }

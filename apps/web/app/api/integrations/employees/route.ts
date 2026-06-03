@@ -8,10 +8,12 @@ export const runtime = "nodejs";
 /**
  * GET /api/integrations/employees
  *
- * Plantilla operativa de UNA cuenta de obrador (el ADMIN dueño de la API key y
- * sus workers). El CRM la vincula con Contabilidad por DNI.
+ * Plantilla operativa asignada a UN LOCAL concreto: empleados cuyo contrato
+ * (Employment) tiene este local en `assignedLocations`, o que tienen
+ * pertenencia directa legada (`User.locationId`). El CRM los vincula con
+ * Contabilidad por DNI.
  *
- * Auth: cabecera `x-api-key` resuelta a un businessId (User ADMIN).
+ * Auth: cabecera `x-api-key` resuelta a un `locationId`.
  */
 export async function GET(req: NextRequest) {
   const auth = await resolveIntegrationAuth(req);
@@ -19,13 +21,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  // Datos sólo de la cuenta del owner: él mismo + sus workers (adminId = businessId).
-  // Nunca SUPERADMIN ni cuentas de otros tenants.
   const users = await prisma.user.findMany({
     where: {
       approved: true,
       role: { not: "SUPERADMIN" },
-      OR: [{ id: auth.businessId }, { adminId: auth.businessId }],
+      OR: [
+        // Empleados con pertenencia directa al local (modelo legado).
+        { locationId: auth.locationId },
+        // Empleados cuyo contrato asigna este local.
+        {
+          employments: {
+            some: { isActive: true, assignedLocations: { some: { id: auth.locationId } } },
+          },
+        },
+      ],
     },
     orderBy: [{ lastName: "asc" }, { name: "asc" }],
     select: {

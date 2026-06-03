@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   const periodEnd = new Date(to.getTime() + MS_DAY - 1);
 
   const tasks = await prisma.task.findMany({
-    where: { businessId: auth.businessId, realStart: { gte: from, lte: periodEnd } },
+    where: { locationId: auth.locationId, realStart: { gte: from, lte: periodEnd } },
     orderBy: { realStart: "asc" },
     select: {
       id: true,
