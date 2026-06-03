@@ -1,60 +1,34 @@
 import { prisma } from '@/app/lib/prisma';
-import EmployeesTable from '@/app/ui/employees/table';
 import { CreateEmployee } from '@/app/ui/employees/buttons';
 import { Suspense } from 'react';
 import Search from '@/app/ui/search';
-import { ShieldCheckIcon, PlusIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
-import clsx from 'clsx';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/auth';
-import { isPlatformOwner } from '@/app/lib/auth/platform';
 import EmployeesList from '@/app/ui/employees/list';
 
+/**
+ * Gestión de Usuarios (= equipo del negocio activo).
+ *
+ * Tras la migración al modelo CRM (Business + BusinessAccess), esta página
+ * lista ÚNICAMENTE el equipo (empleados) del usuario actual. El alta de
+ * clientes/negocios y la concesión de accesos ahora viven en
+ * `/dashboard/settings/empresas` y `/dashboard/settings/accesos`.
+ */
 export default async function Page({
     searchParams,
 }: {
-    searchParams?: Promise<{
-        query?: string;
-        page?: string;
-        tab?: string;
-    }>;
+    searchParams?: Promise<{ query?: string; page?: string }>;
 }) {
     const session = await auth();
-    const isMasterAdmin = isPlatformOwner(session);
     const userId = session?.user?.id;
 
     const params = await searchParams;
     const query = params?.query || '';
-    const currentPage = Number(params?.page) || 1;
-    const tab = params?.tab || 'team';
 
     let teamCount = 0;
-    let requestsCount = 0;
-    let pendingCount = 0;
-
     try {
         if (userId) {
-            teamCount = await prisma.user.count({
-                where: {
-                    adminId: userId
-                }
-            });
-        }
-
-        if (isMasterAdmin) {
-            requestsCount = await prisma.user.count({
-                where: {
-                    role: 'ADMIN',
-                    adminId: null,
-                }
-            });
-            pendingCount = await prisma.user.count({
-                where: {
-                    role: 'ADMIN',
-                    adminId: null,
-                    approved: false
-                }
-            });
+            teamCount = await prisma.user.count({ where: { adminId: userId } });
         }
     } catch (e) {
         console.error("Database connection failed in counts:", e);
@@ -62,7 +36,6 @@ export default async function Page({
 
     return (
         <div className="w-full space-y-8 p-4 md:p-8">
-            {/* Header Section */}
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
@@ -70,71 +43,19 @@ export default async function Page({
                         Gestión de usuarios
                     </h1>
                     <p className="mt-1 text-base text-gray-500">
-                        Administra el acceso y los permisos de su equipo{isMasterAdmin ? ' y clientes' : ''}.
+                        Administra el acceso y los permisos de tu equipo. Equipo actual: {teamCount}.
                     </p>
                 </div>
-
-                <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-end">
-                    <div className="flex rounded-xl bg-gray-100/80 p-1 ring-1 ring-gray-200">
-                        <Link
-                            href="?tab=team"
-                            className={clsx(
-                                "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all",
-                                tab === 'team'
-                                    ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                                    : "text-gray-500 hover:text-gray-700"
-                                , "whitespace-nowrap"
-                            )}
-                        >
-                            Equipo ({teamCount})
-                        </Link>
-                        {isMasterAdmin && (
-                            <Link
-                                href="?tab=requests"
-                                className={clsx(
-                                    "rounded-lg px-4 py-1.5 text-sm font-semibold transition-all flex items-center gap-2",
-                                    tab === 'requests'
-                                        ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                                        : "text-gray-500 hover:text-gray-700"
-                                    , "whitespace-nowrap"
-                                )}
-                            >
-                                Clientes / Solicitudes
-                                {pendingCount > 0 && (
-                                    <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                                        {pendingCount}
-                                    </span>
-                                )}
-                            </Link>
-                        )}
-                    </div>
-                    {tab === 'team' && <CreateEmployee />}
-                    {tab === 'requests' && isMasterAdmin && (
-                        <Link
-                            href="/dashboard/accounts/new"
-                            className="flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-bold text-white transition-all hover:bg-indigo-700 shadow-sm hover:shadow-md active:scale-95"
-                        >
-                            <PlusIcon className="h-5 w-5 stroke-[3px]" />
-                            <span>Crear negocio</span>
-                        </Link>
-                    )}
-                </div>
+                <CreateEmployee />
             </div>
 
-            {/* Search Bar Section */}
             <div className="relative">
-                <Search placeholder={tab === 'team' ? "Buscar empleado..." : "Buscar cliente..."} />
+                <Search placeholder="Buscar empleado..." />
             </div>
 
-            {/* List Section */}
-            <Suspense key={tab + query} fallback={<div className="flex py-20 justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>}>
-                {tab === 'team' ? (
-                    <EmployeesList query={query} />
-                ) : (
-                    <EmployeesTable query={query} currentPage={currentPage} tab={tab} />
-                )}
+            <Suspense key={query} fallback={<div className="flex py-20 justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>}>
+                <EmployeesList query={query} />
             </Suspense>
-
         </div>
     );
 }

@@ -42,10 +42,11 @@ export async function signOutAction() {
 import { UserFormState } from './definitions';
 
 export async function registerUser(prevState: UserFormState | undefined, formData: FormData): Promise<UserFormState> {
-    // Auto-registro deshabilitado: las cuentas de negocio las crea el propietario
-    // de plataforma (SUPERADMIN) desde "Crear negocio" (ver `createBusinessAccount`
-    // en app/lib/actions/accounts.ts). Esta acción se mantiene como no-op por si
-    // algún cliente antiguo aún la invoca.
+    // Auto-registro deshabilitado: las cuentas las crea el propietario de
+    // plataforma desde /dashboard/settings/empresas (createBusiness) y los
+    // accesos individuales desde /dashboard/settings/accesos
+    // (updateBusinessAccess). Esta acción queda como no-op por si algún
+    // cliente antiguo aún la invoca.
     void prevState;
     void formData;
     return {

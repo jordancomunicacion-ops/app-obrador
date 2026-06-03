@@ -112,6 +112,67 @@ model User {
 
   // Push notifications
   pushSubscriptions PushSubscription[]
+
+  // Empresa(s) de la que el usuario es dueño cuando estaba como ADMIN en el
+  // modelo antiguo (`ownerId` apuntaba al User.id). Se mantiene para no romper
+  // los 28 modelos legacy mientras coexiste con `businessId`. La gestión de
+  // acceso real va por BusinessAccess (email + businessId).
+}
+
+// ===========================================================================
+// Multi-tenant moderno (modelo CRM/reservas) — coexiste con `ownerId` legado
+// ===========================================================================
+//
+// Business = el negocio/marca/cliente final (lo que el super admin gestiona).
+// BusinessAccess = quién entra a qué negocio y con qué permisos (granular).
+//
+// Identificación del super admin: comparación de email contra
+// PLATFORM_OWNER_EMAIL en lib/auth/platform.ts. Si eres ese email, ves todo y
+// puedes crear/eliminar negocios y conceder accesos. El resto solo ve los
+// negocios donde tiene una fila en BusinessAccess.
+//
+// Esquema clonado del CRM (model WebSite + WebSiteAccess) para que ambas apps
+// hablen el mismo lenguaje. Los flags `canView*` mapean a los grupos del
+// sidebar (apps/web/app/ui/dashboard/nav-links.ts).
+model Business {
+  id         String   @id @default(uuid())
+  name       String
+  domain     String?  @unique // opcional: dominio o slug identificador
+  logoUrl    String?
+  faviconUrl String?
+  timezone   String   @default("Europe/Madrid")
+  currency   String   @default("EUR")
+
+  accessEntries BusinessAccess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BusinessAccess {
+  id         String   @id @default(uuid())
+  email      String
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  // Permisos granulares (10) mapeados a los grupos del sidebar de obrador.
+  // Si añades un grupo nuevo al sidebar, añade aquí su flag.
+  canViewDashboard      Boolean @default(true)  // Hoy + Dashboard
+  canViewEvents         Boolean @default(true)  // Eventos
+  canViewTasks          Boolean @default(true)  // Tareas
+  canViewCommunications Boolean @default(true)  // Comunicaciones
+  canViewCatalog        Boolean @default(true)  // Productos + Recetas + Planificación Menú
+  canViewOperations     Boolean @default(true)  // Compras + Pedidos + Almacén + Mise + Etiquetas
+  canViewObrador        Boolean @default(true)  // Obrador + Controles sanitarios
+  canViewEmployees      Boolean @default(false) // Gestión de Usuarios
+  canManageDirectory    Boolean @default(false) // Proveedores + Clientes
+  canEditSettings       Boolean @default(false) // Configuración + Empresas + Accesos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, businessId])
+  @@index([email])
 }
 
 // 7. App Configuration

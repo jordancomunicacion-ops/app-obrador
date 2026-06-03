@@ -73,6 +73,10 @@ export const groups: NavGroup[] = [
             { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon },
             { name: 'Clientes y Puntos de Venta', href: '/dashboard/settings/customers', icon: UserGroupIcon },
             { name: 'Documentación', href: '/dashboard/obrador/documents', icon: ClipboardDocumentCheckIcon },
+            // Empresas y Accesos: solo el propietario de plataforma. Modelo CRM/reservas:
+            // gerencia crea negocios y concede accesos por email + permisos granulares.
+            { name: 'Empresas', href: '/dashboard/settings/empresas', icon: BuildingStorefrontIcon, roles: ['SUPERADMIN'] },
+            { name: 'Accesos', href: '/dashboard/settings/accesos', icon: ShieldCheckIcon, roles: ['SUPERADMIN'] },
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon },
         ]
     }
