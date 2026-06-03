@@ -20,11 +20,8 @@ export const dynamic = "force-dynamic";
 /**
  * Detalle de un local con todas sus secciones:
  *  - Datos básicos (editar)
- *  - API key del CRM (generar/rotar/revocar)
- *  - Empleados asignados al local
- *
- * Reemplaza el antiguo flujo donde la API key se generaba a nivel de cuenta.
- * Ahora cada local tiene su propia clave para acotar la sincronización.
+ *  - API key del CRM (única para este local)
+ *  - Empleados asignados al local + permisos (Employment activos)
  */
 export default async function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -36,21 +33,32 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
         where: { id },
         include: {
             apiKeys: { orderBy: { createdAt: "desc" }, take: 1 },
-            members: {
-                where: { approved: true },
-                orderBy: [{ lastName: "asc" }, { name: "asc" }],
-                select: {
-                    id: true, name: true, firstName: true, lastName: true,
-                    email: true, dni: true, phone: true, jobTitle: true, role: true,
-                },
-            },
             employments: {
                 where: { isActive: true, assignedLocations: { some: { id } } },
+                orderBy: { createdAt: "asc" },
                 select: {
+                    id: true,
+                    position: true,
+                    canViewDashboard: true,
+                    canViewEvents: true,
+                    canViewTasks: true,
+                    canViewCommunications: true,
+                    canViewCatalog: true,
+                    canViewOperations: true,
+                    canViewObrador: true,
+                    canViewEmployees: true,
+                    canManageDirectory: true,
+                    canEditSettings: true,
                     user: {
                         select: {
-                            id: true, name: true, firstName: true, lastName: true,
-                            email: true, dni: true, phone: true, jobTitle: true, role: true,
+                            id: true,
+                            name: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                            dni: true,
+                            jobTitle: true,
+                            role: true,
                         },
                     },
                 },
@@ -58,15 +66,7 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
         },
     });
     if (!location) notFound();
-
-    // Guard: el local debe pertenecer al business activo (salvo super admin).
     if (!isOwner && location.businessId !== activeBusinessId) notFound();
-
-    // Empleados visibles: por pertenencia directa + por contrato con este local asignado.
-    const employeesMap = new Map<string, (typeof location.members)[number]>();
-    for (const m of location.members) employeesMap.set(m.id, m);
-    for (const e of location.employments) employeesMap.set(e.user.id, e.user);
-    const employees = Array.from(employeesMap.values());
 
     const apiKey = location.apiKeys[0] ?? null;
 
@@ -103,9 +103,9 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
                     API key del CRM
                 </h2>
                 <p className="mb-4 text-sm text-slate-500">
-                    Clave única de este local para conectar con el CRM. Pega esta clave en
-                    Conexiones → Cocina del CRM; sincronizará solo los empleados y tareas de
-                    este local. Rotarla invalida la anterior al instante.
+                    Clave única de este local. Pégala en el CRM (Conexiones → Cocina); sincronizará
+                    solo los empleados y tareas de este local. Rotarla invalida la anterior al
+                    instante.
                 </p>
                 <LocationApiKey
                     locationId={location.id}
@@ -117,14 +117,17 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
                 <h2 className="mb-1 flex items-center gap-2 text-base font-bold text-slate-900">
                     <UserGroupIcon className="h-5 w-5 text-slate-500" />
-                    Empleados con acceso al local ({employees.length})
+                    Empleados con acceso al local ({location.employments.length})
                 </h2>
                 <p className="mb-4 text-sm text-slate-500">
-                    Personas cuyo contrato les asigna este local o que tienen pertenencia
-                    directa al mismo. Para añadir o quitar empleados, gestiona sus contratos
-                    en Gestión de Usuarios.
+                    Personas con contrato activo asignado a este local. Cada una entra a la app
+                    con su email y ve las secciones marcadas. Para quitarle el acceso al local,
+                    revoca aquí (el contrato sigue para histórico).
                 </p>
-                <LocationEmployees employees={employees} />
+                <LocationEmployees
+                    locationId={location.id}
+                    initial={location.employments}
+                />
             </section>
         </div>
     );

@@ -115,8 +115,6 @@ model Business {
   timezone   String   @default("Europe/Madrid")
   currency   String   @default("EUR")
 
-  accessEntries BusinessAccess[]
-
   // Relaciones inversas a modelos legacy con `businessId` (Fase 2).
   appConfigs AppConfig[] @relation("AppConfigBusiness")
   ingredients Ingredient[] @relation("IngredientBusiness")
@@ -150,31 +148,6 @@ model Business {
   updatedAt DateTime @updatedAt
 }
 
-model BusinessAccess {
-  id         String   @id @default(uuid())
-  email      String
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-
-  // Permisos granulares (10) mapeados a los grupos del sidebar de obrador.
-  // Si añades un grupo nuevo al sidebar, añade aquí su flag.
-  canViewDashboard      Boolean @default(true)  // Hoy + Dashboard
-  canViewEvents         Boolean @default(true)  // Eventos
-  canViewTasks          Boolean @default(true)  // Tareas
-  canViewCommunications Boolean @default(true)  // Comunicaciones
-  canViewCatalog        Boolean @default(true)  // Productos + Recetas + Planificación Menú
-  canViewOperations     Boolean @default(true)  // Compras + Pedidos + Almacén + Mise + Etiquetas
-  canViewObrador        Boolean @default(true)  // Obrador + Controles sanitarios
-  canViewEmployees      Boolean @default(false) // Gestión de Usuarios
-  canManageDirectory    Boolean @default(false) // Proveedores + Clientes
-  canEditSettings       Boolean @default(false) // Configuración + Empresas + Accesos
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([email, businessId])
-  @@index([email])
-}
 
 // 7. App Configuration
 model AppConfig {
@@ -1232,6 +1205,21 @@ model Employment {
 
   // Centros de trabajo (locales) de la empresa a los que está asignado.
   assignedLocations Location[] @relation("EmploymentLocations")
+
+  // Permisos granulares (10) sobre la app, mapeados a los grupos del sidebar
+  // (apps/web/app/ui/dashboard/nav-links.ts). Estos flags reemplazan al modelo
+  // anterior BusinessAccess: el "acceso" a la app es ahora una propiedad del
+  // contrato laboral. Si añades un grupo nuevo al sidebar, añade aquí su flag.
+  canViewDashboard      Boolean @default(true)
+  canViewEvents         Boolean @default(true)
+  canViewTasks          Boolean @default(true)
+  canViewCommunications Boolean @default(true)
+  canViewCatalog        Boolean @default(true)
+  canViewOperations     Boolean @default(true)
+  canViewObrador        Boolean @default(true)
+  canViewEmployees      Boolean @default(false)
+  canManageDirectory    Boolean @default(false)
+  canEditSettings       Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
