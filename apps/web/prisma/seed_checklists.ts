@@ -164,7 +164,7 @@ async function main() {
   const locationByCode = new Map<string, string>();
   for (const loc of LOCATIONS) {
     const existing = await prisma.location.findFirst({
-      where: { ownerId: admin.id, name: loc.name },
+      where: { businessId: admin.id, name: loc.name },
     });
     if (existing) {
       console.log(`  · Location ya existe: ${loc.name}`);
@@ -172,7 +172,7 @@ async function main() {
       continue;
     }
     const created = await prisma.location.create({
-      data: { name: loc.name, shortCode: loc.shortCode, ownerId: admin.id },
+      data: { name: loc.name, shortCode: loc.shortCode, businessId: admin.id },
     });
     console.log(`  ✓ Location creado: ${loc.name}`);
     locationByCode.set(loc.shortCode, created.id);
@@ -182,7 +182,7 @@ async function main() {
   for (const tpl of TEMPLATES) {
     const locationId = tpl.locationShortCode ? locationByCode.get(tpl.locationShortCode) : null;
     const existing = await prisma.checklistTemplate.findFirst({
-      where: { ownerId: admin.id, name: tpl.name, locationId: locationId ?? null },
+      where: { businessId: admin.id, name: tpl.name, locationId: locationId ?? null },
     });
     if (existing) {
       console.log(`  · Template ya existe: ${tpl.name} (${tpl.locationShortCode ?? "GLOBAL"})`);
@@ -192,7 +192,7 @@ async function main() {
       data: {
         name: tpl.name,
         description: tpl.description,
-        ownerId: admin.id,
+        businessId: admin.id,
         locationId: locationId ?? null,
         fields: {
           create: tpl.fields.map((f, idx) => ({

@@ -39,55 +39,31 @@ model User {
   auditLogs AuditLog[]
 
   // Ciclos de producción recurrentes (propios y asignados por defecto)
-  ownedProductionRoutines    ProductionRoutine[] @relation("ProductionRoutineOwner")
   assignedProductionRoutines ProductionRoutine[] @relation("ProductionRoutineAssignee")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Multi-Tenancy Relations (Owned Data)
-  ownedEvents       Event[]           @relation("EventOwner")
-  ownedRecipes      Recipe[]          @relation("RecipeOwner")
-  ownedIngredients  Ingredient[]      @relation("IngredientOwner")
-  ownedSuppliers    Supplier[]        @relation("SupplierOwner")
-  ownedTasks        Task[]            @relation("TaskOwner")
-  ownedMenuServices MenuService[]     @relation("MenuServiceOwner")
-  ownedAppConfigs   AppConfig[]       @relation("AppConfigOwner")
-  ownedStorage      StorageLocation[] @relation("StorageOwner")
-  ownedMiseEnPlace  MiseEnPlaceTask[] @relation("MiseEnPlaceOwner")
-  integrationApiKeys IntegrationApiKey[] @relation("IntegrationApiKeyOwner")
 
   // Obrador Relations
-  ownedObradorConfigs   ObradorConfig[]           @relation("ObradorConfigOwner")
-  ownedObradorBatches   ObradorProductionBatch[]  @relation("ObradorBatchOwner")
-  ownedObradorIntake    ObradorRawMaterialEntry[] @relation("ObradorIntakeOwner")
-  ownedObradorDocs      ObradorSanitaryDocument[] @relation("ObradorDocOwner")
-  ownedObradorTemps     ObradorTemperatureLog[]   @relation("ObradorTempOwner")
-  ownedObradorIncidents ObradorIncident[]         @relation("ObradorIncidentOwner")
 
   // Empresas (empleador legal: razón social + NIF) bajo una misma cuenta de cliente
-  ownedEmpresas Empresa[] @relation("EmpresaOwner")
 
   // Empleo: contratos de esta persona (uno por empresa empleadora)
   employments Employment[] @relation("UserEmployments")
 
   // Locales (multi-location bajo un mismo admin)
-  ownedLocations Location[] @relation("LocationOwner")
   locationId     String?
   location       Location?  @relation("LocationMembers", fields: [locationId], references: [id])
 
   // Checklists (patrón yurest)
-  ownedChecklistTemplates      ChecklistTemplate[] @relation("ChecklistTemplateOwner")
-  ownedChecklistSchedules      ChecklistSchedule[] @relation("ChecklistScheduleOwner")
   closedChecklistInstances     ChecklistInstance[] @relation("ChecklistInstanceClosedBy")
   assignedChecklistInstances   ChecklistInstance[] @relation("ChecklistInstanceAssignee")
   answeredChecklistResponses   ChecklistResponse[] @relation("ChecklistResponseAnsweredBy")
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 
   // Motor de tareas único (Fase 3, Frente B)
-  ownedTaskDefinitions    TaskDefinition[] @relation("TaskDefinitionOwner")
-  ownedTaskSchedules      TaskSchedule[]   @relation("TaskScheduleOwner")
-  ownedTaskInstances      TaskInstance[]   @relation("TaskInstanceOwner")
   assignedTaskInstances   TaskInstance[]   @relation("TaskInstanceAssignee")
   closedTaskInstances     TaskInstance[]   @relation("TaskInstanceClosedBy")
   answeredTaskResponses   TaskResponse[]   @relation("TaskResponseAnsweredBy")
@@ -96,19 +72,15 @@ model User {
   // Comunicaciones (averías, avisos, eventos, reuniones)
   authoredCommunications Communication[]        @relation("CommunicationAuthor")
   authoredCommComments   CommunicationComment[] @relation("CommunicationCommentAuthor")
-  ownedCommunications    Communication[]        @relation("CommunicationOwner")
 
   // Pedidos y albaranes
-  ownedPurchaseOrders   PurchaseOrder[] @relation("PurchaseOrderOwner")
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreator")
   receivedDeliveryNotes DeliveryNote[]  @relation("DeliveryNoteReceiver")
 
   // Etiquetas
-  ownedProductLabels   ProductLabel[] @relation("ProductLabelOwner")
   createdProductLabels ProductLabel[] @relation("ProductLabelCreator")
 
   // Clientes (núcleo, Frente A)
-  ownedCustomers Customer[] @relation("CustomerOwner")
 
   // Push notifications
   pushSubscriptions PushSubscription[]
@@ -212,8 +184,6 @@ model AppConfig {
 
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("AppConfigOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("AppConfigBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 }
@@ -280,8 +250,6 @@ model Ingredient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("IngredientOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("IngredientBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -380,8 +348,6 @@ model Customer {
   contactPerson String? // persona de contacto
   customerType  String? // Consumidor final, Minorista, Online, Profesional
 
-  ownerId String?
-  owner   User?   @relation("CustomerOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("CustomerBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -419,8 +385,6 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("SupplierOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("SupplierBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -588,8 +552,6 @@ model Recipe {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("RecipeOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("RecipeBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -690,8 +652,6 @@ model Event {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("EventOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("EventBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -753,8 +713,6 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("TaskOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("TaskBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -796,8 +754,6 @@ model ProductionRoutine {
 
   tasks Task[]
 
-  ownerId String?
-  owner   User?   @relation("ProductionRoutineOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ProductionRoutineBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -807,7 +763,6 @@ model ProductionRoutine {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([ownerId])
   @@index([locationId])
 }
 
@@ -852,8 +807,6 @@ model StorageLocation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("StorageOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("StorageBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 }
@@ -903,8 +856,6 @@ model MiseEnPlaceTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("MiseEnPlaceOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("MiseEnPlaceBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 }
@@ -973,8 +924,6 @@ model MenuService {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String?
-  owner   User?   @relation("MenuServiceOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("MenuServiceBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1049,8 +998,6 @@ model ObradorConfig {
   status         String    @default("no_iniciado") // no_iniciado, solicitado, aprobado, etc.
   region         String? // Comunidad autónoma
 
-  ownerId String?
-  owner   User?   @relation("ObradorConfigOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorConfigBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1084,8 +1031,6 @@ model ObradorRawMaterialEntry {
 
   batchIngredients ObradorBatchIngredient[]
 
-  ownerId String?
-  owner   User?   @relation("ObradorIntakeOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorIntakeBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1124,8 +1069,6 @@ model ObradorProductionBatch {
   customerId String?
   customer   Customer? @relation("BatchToCustomer", fields: [customerId], references: [id])
 
-  ownerId String?
-  owner   User?   @relation("ObradorBatchOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorBatchBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1166,8 +1109,6 @@ model ObradorTemperatureLog {
   hasIncidence     Boolean  @default(false)
   correctiveAction String?
 
-  ownerId String?
-  owner   User?   @relation("ObradorTempOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorTempBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1212,8 +1153,6 @@ model ObradorIncident {
   status           String   @default("abierto") // abierto, cerrado
   documentUrl      String?
 
-  ownerId String?
-  owner   User?   @relation("ObradorIncidentOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorIncidentBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1228,8 +1167,6 @@ model ObradorSanitaryDocument {
   expiryDate   DateTime?
   associatedId String? // Optional link to product, supplier or batch
 
-  ownerId String?
-  owner   User?   @relation("ObradorDocOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ObradorDocBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1257,8 +1194,6 @@ model Empresa {
   isActive      Boolean @default(true)
 
   // Cuenta de cliente (tenant) propietaria de la empresa.
-  ownerId String?
-  owner   User?  @relation("EmpresaOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("EmpresaBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1271,7 +1206,6 @@ model Empresa {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([ownerId])
 }
 
 // Employment = relación contractual entre una persona (User) y una Empresa.
@@ -1328,8 +1262,6 @@ model Location {
   requestDate    DateTime?
   resolutionDate DateTime?
 
-  ownerId String?
-  owner   User?  @relation("LocationOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("LocationBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1406,8 +1338,6 @@ model ChecklistTemplate {
   description String?
   isActive    Boolean @default(true)
 
-  ownerId String?
-  owner   User?  @relation("ChecklistTemplateOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ChecklistTemplateBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1461,8 +1391,6 @@ model ChecklistSchedule {
   supervisorRoles   String[] @default([])
   followerRoles     String[] @default([])
 
-  ownerId String?
-  owner   User?  @relation("ChecklistScheduleOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ChecklistScheduleBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1525,8 +1453,6 @@ model Communication {
   status      CommunicationStatus @default(OPEN)
 
   // Multi-tenancy
-  ownerId String?
-  owner   User?  @relation("CommunicationOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("CommunicationBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1666,8 +1592,6 @@ model TaskDefinition {
 
   instances TaskInstance[]
 
-  ownerId String?
-  owner   User?   @relation("TaskDefinitionOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("TaskDefinitionBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1720,8 +1644,6 @@ model TaskSchedule {
 
   instances TaskInstance[]
 
-  ownerId String?
-  owner   User?   @relation("TaskScheduleOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("TaskScheduleBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1780,8 +1702,6 @@ model TaskInstance {
   // Operativa: respuestas por campo.
   responses TaskResponse[]
 
-  ownerId String?
-  owner   User?   @relation("TaskInstanceOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("TaskInstanceBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1840,8 +1760,6 @@ enum PurchaseOrderStatus {
 model PurchaseOrder {
   id String @id @default(cuid())
 
-  ownerId String?
-  owner   User?  @relation("PurchaseOrderOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("PurchaseOrderBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1865,8 +1783,8 @@ model PurchaseOrder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([ownerId, status])
-  @@index([ownerId, supplierId, createdAt])
+  @@index([businessId, status])
+  @@index([businessId, supplierId, createdAt])
 }
 
 model PurchaseOrderLine {
@@ -1929,8 +1847,6 @@ enum LabelDestination {
 model ProductLabel {
   id String @id @default(cuid())
 
-  ownerId String?
-  owner   User?  @relation("ProductLabelOwner", fields: [ownerId], references: [id])
   businessId String?
   business   Business? @relation("ProductLabelBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
@@ -1973,9 +1889,9 @@ model ProductLabel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([ownerId, productionDate])
-  @@index([ownerId, locationId, productionDate])
-  @@index([ownerId, destination, productionDate])
+  @@index([businessId, productionDate])
+  @@index([businessId, locationId, productionDate])
+  @@index([businessId, destination, productionDate])
 }
 
 // ============================================================================
@@ -2006,11 +1922,8 @@ model PushSubscription {
 model IntegrationApiKey {
   id        String   @id @default(cuid())
   key       String   @unique
-  ownerId   String?
-  owner     User?     @relation("IntegrationApiKeyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   businessId String?
   business   Business? @relation("IntegrationApiKeyBusiness", fields: [businessId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
 
-  @@index([ownerId])
 }

@@ -90,16 +90,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 });
 
 export async function currentOrgId() {
-    // Delega en currentAccountId(): para ADMIN/USER resuelve su organización igual
-    // que antes; para el propietario de plataforma (SUPERADMIN) resuelve la CUENTA
-    // ACTIVA seleccionada en la barra (o null = "Todas las cuentas"). Así los ~41
-    // consumidores de currentOrgId() honran el selector de cuenta sin cambios.
-    //
-    // Import dinámico para romper el ciclo de módulos: account.ts importa `auth`
-    // de este fichero.
+    // Delega en currentBusinessId(): resuelve el `Business.id` activo (modelo
+    // CRM/reservas). Import dinámico para romper el ciclo de módulos:
+    // business.ts importa `auth` de este fichero.
     try {
-        const { currentAccountId } = await import('@/app/lib/auth/account');
-        return await currentAccountId();
+        const { currentBusinessId } = await import('@/app/lib/auth/business');
+        return await currentBusinessId();
     } catch (e) {
         console.error("Error getting Org ID", e);
         return null;

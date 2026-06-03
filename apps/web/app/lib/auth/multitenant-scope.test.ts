@@ -63,10 +63,10 @@ const H = vi.hoisted(() => {
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(async () => H.state.session),
-  // Réplica de la delegación real de auth.ts: currentOrgId → currentAccountId.
+  // Réplica de la delegación real de auth.ts: currentOrgId → currentBusinessId.
   currentOrgId: vi.fn(async () => {
-    const { currentAccountId } = await import('@/app/lib/auth/account');
-    return currentAccountId();
+    const { currentBusinessId } = await import('@/app/lib/auth/business');
+    return currentBusinessId();
   }),
 }));
 
@@ -78,7 +78,7 @@ vi.mock('next/headers', () => ({
 
 vi.mock('@/app/lib/prisma', () => ({ prisma: H.prisma }));
 
-import { currentAccountId, listAccounts } from '@/app/lib/auth/account';
+import { currentBusinessId, listBusinessesForCurrentUser } from '@/app/lib/auth/business';
 import { currentScope, locationScope } from '@/app/lib/auth/scope';
 
 function asPlatform(cookies: Record<string, string> = {}) {
@@ -96,7 +96,7 @@ describe('multi-tenant · anti-fuga cross-tenant', () => {
   it('A) propietario con cuenta A y local de A → scope acotado al local (no global)', async () => {
     asPlatform({ active_account_id: 'A', active_location_id: 'L1' });
 
-    expect(await currentAccountId()).toBe('A');
+    expect(await currentBusinessId()).toBe('A');
     expect(await currentScope()).toEqual({ kind: 'location', locationId: 'L1', orgId: 'A' });
     // Clave anti-fuga: NO devuelve {} (que mostraría datos de todas las cuentas).
     expect(await locationScope()).toEqual({ locationId: 'L1' });
@@ -115,7 +115,7 @@ describe('multi-tenant · anti-fuga cross-tenant', () => {
   it('B) "Todas las cuentas" (sin cookie) → ámbito global EXPLÍCITO', async () => {
     asPlatform({});
 
-    expect(await currentAccountId()).toBeNull();
+    expect(await currentBusinessId()).toBeNull();
     expect(await currentScope()).toEqual({ kind: 'platform' });
     expect(await locationScope()).toEqual({}); // global intencionado, no fuga
   });
@@ -123,17 +123,17 @@ describe('multi-tenant · anti-fuga cross-tenant', () => {
   it('C) cookie de cuenta falsa (id que no es ADMIN) → ignorada, no escala', async () => {
     // 'u' es un USER: aunque se fuerce la cookie, no concede una cuenta.
     asPlatform({ active_account_id: 'u' });
-    expect(await currentAccountId()).toBeNull();
+    expect(await currentBusinessId()).toBeNull();
 
     // 'zzz' no existe en absoluto.
     asPlatform({ active_account_id: 'zzz' });
-    expect(await currentAccountId()).toBeNull();
+    expect(await currentBusinessId()).toBeNull();
   });
 
   it('G) cuenta seleccionada SIN locales → fail-closed (no ve nada, no global)', async () => {
     asPlatform({ active_account_id: 'C' }); // C es ADMIN pero no tiene locales
 
-    expect(await currentAccountId()).toBe('C');
+    expect(await currentBusinessId()).toBe('C');
     expect(await currentScope()).toEqual({ kind: 'none' });
     // Fail-closed: filtro imposible, no {} global.
     expect(await locationScope()).toEqual({ id: '__no_scope__' });
@@ -142,13 +142,13 @@ describe('multi-tenant · anti-fuga cross-tenant', () => {
   it('D) ADMIN: la cuenta es la suya, igual que antes (la cookie se ignora)', async () => {
     H.state.session = { user: { id: 'A', role: 'ADMIN' } };
     H.state.cookies = { active_account_id: 'B' }; // intento de spoof: debe ignorarse
-    expect(await currentAccountId()).toBe('A');
+    expect(await currentBusinessId()).toBe('A');
   });
 
   it('E) USER: la cuenta es la de su admin (adminId), igual que antes', async () => {
     H.state.session = { user: { id: 'u', role: 'USER' } };
     H.state.cookies = { active_account_id: 'B' };
-    expect(await currentAccountId()).toBe('A');
+    expect(await currentBusinessId()).toBe('A');
   });
 
   it('F) sin sesión → ningún ámbito (fail-closed)', async () => {
@@ -157,15 +157,15 @@ describe('multi-tenant · anti-fuga cross-tenant', () => {
     expect(await locationScope()).toEqual({ id: '__no_scope__' });
   });
 
-  it('H) listAccounts: el propietario ve todas las cuentas ADMIN; el resto, ninguna', async () => {
+  it('H) listBusinessesForCurrentUser: el propietario ve todas las cuentas ADMIN; el resto, ninguna', async () => {
     asPlatform({});
-    const accs = await listAccounts();
+    const accs = await listBusinessesForCurrentUser();
     expect(accs.map((a) => a.id).sort()).toEqual(['A', 'B', 'C']);
-    expect(accs.find((a) => a.id === 'A')?.empresa).toBe('Empresa A');
-    expect(accs.find((a) => a.id === 'C')?.empresa).toBeNull();
+    expect(accs.find((a) => a.id === 'A')?.name).toBe('Empresa A');
+    expect(accs.find((a) => a.id === 'C')?.name).toBeTruthy();
 
     // Un ADMIN no obtiene el selector (lista vacía).
     H.state.session = { user: { id: 'A', role: 'ADMIN' } };
-    expect(await listAccounts()).toEqual([]);
+    expect(await listBusinessesForCurrentUser()).toEqual([]);
   });
 });

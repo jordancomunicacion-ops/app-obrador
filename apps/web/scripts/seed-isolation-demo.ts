@@ -53,24 +53,24 @@ async function main() {
   });
 
   // 3. Empresa (empleador legal) del cliente.
-  let empresa = await prisma.empresa.findFirst({ where: { ownerId: client.id, nif: 'B00000001' } });
+  let empresa = await prisma.empresa.findFirst({ where: { businessId: client.id, nif: 'B00000001' } });
   if (!empresa) {
     empresa = await prisma.empresa.create({
       data: {
         razonSocial: 'Restauración Demo S.L.',
         comercialName: 'Demo',
         nif: 'B00000001',
-        ownerId: client.id,
+        businessId: client.id,
       },
     });
   }
 
   // 4. Dos locales (centros de trabajo) de la empresa.
   async function ensureLocation(name: string, shortCode: string) {
-    const existing = await prisma.location.findFirst({ where: { ownerId: client.id, name } });
+    const existing = await prisma.location.findFirst({ where: { businessId: client.id, name } });
     if (existing) return existing;
     return prisma.location.create({
-      data: { name, shortCode, ownerId: client.id, empresaId: empresa!.id },
+      data: { name, shortCode, businessId: client.id, empresaId: empresa!.id },
     });
   }
   const locA = await ensureLocation('Local A — Centro', 'A');
@@ -111,7 +111,7 @@ async function main() {
     const existing = await prisma.recipe.findFirst({ where: { name, locationId } });
     if (existing) return existing;
     return prisma.recipe.create({
-      data: { name, yieldQuantity: 1, category: 'ELABORACION_FINAL', ownerId: client.id, locationId },
+      data: { name, yieldQuantity: 1, category: 'ELABORACION_FINAL', businessId: client.id, locationId },
     });
   }
   await ensureRecipe('Receta de prueba — Local A', locA.id);

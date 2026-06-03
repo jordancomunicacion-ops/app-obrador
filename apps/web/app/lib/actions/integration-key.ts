@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
-import { currentAccountId } from "@/app/lib/auth/account";
+import { currentBusinessId } from "@/app/lib/auth/business";
 
 /**
  * Gestiona la API key de integración (lectura) de la cuenta actual. La consume
@@ -14,7 +14,7 @@ import { currentAccountId } from "@/app/lib/auth/account";
 export type CurrentKey = { key: string; createdAt: Date } | null;
 
 export async function getCurrentIntegrationKey(): Promise<CurrentKey> {
-  const businessId = await currentAccountId();
+  const businessId = await currentBusinessId();
   if (!businessId) return null;
   const row = await prisma.integrationApiKey.findFirst({
     where: { businessId },
@@ -27,7 +27,7 @@ export async function getCurrentIntegrationKey(): Promise<CurrentKey> {
 export async function rotateIntegrationKey(): Promise<
   { ok: true; key: string } | { ok: false; error: string }
 > {
-  const businessId = await currentAccountId();
+  const businessId = await currentBusinessId();
   if (!businessId) {
     return { ok: false, error: "No hay cuenta activa." };
   }
