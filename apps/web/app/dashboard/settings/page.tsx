@@ -1,12 +1,14 @@
 import Link from "next/link";
 import {
     BuildingStorefrontIcon,
+    BuildingOffice2Icon,
     Cog6ToothIcon,
     KeyIcon,
     PlusIcon,
     ChevronRightIcon,
     UserGroupIcon,
     ScaleIcon,
+    ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { prisma } from "@/app/lib/prisma";
 import { currentBusinessId } from "@/app/lib/auth/business";
@@ -139,6 +141,38 @@ export default async function SettingsPage() {
                     <PackagingList />
                 </div>
             </section>
+
+            {isOwner && (
+                <section>
+                    <h2 className="mb-3 text-lg font-bold tracking-tight text-gray-900">Administración de plataforma</h2>
+                    <p className="mb-3 text-sm text-gray-500">
+                        Solo visible para el super administrador. Aquí gestionas qué negocios (clientes)
+                        existen y quién entra a cada uno.
+                    </p>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <Link
+                            href="/dashboard/settings/empresas"
+                            className="flex items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50/30 p-4 transition hover:border-indigo-300 hover:bg-indigo-50"
+                        >
+                            <BuildingOffice2Icon className="h-6 w-6 text-indigo-600" />
+                            <div>
+                                <p className="font-semibold text-slate-900">Empresas</p>
+                                <p className="text-sm text-slate-500">Crear y editar los negocios cliente</p>
+                            </div>
+                        </Link>
+                        <Link
+                            href="/dashboard/settings/accesos"
+                            className="flex items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50/30 p-4 transition hover:border-indigo-300 hover:bg-indigo-50"
+                        >
+                            <ShieldCheckIcon className="h-6 w-6 text-indigo-600" />
+                            <div>
+                                <p className="font-semibold text-slate-900">Accesos</p>
+                                <p className="text-sm text-slate-500">Quién entra a cada empresa y con qué permisos</p>
+                            </div>
+                        </Link>
+                    </div>
+                </section>
+            )}
 
             <section>
                 <h2 className="mb-3 text-lg font-bold tracking-tight text-gray-900">Otros</h2>

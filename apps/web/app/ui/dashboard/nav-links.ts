@@ -90,9 +90,8 @@ export const groups: NavGroup[] = [
             { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon, permission: 'canManageDirectory' },
             { name: 'Clientes y Puntos de Venta', href: '/dashboard/settings/customers', icon: UserGroupIcon, permission: 'canManageDirectory' },
             { name: 'Documentación', href: '/dashboard/obrador/documents', icon: ClipboardDocumentCheckIcon, permission: 'canViewObrador' },
-            // Empresas y Accesos: solo el propietario de plataforma.
-            { name: 'Empresas', href: '/dashboard/settings/empresas', icon: BuildingStorefrontIcon, roles: ['SUPERADMIN'] },
-            { name: 'Accesos', href: '/dashboard/settings/accesos', icon: ShieldCheckIcon, roles: ['SUPERADMIN'] },
+            // Empresas/Accesos (gestión de plataforma) viven dentro de Configuración
+            // como secciones visibles solo al SUPERADMIN; no salen al sidebar.
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon, permission: 'canEditSettings' },
         ]
     }
