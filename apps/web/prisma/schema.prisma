@@ -54,8 +54,8 @@ model User {
   employments Employment[] @relation("UserEmployments")
 
   // Locales (multi-location bajo un mismo admin)
-  locationId     String?
-  location       Location?  @relation("LocationMembers", fields: [locationId], references: [id])
+  locationId String?
+  location   Location? @relation("LocationMembers", fields: [locationId], references: [id])
 
   // Checklists (patrón yurest)
   closedChecklistInstances     ChecklistInstance[] @relation("ChecklistInstanceClosedBy")
@@ -64,10 +64,10 @@ model User {
   supervisedChecklistResponses ChecklistResponse[] @relation("ChecklistResponseSupervisedBy")
 
   // Motor de tareas único (Fase 3, Frente B)
-  assignedTaskInstances   TaskInstance[]   @relation("TaskInstanceAssignee")
-  closedTaskInstances     TaskInstance[]   @relation("TaskInstanceClosedBy")
-  answeredTaskResponses   TaskResponse[]   @relation("TaskResponseAnsweredBy")
-  supervisedTaskResponses TaskResponse[]   @relation("TaskResponseSupervisedBy")
+  assignedTaskInstances   TaskInstance[] @relation("TaskInstanceAssignee")
+  closedTaskInstances     TaskInstance[] @relation("TaskInstanceClosedBy")
+  answeredTaskResponses   TaskResponse[] @relation("TaskResponseAnsweredBy")
+  supervisedTaskResponses TaskResponse[] @relation("TaskResponseSupervisedBy")
 
   // Comunicaciones (averías, avisos, eventos, reuniones)
   authoredCommunications Communication[]        @relation("CommunicationAuthor")
@@ -107,47 +107,47 @@ model User {
 // hablen el mismo lenguaje. Los flags `canView*` mapean a los grupos del
 // sidebar (apps/web/app/ui/dashboard/nav-links.ts).
 model Business {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   name       String
-  domain     String?  @unique // opcional: dominio o slug identificador
+  domain     String? @unique // opcional: dominio o slug identificador
   logoUrl    String?
   faviconUrl String?
-  timezone   String   @default("Europe/Madrid")
-  currency   String   @default("EUR")
+  timezone   String  @default("Europe/Madrid")
+  currency   String  @default("EUR")
 
   // Relaciones inversas a modelos legacy con `businessId` (Fase 2).
-  appConfigs AppConfig[] @relation("AppConfigBusiness")
-  ingredients Ingredient[] @relation("IngredientBusiness")
-  customers Customer[] @relation("CustomerBusiness")
-  suppliers Supplier[] @relation("SupplierBusiness")
-  recipes Recipe[] @relation("RecipeBusiness")
-  events Event[] @relation("EventBusiness")
-  tasks Task[] @relation("TaskBusiness")
-  productionRoutines ProductionRoutine[] @relation("ProductionRoutineBusiness")
-  storageLocations StorageLocation[] @relation("StorageBusiness")
-  miseEnPlaceTasks MiseEnPlaceTask[] @relation("MiseEnPlaceBusiness")
-  menuServices MenuService[] @relation("MenuServiceBusiness")
-  obradorConfigs ObradorConfig[] @relation("ObradorConfigBusiness")
+  appConfigs               AppConfig[]               @relation("AppConfigBusiness")
+  ingredients              Ingredient[]              @relation("IngredientBusiness")
+  customers                Customer[]                @relation("CustomerBusiness")
+  suppliers                Supplier[]                @relation("SupplierBusiness")
+  recipes                  Recipe[]                  @relation("RecipeBusiness")
+  events                   Event[]                   @relation("EventBusiness")
+  tasks                    Task[]                    @relation("TaskBusiness")
+  productionRoutines       ProductionRoutine[]       @relation("ProductionRoutineBusiness")
+  storageLocations         StorageLocation[]         @relation("StorageBusiness")
+  miseEnPlaceTasks         MiseEnPlaceTask[]         @relation("MiseEnPlaceBusiness")
+  menuServices             MenuService[]             @relation("MenuServiceBusiness")
+  obradorConfigs           ObradorConfig[]           @relation("ObradorConfigBusiness")
   obradorRawMaterialEntrys ObradorRawMaterialEntry[] @relation("ObradorIntakeBusiness")
-  obradorProductionBatchs ObradorProductionBatch[] @relation("ObradorBatchBusiness")
-  obradorTemperatureLogs ObradorTemperatureLog[] @relation("ObradorTempBusiness")
-  obradorIncidents ObradorIncident[] @relation("ObradorIncidentBusiness")
+  obradorProductionBatchs  ObradorProductionBatch[]  @relation("ObradorBatchBusiness")
+  obradorTemperatureLogs   ObradorTemperatureLog[]   @relation("ObradorTempBusiness")
+  obradorIncidents         ObradorIncident[]         @relation("ObradorIncidentBusiness")
   obradorSanitaryDocuments ObradorSanitaryDocument[] @relation("ObradorDocBusiness")
-  empresas Empresa[] @relation("EmpresaBusiness")
-  locations Location[] @relation("LocationBusiness")
-  checklistTemplates ChecklistTemplate[] @relation("ChecklistTemplateBusiness")
-  checklistSchedules ChecklistSchedule[] @relation("ChecklistScheduleBusiness")
-  communications Communication[] @relation("CommunicationBusiness")
-  taskDefinitions TaskDefinition[] @relation("TaskDefinitionBusiness")
-  taskSchedules TaskSchedule[] @relation("TaskScheduleBusiness")
-  taskInstances TaskInstance[] @relation("TaskInstanceBusiness")
-  purchaseOrders PurchaseOrder[] @relation("PurchaseOrderBusiness")
-  productLabels ProductLabel[] @relation("ProductLabelBusiness")
+  empresas                 Empresa[]                 @relation("EmpresaBusiness")
+  locations                Location[]                @relation("LocationBusiness")
+  checklistTemplates       ChecklistTemplate[]       @relation("ChecklistTemplateBusiness")
+  checklistSchedules       ChecklistSchedule[]       @relation("ChecklistScheduleBusiness")
+  communications           Communication[]           @relation("CommunicationBusiness")
+  taskDefinitions          TaskDefinition[]          @relation("TaskDefinitionBusiness")
+  taskSchedules            TaskSchedule[]            @relation("TaskScheduleBusiness")
+  taskInstances            TaskInstance[]            @relation("TaskInstanceBusiness")
+  purchaseOrders           PurchaseOrder[]           @relation("PurchaseOrderBusiness")
+  productLabels            ProductLabel[]            @relation("ProductLabelBusiness")
+  onlineOrders             OnlineOrder[]             @relation("OnlineOrderBusiness")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 // 7. App Configuration
 model AppConfig {
@@ -250,13 +250,25 @@ model MasterProduct {
   // Ficha única: un producto puede ser de cocina y/o de obrador (Fase 3, Frente A).
   isObrador Boolean @default(false)
 
+  // --- Venta online (Ecommerce, aditivo) ---
+  // Marca el producto como vendible en la tienda web. La web lee estos campos por
+  // la API de integración del local. La ficha legal/alérgenos/nutrición se reutiliza
+  // de `sanitaryInfo`; aquí solo va lo específico de la venta online.
+  isSellableOnline  Boolean @default(false)
+  salePrice         Float? // precio de venta al público (IVA incl.), en euros
+  onlineDescription String? // descripción comercial para la tienda
+  onlineImageUrl    String? // imagen de venta (CDN)
+
+  // Pedidos online que incluyen este producto.
+  onlineOrderItems OnlineOrderItem[]
+
   supplierProducts SupplierProduct[]
 
   // Sección sanitaria/nutricional/legal como extensión 1:1 (pestaña de la misma ficha).
   sanitaryInfo ProductSanitaryInfo?
 
   // Puentes de convergencia obrador → núcleo (aditivos, Frente A).
-  obradorBatches ObradorProductionBatch[] @relation("ObradorBatchToMaster")
+  obradorBatches ObradorProductionBatch[]  @relation("ObradorBatchToMaster")
   obradorIntakes ObradorRawMaterialEntry[] @relation("ObradorIntakeToMaster")
 
   // Etiquetas de venta generadas a partir de esta ficha.
@@ -329,6 +341,9 @@ model Customer {
 
   // Lotes de producción cuyo destino es este cliente / punto de venta.
   batches ObradorProductionBatch[] @relation("BatchToCustomer")
+
+  // Pedidos online de este cliente (volcado del CRM web → obrador).
+  onlineOrders OnlineOrder[] @relation("OnlineOrderCustomer")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1028,7 +1043,7 @@ model ObradorProductionBatch {
   status        String  @default("abierto") // abierto, cerrado, bloqueado, retirado
 
   usedMaterials ObradorBatchIngredient[]
-  productLabels ProductLabel[] @relation("ObradorBatchLabels")
+  productLabels ProductLabel[]           @relation("ObradorBatchLabels")
 
   // Puentes convergencia → núcleo (Frente A, aditivo). Los lotes nunca se tocan;
   // solo ganan FK a la receta/ficha del núcleo para trazabilidad unificada.
@@ -1177,7 +1192,6 @@ model Empresa {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
 
 // Employment = relación contractual entre una persona (User) y una Empresa.
@@ -1217,6 +1231,7 @@ model Employment {
   canViewCatalog        Boolean @default(true)
   canViewOperations     Boolean @default(true)
   canViewObrador        Boolean @default(true)
+  canViewEcommerce      Boolean @default(false)
   canViewEmployees      Boolean @default(false)
   canManageDirectory    Boolean @default(false)
   canEditSettings       Boolean @default(false)
@@ -1260,25 +1275,26 @@ model Location {
   // Empleados asignados a este centro de trabajo (vía su contrato de empleo).
   employments Employment[] @relation("EmploymentLocations")
 
-  members           User[]              @relation("LocationMembers")
-  apiKeys           IntegrationApiKey[] @relation("IntegrationApiKeyLocation")
-  recipes           Recipe[]            @relation("RecipeLocation")
-  ingredients       Ingredient[]        @relation("IngredientLocation")
-  masterProducts    MasterProduct[]     @relation("MasterProductLocation")
-  supplierProducts2 SupplierProduct[]   @relation("SupplierProductLocation")
-  suppliers         Supplier[]          @relation("SupplierLocation")
-  events            Event[]             @relation("EventLocation")
-  tasks             Task[]              @relation("TaskLocation")
+  members            User[]              @relation("LocationMembers")
+  apiKeys            IntegrationApiKey[] @relation("IntegrationApiKeyLocation")
+  recipes            Recipe[]            @relation("RecipeLocation")
+  ingredients        Ingredient[]        @relation("IngredientLocation")
+  masterProducts     MasterProduct[]     @relation("MasterProductLocation")
+  supplierProducts2  SupplierProduct[]   @relation("SupplierProductLocation")
+  suppliers          Supplier[]          @relation("SupplierLocation")
+  events             Event[]             @relation("EventLocation")
+  tasks              Task[]              @relation("TaskLocation")
   productionRoutines ProductionRoutine[] @relation("ProductionRoutineLocation")
-  taskDefinitions   TaskDefinition[]    @relation("TaskDefinitionLocation")
-  taskSchedules     TaskSchedule[]      @relation("TaskScheduleLocation")
-  taskInstances     TaskInstance[]      @relation("TaskInstanceLocation")
-  menuServices      MenuService[]       @relation("MenuServiceLocation")
-  templates         ChecklistTemplate[] @relation("ChecklistTemplateLocation")
-  schedules         ChecklistSchedule[] @relation("ChecklistScheduleLocation")
-  communications    Communication[]     @relation("CommunicationLocation")
-  productLabels     ProductLabel[]      @relation("ProductLabelLocation")
-  customers         Customer[]          @relation("CustomerLocation")
+  taskDefinitions    TaskDefinition[]    @relation("TaskDefinitionLocation")
+  taskSchedules      TaskSchedule[]      @relation("TaskScheduleLocation")
+  taskInstances      TaskInstance[]      @relation("TaskInstanceLocation")
+  menuServices       MenuService[]       @relation("MenuServiceLocation")
+  templates          ChecklistTemplate[] @relation("ChecklistTemplateLocation")
+  schedules          ChecklistSchedule[] @relation("ChecklistScheduleLocation")
+  communications     Communication[]     @relation("CommunicationLocation")
+  productLabels      ProductLabel[]      @relation("ProductLabelLocation")
+  customers          Customer[]          @relation("CustomerLocation")
+  onlineOrders       OnlineOrder[]       @relation("OnlineOrderLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1860,19 +1876,19 @@ model ProductLabel {
   // --- Etiqueta de venta (destination = SALE) ---
   // Referencia a la ficha del producto y al lote de obrador (trazabilidad ascendente).
   masterProductId String?
-  masterProduct   MasterProduct? @relation("MasterProductLabels", fields: [masterProductId], references: [id])
+  masterProduct   MasterProduct?          @relation("MasterProductLabels", fields: [masterProductId], references: [id])
   obradorBatchId  String?
   obradorBatch    ObradorProductionBatch? @relation("ObradorBatchLabels", fields: [obradorBatchId], references: [id])
 
   // Snapshot legal: copia congelada al crear la etiqueta, para que una etiqueta ya
   // impresa no cambie si luego se edita la ficha del producto.
   legalDenomination String?
-  registryNumber    String?  // nº de registro sanitario (del local o ObradorConfig)
+  registryNumber    String? // nº de registro sanitario (del local o ObradorConfig)
   origin            String?
   usageInstructions String?
   requiresCooking   Boolean?
-  labelTemplate     String?  // 100x70, 100x50, 80x50, 60x40
-  nutritionSnapshot Json?    // { energyKj, energyKcal, fat, saturatedFat, carbs, sugars, protein, salt }
+  labelTemplate     String? // 100x70, 100x50, 80x50, 60x40
+  nutritionSnapshot Json? // { energyKj, energyKcal, fat, saturatedFat, carbs, sugars, protein, salt }
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1880,6 +1896,83 @@ model ProductLabel {
   @@index([businessId, productionDate])
   @@index([businessId, locationId, productionDate])
   @@index([businessId, destination, productionDate])
+}
+
+// ============================================================================
+// 17. ECOMMERCE — PEDIDOS DE LA TIENDA WEB (online)
+// ============================================================================
+// La tienda web (WEB SOTOdelPRIOR) cobra con Stripe y, tras confirmarse el pago,
+// reenvía el pedido al obrador vía la API de integración del local
+// (IntegrationApiKey → Location). El obrador es la fuente de verdad del catálogo
+// (MasterProduct.isSellableOnline) y de los pedidos online. Desde aquí se inicia
+// producción, se etiqueta (ProductLabel destination=SALE) y se vuelca el cliente
+// al CRM (Customer). Todo aislado por local → multi-restaurante.
+
+enum OnlineOrderStatus {
+  NEW // recibido y pagado, pendiente de gestionar
+  IN_PRODUCTION // se ha iniciado la elaboración / preparación
+  LABELED // etiquetado y listo para envío
+  SHIPPED // enviado
+  DELIVERED // entregado
+  CANCELLED
+}
+
+model OnlineOrder {
+  id String @id @default(cuid())
+
+  // Tenant / local que gestiona el pedido (resuelto por la API key de la web).
+  businessId String?
+  business   Business? @relation("OnlineOrderBusiness", fields: [businessId], references: [id], onDelete: SetNull)
+  locationId String
+  location   Location  @relation("OnlineOrderLocation", fields: [locationId], references: [id])
+
+  // Referencia legible para el operario y el cliente.
+  reference String @unique // p.ej. WEB-YYYYMMDD-NNN
+
+  status OnlineOrderStatus @default(NEW)
+
+  // Datos del cliente / envío (copiados del checkout de la web).
+  customerName  String
+  customerEmail String
+  phone         String?
+  address       String?
+  city          String?
+  zipCode       String?
+  notes         String?
+
+  // Importe total (euros, IVA incl.) calculado y cobrado en la web.
+  total Float
+
+  // Pago (Stripe). La web cobra; aquí guardamos la referencia para conciliar.
+  paymentRef      String? // PaymentIntent id de Stripe
+  paymentProvider String  @default("stripe")
+
+  // Vínculo opcional al cliente del CRM (upsert al recibir el pedido).
+  customerId String?
+  customer   Customer? @relation("OnlineOrderCustomer", fields: [customerId], references: [id])
+
+  items OnlineOrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locationId, status])
+  @@index([businessId, createdAt])
+}
+
+model OnlineOrderItem {
+  id String @id @default(cuid())
+
+  orderId String
+  order   OnlineOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Producto de catálogo. Se conserva el nombre por si la ficha cambia luego.
+  masterProductId String?
+  masterProduct   MasterProduct? @relation(fields: [masterProductId], references: [id])
+
+  productName     String
+  quantity        Int
+  priceAtPurchase Float // precio unitario cobrado (euros)
 }
 
 // ============================================================================

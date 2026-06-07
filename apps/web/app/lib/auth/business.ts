@@ -34,6 +34,7 @@ export type BusinessPermissions = {
   canViewCatalog: boolean;
   canViewOperations: boolean;
   canViewObrador: boolean;
+  canViewEcommerce: boolean;
   canViewEmployees: boolean;
   canManageDirectory: boolean;
   canEditSettings: boolean;
@@ -49,6 +50,7 @@ export const ALL_PERMISSIONS: BusinessPermissions = {
   canViewCatalog: true,
   canViewOperations: true,
   canViewObrador: true,
+  canViewEcommerce: true,
   canViewEmployees: true,
   canManageDirectory: true,
   canEditSettings: true,
@@ -63,6 +65,7 @@ const EMPTY_PERMISSIONS: BusinessPermissions = {
   canViewCatalog: false,
   canViewOperations: false,
   canViewObrador: false,
+  canViewEcommerce: false,
   canViewEmployees: false,
   canManageDirectory: false,
   canEditSettings: false,
@@ -169,6 +172,7 @@ export async function getBusinessPermissions(
       canViewCatalog: true,
       canViewOperations: true,
       canViewObrador: true,
+      canViewEcommerce: true,
       canViewEmployees: true,
       canManageDirectory: true,
       canEditSettings: true,

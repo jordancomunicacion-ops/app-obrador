@@ -46,6 +46,7 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
                     canViewCatalog: true,
                     canViewOperations: true,
                     canViewObrador: true,
+                    canViewEcommerce: true,
                     canViewEmployees: true,
                     canManageDirectory: true,
                     canEditSettings: true,

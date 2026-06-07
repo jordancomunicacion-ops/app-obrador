@@ -27,6 +27,7 @@ type Employment = {
     canViewCatalog: boolean;
     canViewOperations: boolean;
     canViewObrador: boolean;
+    canViewEcommerce: boolean;
     canViewEmployees: boolean;
     canManageDirectory: boolean;
     canEditSettings: boolean;
@@ -50,6 +51,7 @@ const PERMISSION_LABELS: { key: keyof AccessPermissions; label: string; hint: st
     { key: "canViewCatalog", label: "Catálogo", hint: "Productos, recetas, menú" },
     { key: "canViewOperations", label: "Operaciones", hint: "Compras, almacén, mise, etiquetas" },
     { key: "canViewObrador", label: "Obrador", hint: "Producción y controles sanitarios" },
+    { key: "canViewEcommerce", label: "Ecommerce", hint: "Productos y pedidos de la tienda online" },
     { key: "canViewEmployees", label: "Empleados", hint: "Gestión de usuarios" },
     { key: "canManageDirectory", label: "Directorio", hint: "Proveedores y clientes" },
     { key: "canEditSettings", label: "Configuración", hint: "Ajustes, empresas, accesos" },
@@ -63,6 +65,7 @@ const DEFAULT_NEW: AccessPermissions = {
     canViewCatalog: true,
     canViewOperations: true,
     canViewObrador: true,
+    canViewEcommerce: false,
     canViewEmployees: false,
     canManageDirectory: false,
     canEditSettings: false,

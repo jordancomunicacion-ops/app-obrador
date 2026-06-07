@@ -28,6 +28,7 @@ export type BusinessPermissionKey =
     | 'canViewCatalog'
     | 'canViewOperations'
     | 'canViewObrador'
+    | 'canViewEcommerce'
     | 'canViewEmployees'
     | 'canManageDirectory'
     | 'canEditSettings';
@@ -79,6 +80,16 @@ export const groups: NavGroup[] = [
             { name: 'Etiquetas', href: '/dashboard/labels', icon: TagIcon, permission: 'canViewOperations' },
             { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon, permission: 'canViewObrador' },
             { name: 'Controles sanitarios', href: '/dashboard/obrador/compliance', icon: ShieldCheckIcon, permission: 'canViewObrador' },
+        ]
+    },
+    {
+        // Tienda online: catálogo vendible (MasterProduct.isSellableOnline) y los
+        // pedidos que llegan de la web. La web es solo escaparate + cobro (Stripe);
+        // el obrador es la fuente de verdad. Aislado por local (multi-restaurante).
+        name: 'Ecommerce',
+        items: [
+            { name: 'Productos online', href: '/dashboard/ecommerce/products', icon: BuildingStorefrontIcon, permission: 'canViewEcommerce' },
+            { name: 'Pedidos online', href: '/dashboard/ecommerce/orders', icon: ShoppingCartIcon, permission: 'canViewEcommerce' },
         ]
     },
     {
