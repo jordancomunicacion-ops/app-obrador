@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       id: true,
       name: true,
       category: true,
+      onlineCategory: true,
       description: true,
       salePrice: true,
       onlineDescription: true,
@@ -53,7 +54,8 @@ export async function GET(req: NextRequest) {
     products: products.map((p) => ({
       id: p.id,
       name: p.name,
-      category: p.category,
+      // Categoría de la TIENDA (onlineCategory) con fallback a la interna.
+      category: p.onlineCategory ?? p.category,
       // Descripción comercial con fallback a la genérica de la ficha.
       description: p.onlineDescription ?? p.description ?? null,
       price: p.salePrice,

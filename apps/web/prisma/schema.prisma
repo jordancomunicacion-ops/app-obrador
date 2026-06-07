@@ -258,6 +258,7 @@ model MasterProduct {
   salePrice         Float? // precio de venta al público (IVA incl.), en euros
   onlineDescription String? // descripción comercial para la tienda
   onlineImageUrl    String? // imagen de venta (CDN)
+  onlineCategory    String? // categoría de la TIENDA (independiente de `category` de cocina)
 
   // Pedidos online que incluyen este producto.
   onlineOrderItems OnlineOrderItem[]

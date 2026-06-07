@@ -2,22 +2,33 @@ import Link from 'next/link';
 import { BuildingStorefrontIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { prisma } from '@/app/lib/prisma';
 import { locationScope } from '@/app/lib/auth/scope';
+import { SHOP_CATEGORY_LABELS, SHOP_CATEGORY_ORDER } from '@/app/lib/ecommerce-constants';
+import OnlineCategorySelect from '@/app/ui/ecommerce/online-category-select';
 
 export default async function EcommerceProductsPage() {
+  // Solo los productos con venta web activada (se activa en la ficha del producto).
   const products = await prisma.masterProduct.findMany({
-    where: { ...(await locationScope()) },
-    orderBy: [{ isSellableOnline: 'desc' }, { name: 'asc' }],
+    where: { ...(await locationScope()), isSellableOnline: true },
+    orderBy: [{ onlineCategory: 'asc' }, { name: 'asc' }],
     select: {
       id: true,
       name: true,
-      category: true,
-      isSellableOnline: true,
       salePrice: true,
-      onlineImageUrl: true,
+      onlineCategory: true,
     },
   });
 
-  const sellableCount = products.filter((p) => p.isSellableOnline).length;
+  // Agrupar por categoría de tienda (orden definido; sin categoría al final).
+  const groups = new Map<string, typeof products>();
+  for (const p of products) {
+    const key = p.onlineCategory && SHOP_CATEGORY_ORDER.includes(p.onlineCategory)
+      ? p.onlineCategory
+      : '__none__';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(p);
+  }
+  const orderedKeys = [...SHOP_CATEGORY_ORDER.filter((k) => groups.has(k))];
+  if (groups.has('__none__')) orderedKeys.push('__none__');
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -27,8 +38,8 @@ export default async function EcommerceProductsPage() {
           Productos online
         </h1>
         <p className="text-slate-600 mt-1">
-          Marca qué productos del catálogo se venden en la tienda web y a qué precio.
-          La ficha legal y los alérgenos se reutilizan del producto. {sellableCount} a la venta.
+          Productos a la venta en la tienda web ({products.length}). La venta se activa en la ficha
+          del producto (Catálogo → Productos); aquí los organizas por categoría.
         </p>
       </div>
 
@@ -36,57 +47,56 @@ export default async function EcommerceProductsPage() {
         <div className="text-center p-16 border-2 border-dashed border-slate-200 rounded-2xl">
           <BuildingStorefrontIcon className="w-12 h-12 mx-auto text-slate-300" />
           <p className="mt-3 text-slate-500">
-            No hay productos en este local todavía. Créalos en{' '}
+            Aún no hay productos a la venta. Abre un producto en{' '}
             <Link href="/dashboard/products" className="text-emerald-600 font-semibold hover:underline">
               Catálogo → Productos
-            </Link>
-            .
+            </Link>{' '}
+            y activa <strong>Venta web</strong> en su ficha.
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-500 text-left text-xs uppercase">
-              <tr>
-                <th className="px-5 py-3 font-semibold">Producto</th>
-                <th className="px-5 py-3 font-semibold">Categoría</th>
-                <th className="px-5 py-3 font-semibold">Estado</th>
-                <th className="px-5 py-3 font-semibold text-right">Precio</th>
-                <th className="px-5 py-3 font-semibold text-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {products.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50/60">
-                  <td className="px-5 py-3 font-medium text-slate-900">{p.name}</td>
-                  <td className="px-5 py-3 text-slate-500">{p.category || '—'}</td>
-                  <td className="px-5 py-3">
-                    {p.isSellableOnline ? (
-                      <span className="px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded uppercase">
-                        A la venta
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded uppercase">
-                        Oculto
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-right text-slate-900">
-                    {p.salePrice != null ? `${p.salePrice.toFixed(2)} €` : '—'}
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/dashboard/ecommerce/products/${p.id}`}
-                      className="inline-flex items-center gap-1 text-emerald-600 font-bold hover:underline"
-                    >
-                      <PencilSquareIcon className="w-4 h-4" />
-                      Editar venta
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-8">
+          {orderedKeys.map((key) => (
+            <section key={key}>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500 mb-3">
+                {key === '__none__' ? 'Sin categoría' : SHOP_CATEGORY_LABELS[key] ?? key}
+              </h2>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 text-slate-500 text-left text-xs uppercase">
+                    <tr>
+                      <th className="px-5 py-3 font-semibold">Producto</th>
+                      <th className="px-5 py-3 font-semibold">Categoría de tienda</th>
+                      <th className="px-5 py-3 font-semibold text-right">Precio</th>
+                      <th className="px-5 py-3 font-semibold text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {groups.get(key)!.map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50/60">
+                        <td className="px-5 py-3 font-medium text-slate-900">{p.name}</td>
+                        <td className="px-5 py-3">
+                          <OnlineCategorySelect productId={p.id} current={p.onlineCategory} />
+                        </td>
+                        <td className="px-5 py-3 text-right text-slate-900">
+                          {p.salePrice != null ? `${p.salePrice.toFixed(2)} €` : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <Link
+                            href={`/dashboard/products/${p.id}/edit`}
+                            className="inline-flex items-center gap-1 text-emerald-600 font-bold hover:underline"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                            Editar ficha
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </div>

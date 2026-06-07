@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth, currentOrgId } from '@/auth';
 import { locationScope } from '@/app/lib/auth/scope';
+import { uploadPhoto } from '@/app/lib/storage/spaces';
 import type { LabelStorageMode, Prisma } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
@@ -17,6 +18,7 @@ const OnlineSaleSchema = z.object({
   salePrice: z.number().nonnegative().nullable(),
   onlineDescription: z.string().optional(),
   onlineImageUrl: z.string().optional(),
+  onlineCategory: z.string().optional(),
 });
 
 export type OnlineSaleFormState = {
@@ -40,6 +42,7 @@ export async function updateOnlineSale(
     salePrice: parseNumber(formData.get('salePrice')),
     onlineDescription: formData.get('onlineDescription') ?? undefined,
     onlineImageUrl: formData.get('onlineImageUrl') ?? undefined,
+    onlineCategory: formData.get('onlineCategory') ?? undefined,
   });
   if (!parsed.success) {
     return { message: null, error: 'Datos inválidos.' };
@@ -47,7 +50,7 @@ export async function updateOnlineSale(
   const d = parsed.data;
 
   if (d.isSellableOnline && (d.salePrice == null || d.salePrice <= 0)) {
-    return { message: null, error: 'Pon un precio de venta para activar la venta online.' };
+    return { message: null, error: 'Pon un precio de venta para activar la venta web.' };
   }
 
   // Scope por local: solo se actualiza si el producto pertenece al local activo.
@@ -58,14 +61,50 @@ export async function updateOnlineSale(
       salePrice: d.salePrice,
       onlineDescription: d.onlineDescription?.trim() || null,
       onlineImageUrl: d.onlineImageUrl?.trim() || null,
+      onlineCategory: d.onlineCategory?.trim() || null,
     },
   });
   if (result.count === 0) {
     return { message: null, error: 'Producto no encontrado en este local.' };
   }
 
+  revalidatePath('/dashboard/products');
+  revalidatePath(`/dashboard/products/${productId}/edit`);
   revalidatePath('/dashboard/ecommerce/products');
-  redirect('/dashboard/ecommerce/products');
+  return { message: 'Venta web guardada.' };
+}
+
+/** Sube una imagen de venta al CDN. Para el componente ImageUpload. */
+export async function uploadEcommerceImage(
+  formData: FormData,
+): Promise<{ success?: boolean; imageUrl?: string; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'No autorizado.' };
+  const file = formData.get('file') as File | null;
+  if (!file) return { error: 'No se seleccionó ningún archivo.' };
+  if (!file.type.startsWith('image/')) return { error: 'El archivo debe ser una imagen.' };
+  try {
+    const buf = Buffer.from(await file.arrayBuffer());
+    const up = await uploadPhoto(buf, { prefix: 'ecommerce', maxWidth: 1280 });
+    return { success: true, imageUrl: up.url };
+  } catch (e) {
+    console.error('[ecommerce] upload error', e);
+    return { error: 'No se pudo subir la imagen.' };
+  }
+}
+
+/** Cambia solo la categoría de tienda (organizar desde Productos online). */
+export async function setOnlineCategory(
+  productId: string,
+  onlineCategory: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const result = await prisma.masterProduct.updateMany({
+    where: { id: productId, ...(await locationScope()) },
+    data: { onlineCategory: onlineCategory || null },
+  });
+  if (result.count === 0) return { ok: false, error: 'Producto no encontrado.' };
+  revalidatePath('/dashboard/ecommerce/products');
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------
