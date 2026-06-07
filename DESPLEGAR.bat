@@ -10,7 +10,7 @@ set REMOTE_HOST=164.92.167.42
 set REMOTE_PATH=/root/SOTOdelPRIOR/apps/obrador
 set COMPOSE=docker compose -f docker-compose.yml
 set DBNAME=obrador
-set DBUSER=obrador_user
+set DBUSER=cocina_user
 set WEB=sotoobrador-web
 set DB=sotoobrador-db
 
