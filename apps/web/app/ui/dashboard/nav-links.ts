@@ -11,9 +11,9 @@ import {
     TruckIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
-    TagIcon,
     TableCellsIcon,
-    ShieldCheckIcon
+    ShieldCheckIcon,
+    BellIcon
 } from '@heroicons/react/24/outline';
 
 /**
@@ -31,7 +31,8 @@ export type BusinessPermissionKey =
     | 'canViewEcommerce'
     | 'canViewEmployees'
     | 'canManageDirectory'
-    | 'canEditSettings';
+    | 'canEditSettings'
+    | 'canViewAllNotifications';
 
 export type NavItem = {
     name: string;
@@ -55,41 +56,40 @@ export const groups: NavGroup[] = [
             // "Hoy" = vista operativa del empleado; "Dashboard" = del admin.
             { name: 'Hoy', href: '/dashboard/today', icon: SunIcon, roles: ['USER'], permission: 'canViewDashboard' },
             { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewDashboard' },
-            { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon, permission: 'canViewEvents' },
-            { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon, permission: 'canViewTasks' },
-            { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon, permission: 'canViewCommunications' },
-        ]
-    },
-    {
-        // Pipeline del catálogo: Productos (ficha: proveedores + test carnicero +
-        // perfiles aromáticos) → Recetas (combinan productos) → Planificación Menú.
-        name: 'Catálogo',
-        items: [
-            { name: 'Productos', href: '/dashboard/products', icon: ArchiveBoxIcon, permission: 'canViewCatalog' },
-            { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon, permission: 'canViewCatalog' },
-            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon, permission: 'canViewCatalog' },
+            { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewTasks' },
+            { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewCommunications' },
+            // Notificaciones: visible para todos; el contenido se filtra por rol/área
+            // (admin/superadmin leen todas, el USER solo las que le implican).
+            { name: 'Notificaciones', href: '/dashboard/notifications', icon: BellIcon, permission: 'canViewDashboard' },
         ]
     },
     {
         name: 'Operaciones',
         items: [
-            { name: 'Compras', href: '/dashboard/purchasing', icon: ShoppingCartIcon, permission: 'canViewOperations' },
-            { name: 'Pedidos a proveedores', href: '/dashboard/purchasing/orders', icon: ShoppingCartIcon, permission: 'canViewOperations' },
-            { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon, permission: 'canViewOperations' },
-            { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon, permission: 'canViewOperations' },
-            { name: 'Etiquetas', href: '/dashboard/labels', icon: TagIcon, permission: 'canViewOperations' },
             { name: 'Obrador', href: '/dashboard/obrador', icon: BuildingStorefrontIcon, permission: 'canViewObrador' },
+            // Pedidos: pestañas Local (pendiente) + Online. De momento apunta al online
+            // existente; la página con pestañas se monta en la pasada de la sección.
+            { name: 'Pedidos', href: '/dashboard/ecommerce/orders', icon: ShoppingCartIcon, permission: 'canViewEcommerce' },
+            { name: 'Eventos', href: '/dashboard/events', icon: CalendarIcon, permission: 'canViewEvents' },
+            { name: 'Planificación Menú', href: '/dashboard/menu-planning', icon: TableCellsIcon, permission: 'canViewCatalog' },
+            { name: 'Mise en place', href: '/dashboard/mise-en-place', icon: ClipboardDocumentCheckIcon, permission: 'canViewOperations' },
+            { name: 'Almacén', href: '/dashboard/storage', icon: ArchiveBoxIcon, permission: 'canViewOperations' },
             { name: 'Controles sanitarios', href: '/dashboard/obrador/compliance', icon: ShieldCheckIcon, permission: 'canViewObrador' },
+            // Etiquetas pasa a vivir dentro del Obrador (no en el sidebar).
         ]
     },
     {
-        // Tienda online: catálogo vendible (MasterProduct.isSellableOnline) y los
-        // pedidos que llegan de la web. La web es solo escaparate + cobro (Stripe);
-        // el obrador es la fuente de verdad. Aislado por local (multi-restaurante).
-        name: 'Ecommerce',
+        // Pipeline del catálogo: Productos (pestañas Local + Online) → Recetas
+        // (combinan productos) → Compras y pedidos a proveedor.
+        name: 'Catálogo',
         items: [
-            { name: 'Productos online', href: '/dashboard/ecommerce/products', icon: BuildingStorefrontIcon, permission: 'canViewEcommerce' },
-            { name: 'Pedidos online', href: '/dashboard/ecommerce/orders', icon: ShoppingCartIcon, permission: 'canViewEcommerce' },
+            // Productos: pestañas Local (/products) + Online (/ecommerce/products).
+            // De momento apunta al catálogo local; las pestañas se montan en su pasada.
+            { name: 'Productos', href: '/dashboard/products', icon: ArchiveBoxIcon, permission: 'canViewCatalog' },
+            { name: 'Recetas', href: '/dashboard/recipes', icon: DocumentDuplicateIcon, permission: 'canViewCatalog' },
+            // Compras y pedidos a proveedor: pestañas Compras (/purchasing) + Pedidos
+            // (/purchasing/orders). De momento apunta a Compras.
+            { name: 'Compras y pedidos a proveedor', href: '/dashboard/purchasing', icon: ShoppingCartIcon, permission: 'canViewOperations' },
         ]
     },
     {
