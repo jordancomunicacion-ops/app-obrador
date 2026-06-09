@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUser, sendPushToUsers } from "@/app/lib/push/send";
+import { notifyUser, notifyUsers } from "@/app/lib/notifications/notify";
 import { scheduleAppliesOn, startOfDayUTC } from "@/app/lib/recurrence";
 
 // ============================================================================
@@ -199,6 +199,8 @@ export async function closeInstance(instanceId: string) {
       schedule: {
         select: {
           supervisorUserIds: true,
+          businessId: true,
+          locationId: true,
           template: { select: { name: true } },
           location: { select: { name: true } },
         },
@@ -206,9 +208,14 @@ export async function closeInstance(instanceId: string) {
     },
   });
   if (full?.schedule.supervisorUserIds.length) {
-    await sendPushToUsers(
+    await notifyUsers(
       full.schedule.supervisorUserIds.filter((id) => id !== userId),
       {
+        type: incidents > 0 ? "INCIDENT" : "CHECKLIST",
+        relatedType: "checklistInstance",
+        relatedId: instance.id,
+        businessId: full.schedule.businessId,
+        locationId: full.schedule.locationId,
         title:
           (incidents > 0 ? "⚠️ Con incidencias: " : "✅ Completado: ") +
           full.schedule.template.name,
@@ -250,6 +257,7 @@ export async function assignChecklistInstance(
         select: {
           supervisorUserIds: true,
           supervisorRoles: true,
+          locationId: true,
           template: { select: { name: true } },
           location: { select: { name: true } },
         },
@@ -280,7 +288,12 @@ export async function assignChecklistInstance(
   });
 
   if (assigneeUserId && assigneeUserId !== session.user.id) {
-    await sendPushToUser(assigneeUserId, {
+    await notifyUser(assigneeUserId, {
+      type: "CHECKLIST",
+      relatedType: "checklistInstance",
+      relatedId: instanceId,
+      businessId: orgId,
+      locationId: instance.schedule.locationId,
       title: `📋 Tarea asignada: ${instance.schedule.template.name}`,
       body: instance.schedule.location.name,
       url: `/dashboard/today/checklist/${instanceId}`,

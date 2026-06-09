@@ -10,6 +10,7 @@ import BusinessSwitcher from "@/app/ui/businesses/business-switcher";
 import PWAInstaller from "@/app/ui/pwa/pwa-installer";
 import NotificationsToggle from "@/app/ui/pwa/notifications-toggle";
 import PendingBadge from "@/app/ui/dashboard/pending-badge";
+import NotificationBell from "@/app/ui/dashboard/notification-bell";
 
 export default async function TopBar() {
     const session = await auth();
@@ -25,6 +26,7 @@ export default async function TopBar() {
     return (
         <div className="flex items-center justify-end gap-3 px-6 py-3 border-b border-gray-100 bg-white">
             <PendingBadge />
+            <NotificationBell />
             {vapidPublic && <NotificationsToggle publicKey={vapidPublic} />}
             <PWAInstaller />
             {(businesses.length > 0 || isOwner) && (

@@ -85,6 +85,9 @@ model User {
   // Push notifications
   pushSubscriptions PushSubscription[]
 
+  // Bandeja de notificaciones persistente (feed in-app, patrón yurest)
+  notifications Notification[] @relation("UserNotifications")
+
   // Empresa(s) de la que el usuario es dueño cuando estaba como ADMIN en el
   // modelo antiguo (`ownerId` apuntaba al User.id). Se mantiene para no romper
   // los 28 modelos legacy mientras coexiste con `businessId`. La gestión de
@@ -1218,6 +1221,10 @@ model Employment {
   endDate      DateTime? // null = vigente
   isActive     Boolean   @default(true)
 
+  // Área de trabajo de la persona (sala/cocina). Determina el departamento de las
+  // notificaciones dirigidas a ella y, si es supervisor, qué área supervisa.
+  department Department @default(GENERAL)
+
   // Centros de trabajo (locales) de la empresa a los que está asignado.
   assignedLocations Location[] @relation("EmploymentLocations")
 
@@ -1236,6 +1243,9 @@ model Employment {
   canViewEmployees      Boolean @default(false)
   canManageDirectory    Boolean @default(false)
   canEditSettings       Boolean @default(false)
+  // Supervisor: ve TODAS las notificaciones de su `department` (jefe de sala/cocina).
+  // El super admin y el ADMIN del negocio ven todas sin necesidad de este flag.
+  canViewAllNotifications Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1995,6 +2005,65 @@ model PushSubscription {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// ============================================================================
+// 20. NOTIFICACIONES (bandeja persistente in-app — patrón yurest)
+// ============================================================================
+// Feed por usuario que acompaña a las push (web-push es el canal de entrega;
+// esto es el histórico consultable con leído/no-leído). Se escribe SIEMPRE junto
+// con la push desde el helper `lib/notifications/notify.ts`, de modo que campana
+// y push nunca se desincronizan. `relatedType`/`relatedId` apuntan al objeto
+// origen (comunicación, instancia de checklist/tarea…) para deep-link y futura
+// deduplicación.
+enum NotificationType {
+  COMMUNICATION // nuevo aviso/avería/evento/reunión o comentario
+  CHECKLIST // asignación / completado / supervisión de checklist o tarea
+  INCIDENT // incidencia detectada en checklist/tarea
+  GENERIC
+}
+
+// Área/departamento de trabajo. Define el ámbito de un supervisor (jefe de sala /
+// jefe de cocina) y se denormaliza en cada notificación según el departamento del
+// destinatario, para poder filtrar la bandeja por área.
+enum Department {
+  SALA
+  COCINA
+  GENERAL
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  // Destinatario
+  userId String
+  user   User   @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  type NotificationType @default(GENERIC)
+
+  // Área del destinatario (copiada al crear). Permite que un jefe de sala/cocina
+  // vea sólo las notificaciones de su departamento. GENERAL = sin área asignada.
+  department Department @default(GENERAL)
+
+  title String
+  body  String?
+  url   String? // deep-link in-app
+
+  // Referencia opcional al objeto origen.
+  relatedType String? // "communication", "checklistInstance", "taskInstance"...
+  relatedId   String?
+
+  readAt DateTime? // null = no leída
+
+  // Metadata multi-tenant (columnas sueltas; sin relación para no tocar Business/Location).
+  businessId String?
+  locationId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([businessId, department, readAt])
 }
 
 // Clave de la API de integración (lectura) por LOCAL. La consume el CRM para

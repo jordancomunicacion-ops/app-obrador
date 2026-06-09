@@ -30,6 +30,7 @@ const PERMS_KEYS = [
     "canViewEmployees",
     "canManageDirectory",
     "canEditSettings",
+    "canViewAllNotifications",
 ] as const;
 
 export type AccessPermissions = Record<(typeof PERMS_KEYS)[number], boolean>;
@@ -46,7 +47,11 @@ const DEFAULT_PERMS: AccessPermissions = {
     canViewEmployees: false,
     canManageDirectory: false,
     canEditSettings: false,
+    canViewAllNotifications: false,
 };
+
+export type DepartmentValue = "SALA" | "COCINA" | "GENERAL";
+const DEPARTMENTS: DepartmentValue[] = ["SALA", "COCINA", "GENERAL"];
 
 const AddSchema = z.object({
     email: z.string().trim().toLowerCase().email("Email inválido."),
@@ -55,6 +60,7 @@ const AddSchema = z.object({
     lastName: z.string().trim().optional(),
     dni: z.string().trim().optional(),
     position: z.string().trim().optional(),
+    department: z.enum(["SALA", "COCINA", "GENERAL"]).optional(),
 });
 
 /** Verifica que el usuario puede gestionar este local; devuelve businessId del local. */
@@ -110,7 +116,7 @@ export async function addEmployeeToLocation(
         if (!parsed.success) {
             return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
         }
-        const { email, password, firstName, lastName, dni, position } = parsed.data;
+        const { email, password, firstName, lastName, dni, position, department } = parsed.data;
 
         // 1) Crear/reutilizar User.
         const hashed = password && password.length >= 6 ? await bcrypt.hash(password, 10) : null;
@@ -157,6 +163,7 @@ export async function addEmployeeToLocation(
                 where: { id: existing.id },
                 data: {
                     ...safePerms,
+                    ...(department ? { department } : {}),
                     ...(alreadyHere ? {} : { assignedLocations: { connect: { id: locationId } } }),
                 },
             });
@@ -166,6 +173,7 @@ export async function addEmployeeToLocation(
                     userId: user.id,
                     empresaId: empresa.id,
                     position: position || null,
+                    department: department ?? "GENERAL",
                     isActive: true,
                     assignedLocations: { connect: { id: locationId } },
                     ...DEFAULT_PERMS,
@@ -202,6 +210,36 @@ export async function updateEmploymentPermissions(
         const safePerms: Partial<AccessPermissions> = {};
         for (const key of PERMS_KEYS) if (key in perms) safePerms[key] = !!perms[key];
         await prisma.employment.update({ where: { id: employmentId }, data: safePerms });
+
+        for (const loc of emp.assignedLocations) {
+            revalidatePath(`/dashboard/settings/locations/${loc.id}`);
+        }
+        return { ok: true as const };
+    } catch (e) {
+        return { ok: false as const, error: (e as Error).message };
+    }
+}
+
+/** Cambia el departamento (área) de un Employment: SALA / COCINA / GENERAL. */
+export async function updateEmploymentDepartment(
+    employmentId: string,
+    department: DepartmentValue,
+) {
+    try {
+        if (!DEPARTMENTS.includes(department)) throw new Error("Departamento inválido.");
+        const emp = await prisma.employment.findUnique({
+            where: { id: employmentId },
+            select: { empresa: { select: { businessId: true } }, assignedLocations: { select: { id: true } } },
+        });
+        if (!emp?.empresa?.businessId) throw new Error("Empleo no encontrado.");
+
+        const session = await auth();
+        if (!isPlatformOwner(session)) {
+            const activeBusinessId = await currentBusinessId();
+            if (emp.empresa.businessId !== activeBusinessId) throw new Error("No autorizado.");
+        }
+
+        await prisma.employment.update({ where: { id: employmentId }, data: { department } });
 
         for (const loc of emp.assignedLocations) {
             revalidatePath(`/dashboard/settings/locations/${loc.id}`);

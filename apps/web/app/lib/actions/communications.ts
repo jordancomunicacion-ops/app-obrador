@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUsers } from "@/app/lib/push/send";
+import { notifyUsers } from "@/app/lib/notifications/notify";
 import type { CommunicationType, CommunicationStatus } from "@prisma/client";
 
 const TYPE_LABEL: Record<CommunicationType, string> = {
@@ -70,7 +70,12 @@ export async function createCommunication(data: {
     (id) => id !== session.user!.id,
   );
   if (notifyIds.length > 0) {
-    await sendPushToUsers(notifyIds, {
+    await notifyUsers(notifyIds, {
+      type: "COMMUNICATION",
+      relatedType: "communication",
+      relatedId: created.id,
+      businessId: orgId,
+      locationId: created.locationId,
       title: `${TYPE_LABEL[data.type]}: ${created.title}`,
       body: data.description?.slice(0, 120) || "Tienes una comunicación nueva",
       url: `/dashboard/communications/${created.id}`,
@@ -163,7 +168,7 @@ export async function addComment(communicationId: string, body: string, photos: 
   // Push: avisamos al autor original + asignados + seguidores (sin el comentador)
   const parent = await prisma.communication.findUnique({
     where: { id: communicationId },
-    select: { title: true, authorId: true, assigneeIds: true, followerIds: true },
+    select: { title: true, authorId: true, assigneeIds: true, followerIds: true, locationId: true },
   });
   if (parent) {
     const notifyIds = [
@@ -172,7 +177,12 @@ export async function addComment(communicationId: string, body: string, photos: 
       ...parent.followerIds,
     ].filter((id) => id !== session.user!.id);
     if (notifyIds.length > 0) {
-      await sendPushToUsers(notifyIds, {
+      await notifyUsers(notifyIds, {
+        type: "COMMUNICATION",
+        relatedType: "communication",
+        relatedId: communicationId,
+        businessId: orgId,
+        locationId: parent.locationId,
         title: `Nuevo comentario: ${parent.title}`,
         body: body.trim().slice(0, 120) || "Foto adjunta",
         url: `/dashboard/communications/${communicationId}`,

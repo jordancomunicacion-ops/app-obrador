@@ -14,12 +14,15 @@ import {
     addEmployeeToLocation,
     removeEmployeeFromLocation,
     updateEmploymentPermissions,
+    updateEmploymentDepartment,
     type AccessPermissions,
+    type DepartmentValue,
 } from "@/app/lib/actions/location-employees";
 
 type Employment = {
     id: string;
     position: string | null;
+    department: DepartmentValue;
     canViewDashboard: boolean;
     canViewEvents: boolean;
     canViewTasks: boolean;
@@ -31,6 +34,7 @@ type Employment = {
     canViewEmployees: boolean;
     canManageDirectory: boolean;
     canEditSettings: boolean;
+    canViewAllNotifications: boolean;
     user: {
         id: string;
         name: string;
@@ -55,6 +59,13 @@ const PERMISSION_LABELS: { key: keyof AccessPermissions; label: string; hint: st
     { key: "canViewEmployees", label: "Empleados", hint: "Gestión de usuarios" },
     { key: "canManageDirectory", label: "Directorio", hint: "Proveedores y clientes" },
     { key: "canEditSettings", label: "Configuración", hint: "Ajustes, empresas, accesos" },
+    { key: "canViewAllNotifications", label: "Supervisor", hint: "Ve todas las notificaciones de su área" },
+];
+
+const DEPARTMENT_OPTIONS: { value: DepartmentValue; label: string }[] = [
+    { value: "GENERAL", label: "General" },
+    { value: "SALA", label: "Sala" },
+    { value: "COCINA", label: "Cocina" },
 ];
 
 const DEFAULT_NEW: AccessPermissions = {
@@ -69,6 +80,7 @@ const DEFAULT_NEW: AccessPermissions = {
     canViewEmployees: false,
     canManageDirectory: false,
     canEditSettings: false,
+    canViewAllNotifications: false,
 };
 
 export default function LocationEmployees({
@@ -91,11 +103,12 @@ export default function LocationEmployees({
     const [lastName, setLastName] = useState("");
     const [dni, setDni] = useState("");
     const [position, setPosition] = useState("");
+    const [department, setDepartment] = useState<DepartmentValue>("GENERAL");
     const [perms, setPerms] = useState<AccessPermissions>({ ...DEFAULT_NEW });
 
     function resetForm() {
         setEmail(""); setPassword(""); setFirstName(""); setLastName("");
-        setDni(""); setPosition(""); setPerms({ ...DEFAULT_NEW }); setError(null);
+        setDni(""); setPosition(""); setDepartment("GENERAL"); setPerms({ ...DEFAULT_NEW }); setError(null);
     }
 
     function togglePerm(emp: Employment, key: keyof AccessPermissions) {
@@ -106,6 +119,18 @@ export default function LocationEmployees({
             if (!res.ok) {
                 alert(res.error);
                 setRows((prev) => prev.map((r) => (r.id === emp.id ? { ...r, [key]: !newVal } : r)));
+            }
+        });
+    }
+
+    function changeDepartment(emp: Employment, value: DepartmentValue) {
+        const prevVal = emp.department;
+        setRows((prev) => prev.map((r) => (r.id === emp.id ? { ...r, department: value } : r)));
+        startTransition(async () => {
+            const res = await updateEmploymentDepartment(emp.id, value);
+            if (!res.ok) {
+                alert(res.error);
+                setRows((prev) => prev.map((r) => (r.id === emp.id ? { ...r, department: prevVal } : r)));
             }
         });
     }
@@ -141,6 +166,7 @@ export default function LocationEmployees({
                     lastName: lastName || undefined,
                     dni: dni || undefined,
                     position: position || undefined,
+                    department,
                 },
                 perms,
             );
@@ -199,6 +225,14 @@ export default function LocationEmployees({
                             <label className="mb-1 block text-xs font-semibold text-gray-700">Puesto</label>
                             <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Cocinero, Ayudante..." className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm" />
                         </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold text-gray-700">Departamento</label>
+                            <select value={department} onChange={(e) => setDepartment(e.target.value as DepartmentValue)} className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm">
+                                {DEPARTMENT_OPTIONS.map((d) => (
+                                    <option key={d.value} value={d.value}>{d.label}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div>
@@ -237,6 +271,7 @@ export default function LocationEmployees({
                         <thead className="border-b border-gray-100 bg-gray-50/60 text-xs font-semibold uppercase tracking-wider text-gray-500">
                             <tr>
                                 <th className="py-2 pl-3 pr-2">Empleado</th>
+                                <th className="px-1.5 py-2 text-center" title="Área de trabajo (define qué supervisor ve sus notificaciones)">Departamento</th>
                                 {PERMISSION_LABELS.map((p) => (
                                     <th key={p.key} className="px-1.5 py-2 text-center" title={p.hint}>{p.label}</th>
                                 ))}
@@ -258,6 +293,18 @@ export default function LocationEmployees({
                                                     <div className="truncate text-xs text-gray-500">{e.user.email}{e.position ? ` · ${e.position}` : ""}</div>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td className="px-1.5 py-2 text-center">
+                                            <select
+                                                value={e.department}
+                                                onChange={(ev) => changeDepartment(e, ev.target.value as DepartmentValue)}
+                                                disabled={pending}
+                                                className="rounded-md border border-gray-300 px-2 py-1 text-xs"
+                                            >
+                                                {DEPARTMENT_OPTIONS.map((d) => (
+                                                    <option key={d.value} value={d.value}>{d.label}</option>
+                                                ))}
+                                            </select>
                                         </td>
                                         {PERMISSION_LABELS.map((p) => (
                                             <td key={p.key} className="px-1.5 py-2 text-center">

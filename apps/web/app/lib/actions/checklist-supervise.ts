@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
-import { sendPushToUsers } from "@/app/lib/push/send";
+import { notifyUsers } from "@/app/lib/notifications/notify";
 
 async function assertCanSupervise(responseId: string) {
   const session = await auth();
@@ -95,10 +95,21 @@ export async function markInstanceSupervised(instanceId: string) {
     const meta = await prisma.checklistInstance.findUnique({
       where: { id: instanceId },
       select: {
-        schedule: { select: { template: { select: { name: true } } } },
+        schedule: {
+          select: {
+            businessId: true,
+            locationId: true,
+            template: { select: { name: true } },
+          },
+        },
       },
     });
-    await sendPushToUsers(ids, {
+    await notifyUsers(ids, {
+      type: "CHECKLIST",
+      relatedType: "checklistInstance",
+      relatedId: instanceId,
+      businessId: meta?.schedule.businessId ?? undefined,
+      locationId: meta?.schedule.locationId ?? undefined,
       title: `✅ Checklist supervisado: ${meta?.schedule.template.name ?? ""}`,
       body: "El responsable ha revisado tus respuestas",
       url: `/dashboard/today`,

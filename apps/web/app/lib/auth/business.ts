@@ -38,6 +38,8 @@ export type BusinessPermissions = {
   canViewEmployees: boolean;
   canManageDirectory: boolean;
   canEditSettings: boolean;
+  /** Supervisor: ve todas las notificaciones de su departamento (jefe de sala/cocina). */
+  canViewAllNotifications: boolean;
   /** true si es super admin (gerencia) — implica acceso total */
   isPlatformOwner: boolean;
 };
@@ -54,6 +56,7 @@ export const ALL_PERMISSIONS: BusinessPermissions = {
   canViewEmployees: true,
   canManageDirectory: true,
   canEditSettings: true,
+  canViewAllNotifications: true,
   isPlatformOwner: true,
 };
 
@@ -69,6 +72,7 @@ const EMPTY_PERMISSIONS: BusinessPermissions = {
   canViewEmployees: false,
   canManageDirectory: false,
   canEditSettings: false,
+  canViewAllNotifications: false,
   isPlatformOwner: false,
 };
 
@@ -176,6 +180,7 @@ export async function getBusinessPermissions(
       canViewEmployees: true,
       canManageDirectory: true,
       canEditSettings: true,
+      canViewAllNotifications: true,
     },
   });
   if (employments.length === 0) return { ...EMPTY_PERMISSIONS };

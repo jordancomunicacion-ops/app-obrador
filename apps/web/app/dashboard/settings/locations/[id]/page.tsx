@@ -39,6 +39,7 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
                 select: {
                     id: true,
                     position: true,
+                    department: true,
                     canViewDashboard: true,
                     canViewEvents: true,
                     canViewTasks: true,
@@ -50,6 +51,7 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
                     canViewEmployees: true,
                     canManageDirectory: true,
                     canEditSettings: true,
+                    canViewAllNotifications: true,
                     user: {
                         select: {
                             id: true,
