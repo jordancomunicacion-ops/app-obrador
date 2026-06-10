@@ -1,13 +1,9 @@
-import {
-    BuildingStorefrontIcon,
-    PlusIcon,
-} from "@heroicons/react/24/outline";
+import { BuildingStorefrontIcon } from "@heroicons/react/24/outline";
 import { prisma } from "@/app/lib/prisma";
 import { currentBusinessId } from "@/app/lib/auth/business";
 import { auth } from "@/auth";
 import { isPlatformOwner } from "@/app/lib/auth/platform";
 import PageHeader from "@/app/ui/primitives/page-header";
-import { createLocation } from "@/app/lib/actions/locations";
 import LocationEnterCard from "@/app/ui/locations/location-enter-card";
 
 export const dynamic = "force-dynamic";
@@ -45,21 +41,6 @@ export default async function LocationsListPage() {
                         <BuildingStorefrontIcon className="h-6 w-6 text-emerald-600" />
                         Locales del negocio
                     </h2>
-                    <form action={createLocation} className="flex items-end gap-2">
-                        <input
-                            name="name"
-                            required
-                            placeholder="Nuevo local"
-                            className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                        />
-                        <button
-                            type="submit"
-                            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
-                        >
-                            <PlusIcon className="w-4 h-4 stroke-[3px]" />
-                            Crear
-                        </button>
-                    </form>
                 </div>
 
                 {locations.length === 0 ? (
@@ -68,8 +49,8 @@ export default async function LocationsListPage() {
                         <p className="mt-3 text-sm font-semibold text-gray-700">No hay locales</p>
                         <p className="mt-1 text-sm text-gray-500">
                             {businessId
-                                ? "Crea el primer local del negocio con el formulario de arriba."
-                                : "Selecciona un negocio en el selector de arriba para gestionar sus locales."}
+                                ? "Los locales se dan de alta desde Configuración → Empresas, dentro de cada cuenta."
+                                : "Selecciona un negocio en el selector de arriba para ver sus locales."}
                         </p>
                     </div>
                 ) : (

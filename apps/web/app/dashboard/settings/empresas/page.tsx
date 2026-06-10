@@ -23,7 +23,13 @@ export default async function EmpresasPage() {
 
     const businesses = await prisma.business.findMany({
         orderBy: { createdAt: "asc" },
-        select: { id: true, name: true, domain: true, logoUrl: true, createdAt: true },
+        select: {
+            id: true, name: true, domain: true, logoUrl: true, createdAt: true,
+            locations: {
+                orderBy: [{ isActive: "desc" }, { name: "asc" }],
+                select: { id: true, name: true, isActive: true },
+            },
+        },
     });
     const cookieStore = await cookies();
     const currentId = cookieStore.get(BUSINESS_COOKIE)?.value ?? null;

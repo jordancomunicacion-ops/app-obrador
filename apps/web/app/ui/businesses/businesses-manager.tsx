@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
     BuildingOffice2Icon,
+    BuildingStorefrontIcon,
     CheckCircleIcon,
     PencilSquareIcon,
     PlusIcon,
@@ -19,6 +20,9 @@ import {
     setSelectedBusinessId,
     updateBusiness,
 } from "@/app/lib/actions/businesses";
+import { createLocationForBusiness } from "@/app/lib/actions/locations";
+
+type LocationLite = { id: string; name: string; isActive: boolean };
 
 type Business = {
     id: string;
@@ -26,6 +30,7 @@ type Business = {
     domain: string | null;
     logoUrl: string | null;
     createdAt: string;
+    locations: LocationLite[];
 };
 
 type FormState = { id?: string; name: string; domain: string; logoUrl: string };
@@ -206,6 +211,8 @@ export default function BusinessesManager({
                                         Eliminar
                                     </button>
                                 </div>
+
+                                <BusinessLocales business={b} />
                             </div>
                         );
                     })}
@@ -287,6 +294,80 @@ export default function BusinessesManager({
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+/**
+ * Locales de una empresa, con alta inline. Vive dentro de la cuenta del cliente
+ * (Empresas) para centralizar el control; la sección "Locales" queda de lectura.
+ */
+function BusinessLocales({ business }: { business: Business }) {
+    const router = useRouter();
+    const [name, setName] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [pending, startTransition] = useTransition();
+
+    const add = (e: React.FormEvent) => {
+        e.preventDefault();
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        startTransition(async () => {
+            const res = await createLocationForBusiness(business.id, trimmed);
+            if (!res.success) {
+                setError(res.error || "No se pudo crear el local.");
+                return;
+            }
+            setName("");
+            setError(null);
+            router.refresh();
+        });
+    };
+
+    return (
+        <div className="border-t border-gray-50 pt-3">
+            <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                <BuildingStorefrontIcon className="h-4 w-4" />
+                Locales ({business.locations.length})
+            </div>
+
+            {business.locations.length > 0 && (
+                <ul className="mb-2 space-y-1">
+                    {business.locations.map((loc) => (
+                        <li
+                            key={loc.id}
+                            className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5 text-sm text-gray-700"
+                        >
+                            <span className="truncate">{loc.name}</span>
+                            {!loc.isActive && (
+                                <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                                    Inactivo
+                                </span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            <form onSubmit={add} className="flex items-center gap-2">
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Nuevo local"
+                    disabled={pending}
+                    className="min-w-0 flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+                <button
+                    type="submit"
+                    disabled={pending || !name.trim()}
+                    className="flex flex-none items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                    <PlusIcon className="h-4 w-4 stroke-[3px]" />
+                    Añadir
+                </button>
+            </form>
+            {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
         </div>
     );
 }
