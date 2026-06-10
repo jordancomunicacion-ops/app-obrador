@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import clsx from "clsx";
 import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
+import { getViewerContext } from "@/app/lib/auth/viewer";
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -36,6 +37,21 @@ export default async function CommunicationDetailPage({
     },
   });
   if (!c) notFound();
+
+  // Mismo criterio que la lista: el trabajador sólo abre comunicaciones en las
+  // que participa; el encargado, además las de sus locales.
+  const viewer = await getViewerContext();
+  if (!viewer.isManager) {
+    const uid = viewer.userId ?? "";
+    const involved =
+      c.authorId === uid || c.assigneeIds.includes(uid) || c.followerIds.includes(uid);
+    const inScope =
+      viewer.isSupervisor &&
+      (viewer.locationIds.length === 0 ||
+        !c.locationId ||
+        viewer.locationIds.includes(c.locationId));
+    if (!involved && !inScope) notFound();
+  }
 
   const setOpen = changeCommunicationStatus.bind(null, c.id, "OPEN");
   const setInProgress = changeCommunicationStatus.bind(null, c.id, "IN_PROGRESS");

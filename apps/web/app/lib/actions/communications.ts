@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/app/lib/prisma";
 import { auth, currentOrgId } from "@/auth";
 import { notifyUsers } from "@/app/lib/notifications/notify";
+import { getAllowedRecipients, getViewerContext } from "@/app/lib/auth/viewer";
 import type { CommunicationType, CommunicationStatus } from "@prisma/client";
 
 const TYPE_LABEL: Record<CommunicationType, string> = {
@@ -42,6 +43,17 @@ export async function createCommunication(data: {
   if (!session?.user?.id || !orgId) throw new Error("Unauthorized");
 
   if (!data.title?.trim()) throw new Error("Title required");
+
+  // El trabajador sólo puede dirigir comunicaciones a sus encargados/dirección
+  // (la UI ya lo limita; esto evita saltárselo manipulando la petición).
+  const viewer = await getViewerContext();
+  if (!viewer.isManager && !viewer.isSupervisor) {
+    const allowed = new Set((await getAllowedRecipients(viewer)).map((r) => r.id));
+    const targets = [...(data.assigneeIds ?? []), ...(data.followerIds ?? [])];
+    if (targets.some((id) => !allowed.has(id))) {
+      throw new Error("Sólo puedes dirigir comunicaciones a tus encargados");
+    }
+  }
 
   if (data.locationId) {
     const loc = await prisma.location.findFirst({

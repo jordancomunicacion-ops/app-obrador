@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/app/lib/prisma";
 import { currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
+import { getViewerContext } from "@/app/lib/auth/viewer";
 import CommunicationTypeTabs from "@/app/ui/communications/type-tabs";
 import {
   PlusIcon,
@@ -51,11 +52,31 @@ export default async function CommunicationsPage({
   const locationId = await currentLocationId();
   const typeFilter = sp.type as CommunicationType | undefined;
 
+  // Visibilidad por jerarquía: dirección ve todo; el encargado, lo suyo + sus
+  // locales; el trabajador, SOLO las comunicaciones en las que participa
+  // (autor, asignado o seguidor).
+  const viewer = await getViewerContext();
+  const involvement = [
+    { authorId: viewer.userId ?? "__none__" },
+    { assigneeIds: { has: viewer.userId ?? "__none__" } },
+    { followerIds: { has: viewer.userId ?? "__none__" } },
+  ];
+  const visibility = viewer.isManager
+    ? undefined
+    : viewer.isSupervisor
+      ? viewer.locationIds.length > 0
+        ? { OR: [...involvement, { locationId: { in: viewer.locationIds } }, { locationId: null }] }
+        : undefined // encargado sin locales asignados: todo el negocio (como notificaciones)
+      : { OR: involvement };
+
   const items = await prisma.communication.findMany({
     where: {
       businessId: orgId,
-      ...(locationId ? { OR: [{ locationId }, { locationId: null }] } : {}),
       ...(typeFilter && TYPE_META[typeFilter] ? { type: typeFilter } : {}),
+      AND: [
+        ...(locationId ? [{ OR: [{ locationId }, { locationId: null }] }] : []),
+        ...(visibility ? [visibility] : []),
+      ],
     },
     include: {
       author: { select: { name: true } },

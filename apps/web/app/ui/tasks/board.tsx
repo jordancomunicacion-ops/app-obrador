@@ -1,6 +1,7 @@
 import { TaskStatusButton, AssignTaskButton } from '@/app/ui/tasks/buttons';
 import TimeInfo from './time-info';
 import { prisma } from '@/app/lib/prisma';
+import { currentOrgId } from '@/auth';
 import clsx from 'clsx';
 import { User, Recipe } from '@prisma/client';
 import { locationScope } from '@/app/lib/auth/scope';
@@ -49,7 +50,17 @@ export default async function TaskBoard({ range = 'today' }: { range?: string })
         return at - bt || b.createdAt.getTime() - a.createdAt.getTime();
     });
 
+    // Asignables: gente del negocio activo (no todos los usuarios de la BD).
+    const orgId = await currentOrgId();
     const users = await prisma.user.findMany({
+        where: orgId
+            ? {
+                OR: [
+                    { id: orgId },
+                    { employments: { some: { isActive: true, empresa: { businessId: orgId } } } },
+                ],
+            }
+            : {},
         orderBy: { name: 'asc' }
     });
 

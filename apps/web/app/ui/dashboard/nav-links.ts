@@ -54,8 +54,13 @@ export const groups: NavGroup[] = [
             // "Hoy" = vista operativa del empleado; "Dashboard" = del admin.
             { name: 'Hoy', href: '/dashboard/today', icon: SunIcon, roles: ['USER'], permission: 'canViewDashboard' },
             { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewDashboard' },
-            { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewTasks' },
-            { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon, roles: ['ADMIN', 'SUPERADMIN'], permission: 'canViewCommunications' },
+            // Tareas (gestión): dirección y encargados. El trabajador no gestiona
+            // tareas: las suyas le salen en "Hoy" (el layout de /tasks lo redirige).
+            { name: 'Tareas', href: '/dashboard/tasks', icon: ClipboardDocumentCheckIcon, permission: 'canViewAllNotifications' },
+            // Comunicaciones: todos. El contenido se filtra por jerarquía (dirección
+            // todo, encargado su área/local, trabajador solo las suyas) y el
+            // trabajador solo puede dirigirlas a sus encargados.
+            { name: 'Comunicaciones', href: '/dashboard/communications', icon: ChatBubbleLeftRightIcon, permission: 'canViewCommunications' },
             // Notificaciones: visible para todos; el contenido se filtra por rol/área
             // (admin/superadmin leen todas, el USER solo las que le implican).
             { name: 'Notificaciones', href: '/dashboard/notifications', icon: BellIcon, permission: 'canViewDashboard' },
