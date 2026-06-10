@@ -1,6 +1,7 @@
 'use client';
 
-import { createTask, TaskFormState } from '@/app/lib/actions/tasks';
+import { createTask } from '@/app/lib/actions/tasks';
+import type { TaskFormState } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
     UserIcon,

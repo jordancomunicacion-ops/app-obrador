@@ -20,12 +20,16 @@ export type SupplierInitial = {
 export default function SupplierForm({
   action,
   initial,
+  locationId,
+  returnTo,
 }: {
   action: (
     prevState: SupplierFormState,
     formData: FormData,
   ) => Promise<SupplierFormState>;
   initial?: SupplierInitial;
+  locationId?: string;
+  returnTo?: string;
 }) {
   const [state, formAction] = useActionState<SupplierFormState, FormData>(action, {
     message: null,
@@ -39,7 +43,7 @@ export default function SupplierForm({
     <div className="p-6 max-w-3xl mx-auto pb-20">
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/dashboard/settings/suppliers"
+          href={returnTo ?? "/dashboard/settings/suppliers"}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -54,6 +58,8 @@ export default function SupplierForm({
       </div>
 
       <form action={formAction} className="space-y-6">
+        {locationId && <input type="hidden" name="locationId" value={locationId} />}
+        {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className={labelCls}>Nombre</label>
@@ -124,7 +130,7 @@ export default function SupplierForm({
 
         <div className="flex justify-end gap-4">
           <Link
-            href="/dashboard/settings/suppliers"
+            href={returnTo ?? "/dashboard/settings/suppliers"}
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar

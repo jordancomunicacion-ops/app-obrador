@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
-import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
+import { resolveSubmittedLocationId, safeReturnTo, locationScope } from '@/app/lib/auth/scope';
+import { currentBusinessId } from '@/app/lib/auth/business';
 
 const SupplierSchema = z.object({
   name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
@@ -57,14 +57,12 @@ export async function createSupplier(
   if (!validated.success) {
     return { errors: validated.error.flatten().fieldErrors, message: 'Faltan campos obligatorios.' };
   }
-  const session = await auth();
-
   try {
     await prisma.supplier.create({
       data: {
         ...data(validated.data),
-        businessId: session?.user?.id ?? null,
-        locationId: await scopedLocationId(),
+        businessId: await currentBusinessId(),
+        locationId: await resolveSubmittedLocationId(formData.get('locationId')),
       },
     });
   } catch (error) {
@@ -72,7 +70,8 @@ export async function createSupplier(
   }
 
   revalidatePath('/dashboard/settings/suppliers');
-  redirect('/dashboard/settings/suppliers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
+  redirect(safeReturnTo(formData.get('returnTo')) ?? '/dashboard/settings/suppliers');
 }
 
 export async function updateSupplier(
@@ -98,6 +97,7 @@ export async function updateSupplier(
   }
 
   revalidatePath('/dashboard/settings/suppliers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
   redirect('/dashboard/settings/suppliers');
 }
 
@@ -110,4 +110,5 @@ export async function deleteSupplier(id: string) {
 
   await prisma.supplier.delete({ where: { id } });
   revalidatePath('/dashboard/settings/suppliers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
 }

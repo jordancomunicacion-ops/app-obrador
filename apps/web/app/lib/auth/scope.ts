@@ -2,6 +2,7 @@ import { auth, currentOrgId } from "@/auth";
 import { isPlatformOwner } from "@/app/lib/auth/platform";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { currentBusinessId } from "@/app/lib/auth/business";
+import { prisma } from "@/app/lib/prisma";
 
 /**
  * Ámbito (scope) resuelto para la petición actual, base del aislamiento por local.
@@ -77,4 +78,36 @@ export async function scopedLocationId(): Promise<string | null> {
   if (scope.kind === "location") return scope.locationId;
   // Plataforma (o sin org): usa el local activo seleccionado, si lo hay.
   return currentLocationId();
+}
+
+/**
+ * `locationId` a usar al crear una entidad cuando el formulario indica
+ * explícitamente un local (p. ej. al crear desde la ficha de un local que no
+ * es el activo). Solo se acepta si el local pertenece a la cuenta del usuario
+ * (el propietario de plataforma puede usar cualquiera); si no, se cae al
+ * local activo (`scopedLocationId`).
+ */
+export async function resolveSubmittedLocationId(submitted: unknown): Promise<string | null> {
+  if (typeof submitted === "string" && submitted) {
+    const loc = await prisma.location.findUnique({
+      where: { id: submitted },
+      select: { businessId: true },
+    });
+    if (loc) {
+      const session = await auth();
+      if (isPlatformOwner(session)) return submitted;
+      const orgId = await currentOrgId();
+      if (orgId && loc.businessId === orgId) return submitted;
+    }
+  }
+  return scopedLocationId();
+}
+
+/**
+ * Sanea una ruta de retorno enviada por formulario: solo rutas internas del
+ * dashboard, para no redirigir fuera de la app.
+ */
+export function safeReturnTo(submitted: unknown): string | null {
+  if (typeof submitted === "string" && submitted.startsWith("/dashboard")) return submitted;
+  return null;
 }

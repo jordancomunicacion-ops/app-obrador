@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
+import { resolveSubmittedLocationId, safeReturnTo, locationScope } from '@/app/lib/auth/scope';
 import { currentBusinessId } from '@/app/lib/auth/business';
 
 const DocSchema = z.object({
@@ -34,7 +34,7 @@ export async function createObradorDocument(
     return { errors: validated.error.flatten().fieldErrors, message: 'Revisa los campos.' };
   }
   const d = validated.data;
-  const locationId = await scopedLocationId();
+  const locationId = await resolveSubmittedLocationId(formData.get('locationId'));
   if (!locationId) return { message: 'Selecciona un local activo antes de subir documentos.' };
 
   try {
@@ -53,7 +53,8 @@ export async function createObradorDocument(
   }
 
   revalidatePath('/dashboard/obrador/documents');
-  redirect('/dashboard/obrador/documents');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
+  redirect(safeReturnTo(formData.get('returnTo')) ?? '/dashboard/obrador/documents');
 }
 
 export async function deleteObradorDocument(id: string) {
@@ -65,4 +66,5 @@ export async function deleteObradorDocument(id: string) {
 
   await prisma.obradorSanitaryDocument.delete({ where: { id } });
   revalidatePath('/dashboard/obrador/documents');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
 }

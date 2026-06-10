@@ -1,6 +1,7 @@
 'use client';
 
-import { updateIngredient, IngredientFormState } from '@/app/lib/actions/inventory';
+import { updateIngredient } from '@/app/lib/actions/inventory';
+import type { IngredientFormState } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
     CurrencyEuroIcon,

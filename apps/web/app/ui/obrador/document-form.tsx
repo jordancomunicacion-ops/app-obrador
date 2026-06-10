@@ -9,7 +9,13 @@ import {
 } from '@/app/lib/actions/obrador-documents';
 import { DOCUMENT_CATEGORIES } from '@/app/lib/obrador-constants';
 
-export default function ObradorDocumentForm() {
+export default function ObradorDocumentForm({
+  locationId,
+  returnTo,
+}: {
+  locationId?: string;
+  returnTo?: string;
+} = {}) {
   const [state, formAction] = useActionState<ObradorDocumentFormState, FormData>(
     createObradorDocument,
     { message: null, errors: {} },
@@ -22,7 +28,7 @@ export default function ObradorDocumentForm() {
     <div className="p-6 max-w-2xl mx-auto pb-20">
       <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/dashboard/obrador/documents"
+          href={returnTo ?? "/dashboard/obrador/documents"}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeftIcon className="w-6 h-6 text-slate-500" />
@@ -40,6 +46,8 @@ export default function ObradorDocumentForm() {
         action={formAction}
         className="space-y-6 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm"
       >
+        {locationId && <input type="hidden" name="locationId" value={locationId} />}
+        {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
         <div>
           <label className={labelCls}>Título</label>
           <input
@@ -85,7 +93,7 @@ export default function ObradorDocumentForm() {
 
         <div className="flex justify-end gap-4">
           <Link
-            href="/dashboard/obrador/documents"
+            href={returnTo ?? "/dashboard/obrador/documents"}
             className="px-6 py-3 border border-slate-300 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-all"
           >
             Cancelar

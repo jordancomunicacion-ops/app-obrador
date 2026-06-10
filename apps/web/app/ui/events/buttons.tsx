@@ -3,10 +3,13 @@ import Link from 'next/link';
 import { deleteEvent, confirmEvent } from '@/app/lib/actions/events';
 
 export function ConfirmEvent({ id }: { id: string }) {
-    const confirmEventWithId = confirmEvent.bind(null, id);
-
     return (
-        <form action={confirmEventWithId}>
+        <form
+            action={async () => {
+                'use server';
+                await confirmEvent(id);
+            }}
+        >
             <button
                 className="rounded-md border p-2 hover:bg-green-100 text-green-600"
                 title="Confirmar Evento"
@@ -42,10 +45,13 @@ export function UpdateEvent({ id }: { id: string }) {
 }
 
 export function DeleteEvent({ id }: { id: string }) {
-    const deleteEventWithId = deleteEvent.bind(null, id);
-
     return (
-        <form action={deleteEventWithId}>
+        <form
+            action={async () => {
+                'use server';
+                await deleteEvent(id);
+            }}
+        >
             <button className="rounded-md border p-2 hover:bg-gray-100">
                 <span className="sr-only">Delete</span>
                 <TrashIcon className="w-5" />

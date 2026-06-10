@@ -26,10 +26,13 @@ export function UpdateRecipe({ id }: { id: string }) {
 }
 
 export function DeleteRecipe({ id }: { id: string }) {
-    const deleteRecipeWithId = deleteRecipe.bind(null, id);
-
     return (
-        <form action={deleteRecipeWithId}>
+        <form
+            action={async () => {
+                'use server';
+                await deleteRecipe(id);
+            }}
+        >
             <button className="rounded-md border p-2 hover:bg-gray-100">
                 <span className="sr-only">Delete</span>
                 <TrashIcon className="w-5" />

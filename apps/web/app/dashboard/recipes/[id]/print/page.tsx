@@ -2,6 +2,7 @@ import { prisma } from '@/app/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Ingredient, RecipeItem, RecipeStep } from '@prisma/client';
 import { locationScope } from '@/app/lib/auth/scope';
+import PrintButton from '@/app/ui/recipes/print-button';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -31,12 +32,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <main className="min-h-screen bg-white text-black p-8 print:p-0">
             {/* Print Button (Hidden in Print) */}
             <div className="mb-4 print:hidden flex justify-end">
-                <button
-                    onClick="window.print()"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    Imprimir Ficha
-                </button>
+                <PrintButton />
             </div>
 
             <div className="max-w-[210mm] mx-auto border border-gray-300 p-8 print:border-0 print:p-0">

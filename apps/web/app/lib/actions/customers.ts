@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
+import { resolveSubmittedLocationId, safeReturnTo, locationScope } from '@/app/lib/auth/scope';
 import { currentBusinessId } from '@/app/lib/auth/business';
 
 const CustomerSchema = z.object({
@@ -60,7 +60,7 @@ export async function createCustomer(
       data: {
         ...data(validated.data),
         businessId: await currentBusinessId(),
-        locationId: await scopedLocationId(),
+        locationId: await resolveSubmittedLocationId(formData.get('locationId')),
       },
     });
   } catch (error) {
@@ -68,7 +68,8 @@ export async function createCustomer(
   }
 
   revalidatePath('/dashboard/settings/customers');
-  redirect('/dashboard/settings/customers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
+  redirect(safeReturnTo(formData.get('returnTo')) ?? '/dashboard/settings/customers');
 }
 
 export async function updateCustomer(
@@ -94,6 +95,7 @@ export async function updateCustomer(
   }
 
   revalidatePath('/dashboard/settings/customers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
   redirect('/dashboard/settings/customers');
 }
 
@@ -106,4 +108,5 @@ export async function deleteCustomer(id: string) {
 
   await prisma.customer.delete({ where: { id } });
   revalidatePath('/dashboard/settings/customers');
+  revalidatePath('/dashboard/settings/locations/[id]', 'page');
 }

@@ -26,10 +26,13 @@ export function UpdateIngredient({ id }: { id: string }) {
 }
 
 export function DeleteIngredient({ id }: { id: string }) {
-    const deleteIngredientWithId = deleteIngredient.bind(null, id);
-
     return (
-        <form action={deleteIngredientWithId}>
+        <form
+            action={async () => {
+                'use server';
+                await deleteIngredient(id);
+            }}
+        >
             <button className="rounded-md border p-2 hover:bg-gray-100">
                 <span className="sr-only">Delete</span>
                 <TrashIcon className="w-5" />
