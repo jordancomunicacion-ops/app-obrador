@@ -83,6 +83,53 @@ const DEFAULT_NEW: AccessPermissions = {
     canViewAllNotifications: false,
 };
 
+// Trabajador de base: solo ve LO SUYO (Hoy, sus tareas y sus comunicaciones).
+const WORKER_PERMS: AccessPermissions = {
+    canViewDashboard: true,
+    canViewEvents: false,
+    canViewTasks: true,
+    canViewCommunications: true,
+    canViewCatalog: false,
+    canViewOperations: false,
+    canViewObrador: false,
+    canViewEcommerce: false,
+    canViewEmployees: false,
+    canManageDirectory: false,
+    canEditSettings: false,
+    canViewAllNotifications: false,
+};
+
+// Encargado / jefe de área: como el perfil estándar pero supervisor de su área
+// (ve todas las notificaciones de su departamento en sus locales).
+const SUPERVISOR_PERMS: AccessPermissions = {
+    ...DEFAULT_NEW,
+    canViewAllNotifications: true,
+};
+
+/**
+ * Puestos predefinidos. Elegir uno configura los flujos de información:
+ * departamento (qué área supervisa o a qué encargado reporta) y permisos
+ * (qué secciones ve y si es supervisor). Después se pueden ajustar a mano.
+ */
+const PUESTO_PRESETS: { label: string; department: DepartmentValue; perms: AccessPermissions }[] = [
+    {
+        label: "Encargado",
+        department: "GENERAL",
+        perms: { ...SUPERVISOR_PERMS, canViewEmployees: true, canManageDirectory: true },
+    },
+    { label: "Jefe de Cocina", department: "COCINA", perms: SUPERVISOR_PERMS },
+    { label: "Jefe de Sala", department: "SALA", perms: SUPERVISOR_PERMS },
+    { label: "Cocinero", department: "COCINA", perms: WORKER_PERMS },
+    { label: "Camarero", department: "SALA", perms: WORKER_PERMS },
+    {
+        label: "Personal de Obrador",
+        department: "COCINA",
+        perms: { ...WORKER_PERMS, canViewObrador: true },
+    },
+    { label: "Ayudante de Cocina", department: "COCINA", perms: WORKER_PERMS },
+    { label: "Ayudante de Camarero", department: "SALA", perms: WORKER_PERMS },
+];
+
 export default function LocationEmployees({
     locationId,
     initial,
@@ -102,13 +149,30 @@ export default function LocationEmployees({
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [dni, setDni] = useState("");
+    const [positionChoice, setPositionChoice] = useState("");
     const [position, setPosition] = useState("");
     const [department, setDepartment] = useState<DepartmentValue>("GENERAL");
     const [perms, setPerms] = useState<AccessPermissions>({ ...DEFAULT_NEW });
 
     function resetForm() {
         setEmail(""); setPassword(""); setFirstName(""); setLastName("");
-        setDni(""); setPosition(""); setDepartment("GENERAL"); setPerms({ ...DEFAULT_NEW }); setError(null);
+        setDni(""); setPositionChoice(""); setPosition(""); setDepartment("GENERAL");
+        setPerms({ ...DEFAULT_NEW }); setError(null);
+    }
+
+    function choosePuesto(value: string) {
+        setPositionChoice(value);
+        if (value === "") {
+            setPosition("");
+            return;
+        }
+        const preset = PUESTO_PRESETS.find((p) => p.label === value);
+        if (!preset) return;
+        // El puesto configura los flujos de información: departamento (área) y
+        // permisos (secciones visibles + supervisor). Ajustables a mano después.
+        setPosition(preset.label);
+        setDepartment(preset.department);
+        setPerms({ ...preset.perms });
     }
 
     function togglePerm(emp: Employment, key: keyof AccessPermissions) {
@@ -223,7 +287,21 @@ export default function LocationEmployees({
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-semibold text-gray-700">Puesto</label>
-                            <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Cocinero, Ayudante..." className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm" />
+                            <select
+                                value={positionChoice}
+                                onChange={(e) => choosePuesto(e.target.value)}
+                                className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                            >
+                                <option value="">Selecciona un puesto…</option>
+                                {PUESTO_PRESETS.map((p) => (
+                                    <option key={p.label} value={p.label}>{p.label}</option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-[11px] leading-snug text-gray-500">
+                                Al elegir un puesto se configuran solos el departamento, los permisos y los
+                                flujos de información (qué notificaciones ve y a quién puede escribir).
+                                Puedes ajustarlos abajo.
+                            </p>
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-semibold text-gray-700">Departamento</label>
