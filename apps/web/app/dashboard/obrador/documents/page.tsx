@@ -5,7 +5,7 @@ import {
   DocumentIcon,
 } from '@heroicons/react/24/outline';
 import { prisma } from '@/app/lib/prisma';
-import { auth } from '@/auth';
+import { locationScope } from '@/app/lib/auth/scope';
 import DeleteObradorDocument from '@/app/ui/obrador/delete-document';
 
 function fmtDate(d: Date) {
@@ -17,11 +17,8 @@ function fmtDate(d: Date) {
 }
 
 export default async function ObradorDocumentsPage() {
-  const session = await auth();
-  const businessId = session?.user?.id ?? '__none__';
-
   const docs = await prisma.obradorSanitaryDocument.findMany({
-    where: { businessId },
+    where: { ...(await locationScope()) },
     orderBy: { createdAt: 'desc' },
   });
 

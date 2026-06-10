@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
+import { currentBusinessId } from '@/app/lib/auth/business';
 
 const DocSchema = z.object({
   title: z.string().min(1, { message: 'El título es obligatorio.' }),
@@ -33,7 +34,8 @@ export async function createObradorDocument(
     return { errors: validated.error.flatten().fieldErrors, message: 'Revisa los campos.' };
   }
   const d = validated.data;
-  const session = await auth();
+  const locationId = await scopedLocationId();
+  if (!locationId) return { message: 'Selecciona un local activo antes de subir documentos.' };
 
   try {
     await prisma.obradorSanitaryDocument.create({
@@ -42,7 +44,8 @@ export async function createObradorDocument(
         category: d.category,
         fileUrl: d.fileUrl,
         expiryDate: d.expiryDate ? new Date(d.expiryDate) : null,
-        businessId: session?.user?.id ?? null,
+        businessId: await currentBusinessId(),
+        locationId,
       },
     });
   } catch (error) {
@@ -54,9 +57,8 @@ export async function createObradorDocument(
 }
 
 export async function deleteObradorDocument(id: string) {
-  const session = await auth();
   const existing = await prisma.obradorSanitaryDocument.findFirst({
-    where: { id, businessId: session?.user?.id ?? '__none__' },
+    where: { id, ...(await locationScope()) },
     select: { id: true },
   });
   if (!existing) return;

@@ -6,6 +6,9 @@ import {
     KeyIcon,
     UserGroupIcon,
     Cog6ToothIcon,
+    TruckIcon,
+    ClipboardDocumentCheckIcon,
+    ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { prisma } from "@/app/lib/prisma";
 import { currentBusinessId } from "@/app/lib/auth/business";
@@ -77,11 +80,11 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
         <div className="space-y-6">
             <div>
                 <Link
-                    href="/dashboard/settings"
+                    href="/dashboard/settings/locations"
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
                 >
                     <ArrowLeftIcon className="w-4 h-4" />
-                    Configuración
+                    Locales
                 </Link>
                 <h1 className="mt-3 flex items-center gap-3 text-2xl font-bold tracking-tight text-gray-900">
                     <BuildingStorefrontIcon className="h-7 w-7 text-emerald-600" />
@@ -91,6 +94,34 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
                     <p className="mt-1 text-sm text-gray-500">{location.shortCode}</p>
                 )}
             </div>
+
+            <section>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                    Secciones de este local
+                </h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {[
+                        { href: "/dashboard/settings/suppliers", icon: TruckIcon, title: "Proveedores", desc: "Proveedores del local" },
+                        { href: "/dashboard/settings/customers", icon: UserGroupIcon, title: "Clientes y Puntos de Venta", desc: "Clientes y PdV del local" },
+                        { href: "/dashboard/obrador/documents", icon: ClipboardDocumentCheckIcon, title: "Documentación", desc: "Documentación sanitaria" },
+                    ].map(({ href, icon: Icon, title, desc }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-emerald-200 hover:shadow-md"
+                        >
+                            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                <Icon className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-bold text-slate-900">{title}</p>
+                                <p className="truncate text-xs text-slate-500">{desc}</p>
+                            </div>
+                            <ChevronRightIcon className="ml-auto h-4 w-4 flex-none text-gray-300 transition-colors group-hover:text-emerald-600" />
+                        </Link>
+                    ))}
+                </div>
+            </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900">

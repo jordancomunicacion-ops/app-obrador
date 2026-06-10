@@ -1161,8 +1161,14 @@ model ObradorSanitaryDocument {
   businessId String?
   business   Business? @relation("ObradorDocBusiness", fields: [businessId], references: [id], onDelete: SetNull)
 
+  // Aislamiento por local. Nullable durante la transición.
+  locationId String?
+  location   Location? @relation("ObradorDocLocation", fields: [locationId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([locationId])
 }
 
 // ============================================================================
@@ -1306,6 +1312,7 @@ model Location {
   productLabels      ProductLabel[]      @relation("ProductLabelLocation")
   customers          Customer[]          @relation("CustomerLocation")
   onlineOrders       OnlineOrder[]       @relation("OnlineOrderLocation")
+  obradorDocuments   ObradorSanitaryDocument[] @relation("ObradorDocLocation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

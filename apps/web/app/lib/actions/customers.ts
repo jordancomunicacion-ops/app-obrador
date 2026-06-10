@@ -5,6 +5,7 @@ import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { scopedLocationId, locationScope } from '@/app/lib/auth/scope';
+import { currentBusinessId } from '@/app/lib/auth/business';
 
 const CustomerSchema = z.object({
   name: z.string().min(1, { message: 'El nombre es obligatorio.' }),
@@ -56,7 +57,11 @@ export async function createCustomer(
 
   try {
     await prisma.customer.create({
-      data: { ...data(validated.data), locationId: await scopedLocationId() },
+      data: {
+        ...data(validated.data),
+        businessId: await currentBusinessId(),
+        locationId: await scopedLocationId(),
+      },
     });
   } catch (error) {
     return { message: 'Error al crear el cliente.' };

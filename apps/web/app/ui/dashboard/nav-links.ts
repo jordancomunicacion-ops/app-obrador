@@ -1,5 +1,4 @@
 import {
-    UserGroupIcon,
     HomeIcon,
     DocumentDuplicateIcon,
     CalendarIcon,
@@ -8,7 +7,6 @@ import {
     Cog6ToothIcon,
     ShoppingCartIcon,
     BuildingStorefrontIcon,
-    TruckIcon,
     SunIcon,
     ChatBubbleLeftRightIcon,
     TableCellsIcon,
@@ -93,16 +91,15 @@ export const groups: NavGroup[] = [
         ]
     },
     {
+        // RRHH y contabilidad (fichajes, turnos, solicitudes, caja, EBITDA) viven en
+        // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
         name: 'Administración',
         items: [
-            // RRHH y contabilidad (fichajes, turnos, solicitudes, caja, EBITDA) viven en
-            // la app de contabilidad (contabilidad.sotodelprior.com), no en cocina.
-            { name: 'Gestión de Usuarios', href: '/dashboard/employees', icon: UserGroupIcon, permission: 'canViewEmployees' },
-            { name: 'Proveedores', href: '/dashboard/settings/suppliers', icon: TruckIcon, permission: 'canManageDirectory' },
-            { name: 'Clientes y Puntos de Venta', href: '/dashboard/settings/customers', icon: UserGroupIcon, permission: 'canManageDirectory' },
-            { name: 'Documentación', href: '/dashboard/obrador/documents', icon: ClipboardDocumentCheckIcon, permission: 'canViewObrador' },
-            // Empresas/Accesos (gestión de plataforma) viven dentro de Configuración
-            // como secciones visibles solo al SUPERADMIN; no salen al sidebar.
+            // Locales: lista de locales del negocio. Dentro de cada local se gestionan
+            // sus empleados, proveedores, clientes/PdV y documentación (todo por local).
+            { name: 'Locales', href: '/dashboard/settings/locations', icon: BuildingStorefrontIcon, permission: 'canEditSettings' },
+            // Configuración: catálogo (categorías de producto/receta, envases), plataforma
+            // (Empresas, solo SUPERADMIN) y otros ajustes transversales del negocio.
             { name: 'Configuración', href: '/dashboard/settings', icon: Cog6ToothIcon, permission: 'canEditSettings' },
         ]
     }
