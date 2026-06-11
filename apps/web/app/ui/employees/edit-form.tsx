@@ -11,8 +11,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { useActionState } from 'react';
 import { User } from '@prisma/client';
+import JornadaSection, { EmploymentFormData } from './jornada-section';
 
-export default function EditForm({ user }: { user: any }) {
+export default function EditForm({ user, employment }: { user: any; employment: EmploymentFormData | null }) {
     // user: any used temporarily to avoid type errors if runtime types aren't fresh yet
     const initialState: UserFormState = { message: null, errors: {} };
     const updateUserWithId = updateUser.bind(null, user.id);
@@ -159,7 +160,10 @@ export default function EditForm({ user }: { user: any }) {
                         </div>
                     </div>
 
-                    {/* 4. Permissions Info */}
+                    {/* 4. Jornada y Contrato (Employment; importable desde contabilidad) */}
+                    <JornadaSection employment={employment} errors={state.errors} />
+
+                    {/* 5. Permissions Info */}
                     <div className="space-y-4 md:col-span-2 lg:col-span-3">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider border-b pb-1">Permisos de Acceso</h4>
                         <p className="text-xs text-gray-500 mb-2">Selecciona las secciones a las que este usuario tendrá acceso.</p>

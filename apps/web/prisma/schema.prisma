@@ -1224,8 +1224,16 @@ model Employment {
   position     String? // Puesto / categoría
   contractType String? // INDEFINIDO, TEMPORAL, FORMACION, PRACTICAS, FIJO_DISCONTINUO...
   startDate    DateTime?
-  endDate      DateTime? // null = vigente
+  endDate      DateTime? // null = vigente (obligatoria si el contrato es TEMPORAL)
   isActive     Boolean   @default(true)
+
+  // Jornada. Puede rellenarse a mano o importarse del ERP de contabilidad
+  // (GET /api/integrations/employees, cruce por DNI). Ver lib/contabilidad.ts.
+  weeklyHours Decimal? @db.Decimal(5, 2) // Horas semanales de contrato
+  partTime    Boolean  @default(false) // Jornada parcial
+  // Horario semanal: { mon: { start: "08:00", end: "16:00" }, tue: ..., sun: null }
+  // null/ausente = día libre. El sumatorio de horas se calcula en la UI.
+  schedule    Json?
 
   // Área de trabajo de la persona (sala/cocina). Determina el departamento de las
   // notificaciones dirigidas a ella y, si es supervisor, qué área supervisa.

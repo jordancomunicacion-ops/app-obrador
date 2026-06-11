@@ -8,11 +8,21 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     const { id } = await params;
     const user = await prisma.user.findUnique({
         where: { id },
+        include: {
+            employments: {
+                where: { isActive: true },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                include: { empresa: { select: { razonSocial: true } } },
+            },
+        },
     });
 
     if (!user) {
         notFound();
     }
+
+    const employment = user.employments[0] ?? null;
 
     return (
         <main>
@@ -45,7 +55,23 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 </nav>
             </div>
             <h1 className="my-8 text-2xl font-bold">Editar Empleado</h1>
-            <Form user={user} />
+            <Form
+                user={user}
+                employment={
+                    employment
+                        ? {
+                              id: employment.id,
+                              empresaName: employment.empresa?.razonSocial ?? null,
+                              contractType: employment.contractType,
+                              startDate: employment.startDate?.toISOString().slice(0, 10) ?? '',
+                              endDate: employment.endDate?.toISOString().slice(0, 10) ?? '',
+                              weeklyHours: employment.weeklyHours?.toString() ?? '',
+                              partTime: employment.partTime,
+                              schedule: (employment.schedule as any) ?? null,
+                          }
+                        : null
+                }
+            />
         </main>
     );
 }

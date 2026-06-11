@@ -182,6 +182,44 @@ export const CreateUserSchema = UserSchema.omit({ id: true, approved: true }).ex
 });
 export const UpdateUserSchema = UserSchema;
 
+// Jornada y contrato (se guarda en Employment, no en User). Llega del bloque
+// "Jornada y Contrato" de la ficha de empleado; puede auto-rellenarse desde
+// el ERP de contabilidad (cruce por DNI).
+export const CONTRACT_TYPES = [
+    'INDEFINIDO',
+    'TEMPORAL',
+    'FORMACION',
+    'PRACTICAS',
+    'FIJO_DISCONTINUO',
+] as const;
+
+export const EmploymentJornadaSchema = z
+    .object({
+        employmentId: z.string().optional(),
+        contractType: z.enum(CONTRACT_TYPES).or(z.literal('')).optional(),
+        contractStart: z.string().optional(),
+        contractEnd: z.string().optional(),
+        weeklyHours: z
+            .string()
+            .optional()
+            .refine((v) => !v || (!isNaN(Number(v)) && Number(v) >= 0 && Number(v) <= 99), {
+                message: 'Horas semanales inválidas.',
+            }),
+        partTime: z.boolean().default(false),
+        schedule: z.string().optional(), // JSON: { mon: { start, end } | null, ... }
+    })
+    .refine((d) => d.contractType !== 'TEMPORAL' || Boolean(d.contractEnd), {
+        message: 'Un contrato temporal debe tener fecha de fin.',
+        path: ['contractEnd'],
+    });
+
+export type WeekSchedule = Partial<
+    Record<
+        'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun',
+        { start: string; end: string } | null
+    >
+>;
+
 export type UserFormState = {
     errors?: {
         name?: string[];
@@ -195,6 +233,11 @@ export type UserFormState = {
         jobTitle?: string[];
         dob?: string[];
         permissions?: string[];
+        contractType?: string[];
+        contractStart?: string[];
+        contractEnd?: string[];
+        weeklyHours?: string[];
+        schedule?: string[];
     };
     message?: string | null;
 };

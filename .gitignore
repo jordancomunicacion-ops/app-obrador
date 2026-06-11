@@ -54,3 +54,6 @@ schema.prisma.backup
 
 # vitest cache
 apps/web/node_modules/.vite/
+
+# Claude Code (estado local del harness)
+.claude/

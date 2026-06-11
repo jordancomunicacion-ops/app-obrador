@@ -4,11 +4,12 @@ import { z } from 'zod';
 import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { CreateUserSchema, UpdateUserSchema, UserFormState } from '@/app/lib/definitions';
+import { CreateUserSchema, UpdateUserSchema, EmploymentJornadaSchema, UserFormState } from '@/app/lib/definitions';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
+import { contabilidadConfigured, fetchContabilidadEmployeeByDni } from '@/app/lib/contabilidad';
 
-export async function createUser(prevState: UserFormState, formData: FormData) {
+export async function createUser(prevState: UserFormState, formData: FormData): Promise<UserFormState> {
     const session = await auth();
     // Only admins or authorized users should create employees
     if (!session?.user?.id) {
@@ -79,7 +80,7 @@ export async function updateUser(
     id: string,
     prevState: UserFormState,
     formData: FormData,
-) {
+): Promise<UserFormState> {
     const validatedFields = UpdateUserSchema.safeParse({
         id: id,
         name: formData.get('name'),
@@ -99,6 +100,24 @@ export async function updateUser(
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Faltan campos obligatorios.',
+        };
+    }
+
+    // Jornada y contrato (se guarda en el Employment activo del empleado)
+    const validatedJornada = EmploymentJornadaSchema.safeParse({
+        employmentId: formData.get('employmentId') || undefined,
+        contractType: formData.get('contractType') ?? '',
+        contractStart: formData.get('contractStart') || undefined,
+        contractEnd: formData.get('contractEnd') || undefined,
+        weeklyHours: formData.get('weeklyHours') || undefined,
+        partTime: formData.get('partTime') === 'on',
+        schedule: formData.get('schedule') || undefined,
+    });
+
+    if (!validatedJornada.success) {
+        return {
+            errors: validatedJornada.error.flatten().fieldErrors as UserFormState['errors'],
+            message: 'Revisa los datos de jornada y contrato.',
         };
     }
 
@@ -126,6 +145,37 @@ export async function updateUser(
             where: { id },
             data: dataToUpdate,
         });
+
+        const { employmentId, contractType, contractStart, contractEnd, weeklyHours, partTime, schedule } =
+            validatedJornada.data;
+        const hasJornadaData = Boolean(contractType || contractStart || contractEnd || weeklyHours || schedule);
+
+        const employmentData = {
+            contractType: contractType || null,
+            startDate: contractStart ? new Date(contractStart) : null,
+            // El fin de contrato solo aplica a contratos con término (temporal, formación...)
+            endDate: contractEnd && contractType !== 'INDEFINIDO' ? new Date(contractEnd) : null,
+            weeklyHours: weeklyHours ? Number(weeklyHours) : null,
+            partTime,
+            schedule: schedule ? JSON.parse(schedule) : null,
+        };
+
+        if (employmentId) {
+            // Verificar que el contrato pertenece a este usuario antes de tocarlo
+            await prisma.employment.update({
+                where: { id: employmentId, userId: id },
+                data: employmentData,
+            });
+        } else if (hasJornadaData) {
+            // El empleado aún no tiene contrato registrado: lo creamos contra la
+            // primera empresa activa (instancia mono-cliente, normalmente hay una).
+            const empresa = await prisma.empresa.findFirst({ where: { isActive: true } });
+            if (empresa) {
+                await prisma.employment.create({
+                    data: { userId: id, empresaId: empresa.id, isActive: true, ...employmentData },
+                });
+            }
+        }
     } catch (error) {
         console.error('Database Error:', error);
         return {
@@ -135,6 +185,46 @@ export async function updateUser(
 
     revalidatePath('/dashboard/employees');
     redirect('/dashboard/employees');
+}
+
+// Busca al empleado en el ERP de contabilidad (cruce por DNI) y devuelve sus
+// datos de contrato/jornada para rellenar el formulario de la ficha. No guarda
+// nada: el usuario revisa los valores y guarda con "Actualizar Empleado".
+export async function importJornadaFromContabilidad(dni: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return { ok: false as const, message: 'No autorizado.' };
+    }
+    if (!contabilidadConfigured()) {
+        return {
+            ok: false as const,
+            message: 'Integración con contabilidad no configurada (CONTABILIDAD_API_URL / CONTABILIDAD_API_KEY).',
+        };
+    }
+    if (!dni || !dni.trim()) {
+        return { ok: false as const, message: 'El empleado no tiene DNI: rellénalo para poder cruzar con contabilidad.' };
+    }
+
+    try {
+        const emp = await fetchContabilidadEmployeeByDni(dni);
+        if (!emp) {
+            return { ok: false as const, message: `No hay ningún empleado con DNI ${dni} en contabilidad.` };
+        }
+        return {
+            ok: true as const,
+            data: {
+                contractType: emp.contractType,
+                contractStart: emp.startDate ? emp.startDate.slice(0, 10) : '',
+                contractEnd: emp.endDate ? emp.endDate.slice(0, 10) : '',
+                weeklyHours: String(emp.weeklyHours ?? ''),
+                partTime: emp.partTime,
+                position: emp.position ?? '',
+            },
+        };
+    } catch (error) {
+        console.error('Contabilidad integration error:', error);
+        return { ok: false as const, message: 'No se pudo conectar con contabilidad. Inténtalo de nuevo.' };
+    }
 }
 
 export async function deleteUser(id: string) {
