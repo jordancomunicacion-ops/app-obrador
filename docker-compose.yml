@@ -69,6 +69,9 @@ services:
       VAPID_SUBJECT: "${VAPID_SUBJECT:-mailto:admin@example.com}"
       # Secreto del cron de generación de tareas (/api/cron/generate-tasks)
       CRON_SECRET: "${CRON_SECRET:-}"
+      # Integración con el ERP de contabilidad (auto-rellenar jornada en la ficha de empleado)
+      CONTABILIDAD_API_URL: "${CONTABILIDAD_API_URL:-https://contabilidad.sotodelprior.com}"
+      CONTABILIDAD_API_KEY: "${CONTABILIDAD_API_KEY:-}"
     networks:
       - proxy-net
       - obrador-internal-net
