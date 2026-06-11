@@ -34,7 +34,7 @@ export default function LocationApiKey({
     }
 
     function rotate() {
-        if (key && !confirm("Se generará una nueva clave para este local. El CRM dejará de sincronizarlo hasta actualizar la clave. ¿Continuar?")) return;
+        if (key && !confirm("Se generará una nueva clave para este local. Las apps conectadas (CRM, Contabilidad) dejarán de sincronizarlo hasta actualizar la clave en cada una. ¿Continuar?")) return;
         startTransition(async () => {
             const res = await rotateIntegrationKey(locationId);
             if (!res.ok) { alert(res.error); return; }
@@ -45,7 +45,7 @@ export default function LocationApiKey({
     }
 
     function revoke() {
-        if (!confirm("¿Revocar la clave? El CRM dejará de sincronizar este local.")) return;
+        if (!confirm("¿Revocar la clave? Las apps conectadas (CRM, Contabilidad) dejarán de sincronizar este local.")) return;
         startTransition(async () => {
             const res = await revokeIntegrationKey(locationId);
             if (!res.ok) { alert(res.error); return; }

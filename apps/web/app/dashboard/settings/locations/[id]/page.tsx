@@ -49,7 +49,7 @@ function fmtDate(d: Date) {
 
 /**
  * Detalle de un local organizado en pestañas:
- *  - General: datos básicos + API key del CRM
+ *  - General: datos básicos + API de integración del local (la leen CRM y Contabilidad)
  *  - Empleados: contratos activos asignados al local + permisos
  *  - Proveedores / Clientes y PdV / Documentos: registros del local
  */
@@ -187,12 +187,13 @@ export default async function LocationDetailPage({
                     <section className="rounded-2xl border border-slate-200 bg-white p-6">
                         <h2 className="mb-1 flex items-center gap-2 text-base font-bold text-slate-900">
                             <KeyIcon className="h-5 w-5 text-slate-500" />
-                            API key del CRM
+                            API de integración del local
                         </h2>
                         <p className="mb-4 text-sm text-slate-500">
-                            Clave única de este local. Pégala en el CRM (Conexiones → Cocina); sincronizará
-                            solo los empleados y tareas de este local. Rotarla invalida la anterior al
-                            instante.
+                            Clave única de este local para que otras apps lean sus datos. Pégala en el
+                            CRM (Conexiones → Cocina) y/o en Contabilidad (Registro de jornada → Conexión
+                            Obrador); sincronizarán solo los empleados y tareas de este local. Rotarla
+                            invalida la anterior al instante.
                         </p>
                         <LocationApiKey
                             locationId={location.id}

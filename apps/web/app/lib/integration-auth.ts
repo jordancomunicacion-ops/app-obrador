@@ -2,12 +2,13 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
 /**
- * Autenticación de la API de integración (lectura) que consume el CRM. Cada
- * **local** (Location) genera su propia clave desde Ajustes → "Integración CRM"
- * y la pega en el CRM. Cuando llega una petición a `/api/integrations/*`,
- * resolvemos a qué local pertenece la clave y devolvemos sólo los datos de ese
- * local (operarios asignados, tareas ocurridas allí). De este modo el CRM
- * no ve datos cruzados con otros locales del mismo negocio.
+ * Autenticación de la API de integración que consumen las apps externas
+ * (CRM y Contabilidad). Cada **local** (Location) genera su propia clave desde
+ * la ficha del local → "API de integración del local" y se pega en la app que
+ * vaya a leer. Cuando llega una petición a `/api/integrations/*`, resolvemos a
+ * qué local pertenece la clave y devolvemos sólo los datos de ese local
+ * (operarios asignados, tareas ocurridas allí), sin datos cruzados con otros
+ * locales del mismo negocio.
  *
  * La cabecera admite `x-api-key: <clave>` o `Authorization: Bearer <clave>`.
  */
