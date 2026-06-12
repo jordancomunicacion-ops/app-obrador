@@ -5,7 +5,6 @@ import Search from '@/app/ui/search';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { auth } from '@/auth';
 import EmployeesList from '@/app/ui/employees/list';
-import ImportContabilidadButton from '@/app/ui/employees/import-contabilidad-button';
 
 /**
  * Gestión de Usuarios (= equipo del negocio activo).
@@ -47,10 +46,7 @@ export default async function Page({
                         Administra el acceso y los permisos de tu equipo. Equipo actual: {teamCount}.
                     </p>
                 </div>
-                <div className="flex items-start gap-3">
-                    <ImportContabilidadButton />
-                    <CreateEmployee />
-                </div>
+                <CreateEmployee />
             </div>
 
             <div className="relative">
