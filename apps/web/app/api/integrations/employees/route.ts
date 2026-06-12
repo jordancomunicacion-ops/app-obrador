@@ -173,16 +173,27 @@ export async function POST(req: NextRequest) {
   // pero sí por email, reutilizamos esa cuenta y le anclamos el DNI.
   const candidates = await prisma.user.findMany({
     where: { dni: { not: null } },
-    select: { id: true, dni: true },
+    select: { id: true, dni: true, email: true },
   });
-  let userId = candidates.find((u) => u.dni && normalizeNif(u.dni) === nif)?.id ?? null;
-  if (!userId && email) {
-    userId = (await prisma.user.findUnique({ where: { email }, select: { id: true } }))?.id ?? null;
+  let matched = candidates.find((u) => u.dni && normalizeNif(u.dni) === nif) ?? null;
+  if (!matched && email) {
+    matched =
+      (await prisma.user.findUnique({ where: { email }, select: { id: true, dni: true, email: true } })) ??
+      null;
   }
+  let userId = matched?.id ?? null;
 
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
   let userCreated = false;
-  if (userId) {
+  if (userId && matched) {
+    // El email solo se actualiza si el actual es el placeholder de alta
+    // importada (es el email de acceso, no pisamos uno real) y el del ERP
+    // no lo usa ya otra cuenta.
+    let emailUpdate: { email: string } | Record<string, never> = {};
+    if (email && matched.email.endsWith("@pendiente.sotodelprior.local") && matched.email !== email) {
+      const taken = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+      if (!taken) emailUpdate = { email };
+    }
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -191,6 +202,7 @@ export async function POST(req: NextRequest) {
         lastName,
         name: fullName,
         ...(phone ? { phone } : {}),
+        ...emailUpdate,
         approved: true,
       },
     });

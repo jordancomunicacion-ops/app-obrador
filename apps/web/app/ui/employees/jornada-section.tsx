@@ -95,6 +95,21 @@ export default function JornadaSection({
             if (jobTitle && !jobTitle.value && result.data.position) {
                 jobTitle.value = result.data.position;
             }
+            // Datos de contacto: el móvil se rellena si la ficha no lo tiene;
+            // el email solo si está vacío o es el placeholder de alta importada
+            // (es el email de acceso: nunca pisamos uno real).
+            const phone = form?.elements.namedItem('phone') as HTMLInputElement | null;
+            if (phone && !phone.value && result.data.phone) {
+                phone.value = result.data.phone;
+            }
+            const email = form?.elements.namedItem('email') as HTMLInputElement | null;
+            if (
+                email &&
+                result.data.email &&
+                (!email.value || email.value.endsWith('@pendiente.sotodelprior.local'))
+            ) {
+                email.value = result.data.email;
+            }
             setImportMsg({ ok: true, text: 'Datos importados de contabilidad. Revisa y pulsa "Actualizar Empleado" para guardar.' });
         });
     };

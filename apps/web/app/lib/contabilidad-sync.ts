@@ -19,6 +19,9 @@ import { fetchContabilidadEmployees } from '@/app/lib/contabilidad';
 
 const normalizeNif = (nif: string) => nif.toUpperCase().replace(/[\s.-]/g, '');
 
+// Email de acceso provisional de las altas importadas sin email real.
+const isPlaceholderEmail = (email: string) => email.endsWith('@pendiente.sotodelprior.local');
+
 // Permisos de un operario importado (mismos que addEmployeeToLocation).
 const IMPORT_DEFAULT_PERMS = {
     canViewDashboard: true,
@@ -78,9 +81,9 @@ export async function syncPlantillaFromContabilidad(): Promise<{
 
     const usersWithDni = await prisma.user.findMany({
         where: { dni: { not: null } },
-        select: { id: true, dni: true },
+        select: { id: true, dni: true, email: true, phone: true },
     });
-    const byDni = new Map(usersWithDni.map((u) => [normalizeNif(u.dni!), u.id]));
+    const byDni = new Map(usersWithDni.map((u) => [normalizeNif(u.dni!), u]));
 
     let created = 0;
     let updated = 0;
@@ -98,10 +101,35 @@ export async function syncPlantillaFromContabilidad(): Promise<{
             partTime: emp.partTime ?? false,
         };
 
-        let userId = byDni.get(nif) ?? null;
-        if (!userId && emp.email) {
-            userId = (await prisma.user.findUnique({ where: { email: emp.email }, select: { id: true } }))?.id ?? null;
-            if (userId) await prisma.user.update({ where: { id: userId }, data: { dni: nif } });
+        let user = byDni.get(nif) ?? null;
+        if (!user && emp.email) {
+            const byEmail = await prisma.user.findUnique({
+                where: { email: emp.email },
+                select: { id: true, email: true, phone: true },
+            });
+            if (byEmail) {
+                await prisma.user.update({ where: { id: byEmail.id }, data: { dni: nif } });
+                user = { ...byEmail, dni: nif };
+            }
+        }
+        const userId = user?.id ?? null;
+
+        if (user && userId) {
+            // Datos de contacto desde el ERP: el móvil solo si la ficha no lo
+            // tiene; el email solo si el actual es el placeholder (es el email
+            // de acceso) y nadie más usa ya el del ERP.
+            const contacto: { phone?: string; email?: string } = {};
+            if (emp.phone && !user.phone) contacto.phone = emp.phone;
+            if (emp.email && isPlaceholderEmail(user.email)) {
+                const taken = await prisma.user.findUnique({
+                    where: { email: emp.email },
+                    select: { id: true },
+                });
+                if (!taken) contacto.email = emp.email;
+            }
+            if (Object.keys(contacto).length > 0) {
+                await prisma.user.update({ where: { id: userId }, data: contacto });
+            }
         }
 
         if (userId) {
@@ -145,7 +173,7 @@ export async function syncPlantillaFromContabilidad(): Promise<{
                     approved: true,
                 },
             });
-            byDni.set(nif, user.id);
+            byDni.set(nif, user);
             await prisma.employment.create({
                 data: {
                     userId: user.id,

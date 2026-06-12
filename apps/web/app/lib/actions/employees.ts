@@ -219,6 +219,8 @@ export async function importJornadaFromContabilidad(dni: string) {
                 weeklyHours: String(emp.weeklyHours ?? ''),
                 partTime: emp.partTime,
                 position: emp.position ?? '',
+                email: emp.email ?? '',
+                phone: emp.phone ?? '',
             },
         };
     } catch (error) {
