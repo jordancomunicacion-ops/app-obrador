@@ -4,7 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { assignChecklistInstance } from "@/app/lib/actions/checklist-instances";
 
-type UserOpt = { id: string; name: string | null };
+// onShift: true = en turno en la ventana de la tarea, false = fuera de turno,
+// null = sin horario semanal en su ficha (no podemos saberlo).
+type UserOpt = { id: string; name: string | null; onShift?: boolean | null };
 
 export default function AssignInstanceControl({
   instanceId,
@@ -37,6 +39,18 @@ export default function AssignInstanceControl({
     });
   }
 
+  const onShift = users.filter((u) => u.onShift === true);
+  const noSchedule = users.filter((u) => u.onShift == null);
+  const offShift = users.filter((u) => u.onShift === false);
+  const hasShiftInfo = onShift.length > 0 || offShift.length > 0;
+
+  const renderOpts = (list: UserOpt[]) =>
+    list.map((u) => (
+      <option key={u.id} value={u.id}>
+        {u.name ?? "—"}
+      </option>
+    ));
+
   return (
     <select
       value={value}
@@ -50,11 +64,19 @@ export default function AssignInstanceControl({
       }
     >
       <option value="">Sin asignar</option>
-      {users.map((u) => (
-        <option key={u.id} value={u.id}>
-          {u.name ?? "—"}
-        </option>
-      ))}
+      {hasShiftInfo ? (
+        <>
+          {onShift.length > 0 && <optgroup label="En turno">{renderOpts(onShift)}</optgroup>}
+          {noSchedule.length > 0 && (
+            <optgroup label="Sin horario en ficha">{renderOpts(noSchedule)}</optgroup>
+          )}
+          {offShift.length > 0 && (
+            <optgroup label="Fuera de turno">{renderOpts(offShift)}</optgroup>
+          )}
+        </>
+      ) : (
+        renderOpts(users)
+      )}
     </select>
   );
 }

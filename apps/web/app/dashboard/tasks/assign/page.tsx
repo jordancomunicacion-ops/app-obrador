@@ -5,6 +5,8 @@ import { auth, currentOrgId } from "@/auth";
 import { currentLocationId } from "@/app/lib/auth/location";
 import { ClipboardDocumentCheckIcon, ClockIcon } from "@heroicons/react/24/outline";
 import AssignInstanceControl from "@/app/ui/tasks/assign-instance-control";
+import { isOnShift } from "@/app/lib/schedule";
+import { WeekSchedule } from "@/app/lib/definitions";
 
 function startOfDayUTC(date = new Date()) {
   const d = new Date(date);
@@ -61,12 +63,24 @@ export default async function AssignTasksPage() {
     }),
     prisma.user.findMany({
       where: { OR: [{ id: orgId }, { adminId: orgId }] },
-      select: { id: true, name: true },
+      select: {
+        id: true,
+        name: true,
+        // Horario semanal del contrato activo, para saber quién está en turno.
+        employments: {
+          where: { isActive: true },
+          select: { schedule: true },
+          take: 1,
+        },
+      },
       orderBy: { name: "asc" },
     }),
   ]);
 
   const nameById = new Map(users.map((u) => [u.id, u.name]));
+  const scheduleById = new Map(
+    users.map((u) => [u.id, (u.employments[0]?.schedule ?? null) as WeekSchedule | null]),
+  );
 
   return (
     <div>
@@ -113,6 +127,18 @@ export default async function AssignTasksPage() {
                   .map((id) => nameById.get(id))
                   .filter(Boolean) as string[];
                 const pool = [...performerNames, ...i.schedule.performerRoles];
+                // Quién está en turno durante la ventana de esta tarea, según
+                // el horario semanal de su ficha.
+                const assignableUsers = users.map((u) => ({
+                  id: u.id,
+                  name: u.name,
+                  onShift: isOnShift(
+                    scheduleById.get(u.id),
+                    new Date(i.dueDate),
+                    i.schedule.executionStartTime,
+                    i.schedule.executionEndTime,
+                  ),
+                }));
                 return (
                   <tr key={i.id} className="hover:bg-gray-50">
                     <td className={clsx("px-4 py-3 text-xs", overdue ? "text-red-600 font-semibold" : "text-gray-600")}>
@@ -136,7 +162,7 @@ export default async function AssignTasksPage() {
                       <AssignInstanceControl
                         instanceId={i.id}
                         assignedToUserId={i.assignedToUserId}
-                        users={users}
+                        users={assignableUsers}
                       />
                     </td>
                   </tr>
