@@ -47,8 +47,8 @@ services:
     environment:
       AUTH_TRUST_HOST: "true"
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
-      AUTH_URL: "${AUTH_URL:-https://obrador.sotodelprior.com}"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://obrador.sotodelprior.com}"
+      AUTH_URL: "${AUTH_URL:-https://obrador.oteyzerena.com}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://obrador.oteyzerena.com}"
       DATABASE_URL: postgresql://${DB_USER:-cocina_user}:${DB_PASS:-cocina_pass}@sotoobrador-db:5432/${DB_NAME:-obrador}
       AUTH_SECRET: "${AUTH_SECRET:-supersecretkey123}"
       NEXTAUTH_SKIP_ENV_VALIDATION: "true"
@@ -70,7 +70,7 @@ services:
       # Secreto del cron de generación de tareas (/api/cron/generate-tasks)
       CRON_SECRET: "${CRON_SECRET:-}"
       # Integración con el ERP de contabilidad (auto-rellenar jornada en la ficha de empleado)
-      CONTABILIDAD_API_URL: "${CONTABILIDAD_API_URL:-https://contabilidad.sotodelprior.com}"
+      CONTABILIDAD_API_URL: "${CONTABILIDAD_API_URL:-https://contabilidad.oteyzerena.com}"
       CONTABILIDAD_API_KEY: "${CONTABILIDAD_API_KEY:-}"
     networks:
       - proxy-net
@@ -89,7 +89,7 @@ services:
     labels:
       - "autoheal=true"
       - "traefik.enable=true"
-      - "traefik.http.routers.sotoobrador-web.rule=Host(`obrador.sotodelprior.com`)"
+      - "traefik.http.routers.sotoobrador-web.rule=Host(`obrador.oteyzerena.com`)"
       - "traefik.http.routers.sotoobrador-web.entrypoints=websecure"
       - "traefik.http.routers.sotoobrador-web.tls=true"
       - "traefik.http.routers.sotoobrador-web.tls.certresolver=le"
@@ -100,4 +100,4 @@ services:
       - "traefik.http.services.sotoobrador-web.loadbalancer.server.port=3000"
 
     extra_hosts:
-      - "obrador.sotodelprior.com:host-gateway"
+      - "obrador.oteyzerena.com:host-gateway"
