@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "App Cocina SOTOdelPRIOR",
+  title: "App Cocina OTEYZERENA",
   description: "Sistema de gestión de cocina",
   icons: {
     icon: "/icon.png",

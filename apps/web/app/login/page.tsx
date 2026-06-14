@@ -15,7 +15,7 @@ export default function Page() {
         <div className="flex h-screen items-center justify-center bg-gray-50">
             <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
                 <div className="flex flex-col items-center justify-center mb-8">
-                    <img src="/logo-icon.png" alt="SOTO DEL PRIOR" className="h-24" />
+                    <img src="/logo-icon.png" alt="OTEYZERENA" className="h-24" />
                     <span className="mt-6 text-xl tracking-[0.5em] text-gray-900 font-light uppercase">
                         Cocina
                     </span>

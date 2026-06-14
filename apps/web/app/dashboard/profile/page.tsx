@@ -63,7 +63,7 @@ export default async function ProfilePage() {
 
                         <div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Empresa</p>
-                            <p className="font-medium text-gray-900">SOTO DEL PRIOR</p>
+                            <p className="font-medium text-gray-900">OTEYZERENA</p>
                         </div>
                     </div>
                 </div>

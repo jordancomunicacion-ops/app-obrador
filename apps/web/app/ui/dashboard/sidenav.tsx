@@ -95,7 +95,7 @@ export default function SideNav({
         <aside className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed left-0 top-0 z-30 shadow-sm">
             {/* LOGO */}
             <div className="p-4 flex justify-center border-b border-gray-100">
-                <img src={logoUrl || "/logo-text.png"} alt="SOTO DEL PRIOR" className="h-12 object-contain" />
+                <img src={logoUrl || "/logo-text.png"} alt="OTEYZERENA" className="h-12 object-contain" />
             </div>
 
             {/* PROFILE */}

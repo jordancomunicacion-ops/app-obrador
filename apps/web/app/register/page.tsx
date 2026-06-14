@@ -13,7 +13,7 @@ export default function Page() {
                     <h1 className="text-2xl font-bold tracking-tight text-white">Registro no disponible</h1>
                     <p className="mt-4 text-slate-300">
                         Las cuentas de acceso las da de alta la administración de la plataforma.
-                        Si necesitas acceso, contacta con Soto del Prior.
+                        Si necesitas acceso, contacta con Oteyzerena.
                     </p>
                     <Link
                         href="/login"
@@ -24,7 +24,7 @@ export default function Page() {
                 </div>
                 <div className="bg-white/5 py-4 px-8 text-center border-t border-white/10">
                     <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
-                        Soto del Prior &copy; 2026
+                        Oteyzerena &copy; 2026
                     </p>
                 </div>
             </div>

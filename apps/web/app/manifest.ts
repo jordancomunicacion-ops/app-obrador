@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "App Cocina SOTO del PRIOR",
+    name: "App Cocina OTEYZERENA",
     short_name: "Cocina",
     description: "Gestión de cocina y checklists operativos",
     start_url: "/dashboard/today",
